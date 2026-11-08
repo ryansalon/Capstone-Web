@@ -6,3 +6,4 @@ PyJWT>=2.8
 python-dotenv>=1.0
 requests>=2.31
 pytest>=8.0
+gunicorn
