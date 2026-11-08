@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Reports — Barangay Health Monitor</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body data-page="bhw-reports">
+  <header class="topbar">
+    <div class="brand"><span class="dot" aria-hidden="true"></span>Barangay Health Monitor</div>
+    <nav class="topnav" aria-label="Health worker navigation">
+      <a href="/bhw/dashboard.html">Dashboard</a>
+      <a href="/bhw/search.html">Find citizens</a>
+      <a href="/bhw/audit-trail.html">Audit trail</a>
+      <a href="/bhw/reports.html" aria-current="page">Reports</a>
+      <span id="whoami" class="whoami"></span>
+      <button id="logoutBtn" class="btn btn-ghost" type="button">Log out</button>
+    </nav>
+  </header>
+
+  <main class="page">
+    <h1>Reports</h1>
+    <p class="lede">Download CSV files for record keeping, or open a printable page for the Rural Health Unit.</p>
+
+    <form id="reportForm" class="filters" novalidate>
+      <div class="field">
+        <label for="reportType">Report</label>
+        <select id="reportType" name="type">
+          <option value="summary">Summary</option>
+          <option value="consent">Consent</option>
+          <option value="audit">Audit</option>
+          <option value="alerts">Alerts</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="fromDate">From</label>
+        <input id="fromDate" name="from" type="date">
+      </div>
+      <div class="field">
+        <label for="toDate">To</label>
+        <input id="toDate" name="to" type="date">
+      </div>
+      <button id="csvBtn" class="btn btn-primary" type="button">Download CSV</button>
+      <button id="printBtn" class="btn btn-secondary" type="button">Open printable report</button>
+    </form>
+
+    <div id="status" aria-live="polite"></div>
+    <p class="muted">Leave the dates empty to include all recorded data.</p>
+  </main>
+
+  <footer class="foot">Citizens without consent are labelled “Withheld (no consent)” in alert reports.</footer>
+  <script src="/js/api.js"></script>
+  <script src="/js/bhw.js"></script>
+</body>
+</html>

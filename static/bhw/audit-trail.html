@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Audit trail — Barangay Health Monitor</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body data-page="bhw-audit">
+  <header class="topbar">
+    <div class="brand"><span class="dot" aria-hidden="true"></span>Barangay Health Monitor</div>
+    <nav class="topnav" aria-label="Health worker navigation">
+      <a href="/bhw/dashboard.html">Dashboard</a>
+      <a href="/bhw/search.html">Find citizens</a>
+      <a href="/bhw/audit-trail.html" aria-current="page">Audit trail</a>
+      <a href="/bhw/reports.html">Reports</a>
+      <span id="whoami" class="whoami"></span>
+      <button id="logoutBtn" class="btn btn-ghost" type="button">Log out</button>
+    </nav>
+  </header>
+
+  <main class="page">
+    <h1>Audit trail</h1>
+    <p class="lede">Append-only log of every access to citizen records. Entries cannot be edited or deleted.</p>
+
+    <form id="filterForm" class="filters" role="search">
+      <div class="field">
+        <label for="fromDate">From</label>
+        <input id="fromDate" name="from" type="date">
+      </div>
+      <div class="field">
+        <label for="toDate">To</label>
+        <input id="toDate" name="to" type="date">
+      </div>
+      <div class="field grow">
+        <label for="bhwName">Health worker full name</label>
+        <input id="bhwName" name="bhw" type="text" placeholder="e.g. Maria Santos" autocomplete="off">
+      </div>
+      <button id="filterBtn" class="btn btn-primary" type="submit">Apply filters</button>
+      <button id="clearBtn" class="btn btn-secondary" type="button">Clear</button>
+    </form>
+
+    <div id="status" aria-live="polite"></div>
+    <div id="results"></div>
+  </main>
+
+  <footer class="foot">Timestamps are UTC. The newest 500 entries are shown.</footer>
+  <script src="/js/api.js"></script>
+  <script src="/js/bhw.js"></script>
+</body>
+</html>

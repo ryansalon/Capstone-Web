@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>My consent — Barangay Health Monitor</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body data-page="citizen-consent">
+  <header class="topbar">
+    <div class="brand"><span class="dot" aria-hidden="true"></span>Barangay Health Monitor</div>
+    <nav class="topnav" aria-label="Citizen navigation">
+      <a href="/citizen/dashboard.html">Dashboard</a>
+      <a href="/citizen/history.html">History</a>
+      <a href="/citizen/consent.html" aria-current="page">Consent</a>
+      <a href="/citizen/profile.html">Profile</a>
+      <span id="whoami" class="whoami"></span>
+      <button id="logoutBtn" class="btn btn-ghost" type="button">Log out</button>
+    </nav>
+  </header>
+
+  <main class="page">
+    <h1>Consent to share my records</h1>
+    <p class="lede">
+      Barangay Health Workers can open your individual readings and notes <strong>only while your consent is
+      granted</strong>. Without consent the kiosk still saves your readings for your own account, but health
+      workers only see anonymous community totals — never your name or your records.
+    </p>
+
+    <div id="status" aria-live="polite"></div>
+
+    <section class="card-surface section" aria-live="polite">
+      <h2>Current consent</h2>
+      <p id="consentState" class="muted">Checking…</p>
+      <div class="btn-row">
+        <button id="grantBtn" class="btn btn-primary" type="button">Grant consent</button>
+        <button id="revokeBtn" class="btn btn-danger" type="button">Revoke consent</button>
+      </div>
+      <p class="hint muted">Every grant or revoke is recorded in the consent history below and cannot be deleted.</p>
+    </section>
+
+    <section class="section">
+      <h2>Consent history</h2>
+      <div id="historyWrap"></div>
+    </section>
+  </main>
+
+  <footer class="foot">Consent changes take effect immediately for all health-worker access.</footer>
+  <script src="/js/api.js"></script>
+  <script src="/js/citizen.js"></script>
+</body>
+</html>

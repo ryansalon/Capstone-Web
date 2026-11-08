@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Create a citizen account — Barangay Health Monitor</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body data-page="citizen-register">
+  <div class="auth-wrap">
+    <header class="topbar">
+      <div class="brand"><span class="dot" aria-hidden="true"></span>Barangay Health Monitor</div>
+    </header>
+    <main class="auth-main">
+      <div class="auth-card">
+        <h1>Create a citizen account</h1>
+        <p class="lede">Register once here to see the readings the kiosk sends to the health center.</p>
+        <p id="registerError" class="form-error" role="alert"></p>
+        <p id="registerSuccess" class="form-success" role="status"></p>
+        <form id="registerForm" novalidate>
+          <div class="field">
+            <label for="fullName">Full name</label>
+            <input id="fullName" name="full_name" type="text" autocomplete="name" required>
+          </div>
+          <div class="field">
+            <label for="username">Username</label>
+            <input id="username" name="username" type="text" autocomplete="username" required>
+          </div>
+          <div class="field">
+            <label for="password">Password</label>
+            <input id="password" name="password" type="password" autocomplete="new-password" minlength="8" required>
+            <p class="hint">At least 8 characters.</p>
+          </div>
+          <div class="field">
+            <label for="birthdate">Birthdate</label>
+            <input id="birthdate" name="birthdate" type="date" required>
+          </div>
+          <div class="field">
+            <label for="gender">Gender</label>
+            <select id="gender" name="gender" required>
+              <option value="male">Male</option>
+              <option value="female">Female</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+          <button id="registerSubmit" class="btn btn-primary" type="submit">Create account</button>
+        </form>
+        <p class="alt-link">Already registered? <a href="/citizen/login.html">Sign in</a></p>
+      </div>
+    </main>
+    <footer class="foot">Data is stored under the Philippine Data Privacy Act (RA 10173).</footer>
+  </div>
+  <script src="/js/api.js"></script>
+  <script src="/js/citizen.js"></script>
+</body>
+</html>

@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>My history — Barangay Health Monitor</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body data-page="citizen-history">
+  <header class="topbar">
+    <div class="brand"><span class="dot" aria-hidden="true"></span>Barangay Health Monitor</div>
+    <nav class="topnav" aria-label="Citizen navigation">
+      <a href="/citizen/dashboard.html">Dashboard</a>
+      <a href="/citizen/history.html" aria-current="page">History</a>
+      <a href="/citizen/consent.html">Consent</a>
+      <a href="/citizen/profile.html">Profile</a>
+      <span id="whoami" class="whoami"></span>
+      <button id="logoutBtn" class="btn btn-ghost" type="button">Log out</button>
+    </nav>
+  </header>
+
+  <main class="page">
+    <h1>My measurement history</h1>
+    <p class="lede">Every reading saved for your account, newest first. Charts show the trend over time (oldest to newest).</p>
+
+    <div id="status" aria-live="polite"></div>
+
+    <section class="grid-2 section" id="chartsSection">
+      <div class="chart-box">
+        <h2>Weight (kg)</h2>
+        <canvas id="weightChart" height="180" aria-label="Weight over time chart" role="img"></canvas>
+      </div>
+      <div class="chart-box">
+        <h2>BMI</h2>
+        <canvas id="bmiChart" height="180" aria-label="BMI over time chart" role="img"></canvas>
+      </div>
+      <div class="chart-box">
+        <h2>Blood pressure (mmHg)</h2>
+        <canvas id="bpChart" height="180" aria-label="Systolic and diastolic blood pressure chart" role="img"></canvas>
+      </div>
+      <div class="chart-box">
+        <h2>SpO2 (%)</h2>
+        <canvas id="spo2Chart" height="180" aria-label="Blood oxygen over time chart" role="img"></canvas>
+      </div>
+    </section>
+    <div id="chartNote"></div>
+
+    <section class="section">
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem; margin-bottom:0.75rem;">
+        <h2 style="margin:0;">All readings</h2>
+        <button id="passportBtnHistory" class="btn btn-secondary" type="button" style="min-height:2.1rem; padding:0.35rem 0.8rem; font-size:0.85rem;">🪪 Print health passport</button>
+      </div>
+      <div id="tableControls" class="table-controls"></div>
+      <div id="tableWrap"></div>
+      <div id="paginationWrap" style="margin-top:0.75rem;"></div>
+    </section>
+  </main>
+
+  <footer class="foot">Timestamps are UTC. Charts load from a local copy of the page data.</footer>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="/js/api.js"></script>
+  <script src="/js/citizen.js"></script>
+</body>
+</html>

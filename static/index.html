@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Barangay Health Monitor</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <main class="auth-main">
+    <div class="auth-card">
+      <h1>Barangay Health Monitor</h1>
+      <p class="lede">Checking your session…</p>
+      <noscript>
+        <p class="form-error">JavaScript is required to use this site.</p>
+      </noscript>
+      <p><a href="/citizen/login.html">Continue to sign in</a></p>
+    </div>
+  </main>
+  <script src="/js/api.js"></script>
+  <script>
+    (function () {
+      var token = API.getToken();
+      var role = API.getRole();
+      if (token && role) {
+        location.replace(API.homeForRole(role));
+      } else {
+        location.replace("/citizen/login.html");
+      }
+    })();
+  </script>
+</body>
+</html>

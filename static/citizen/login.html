@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Citizen sign in — Barangay Health Monitor</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body data-page="citizen-login">
+  <div class="auth-wrap">
+    <header class="topbar">
+      <div class="brand"><span class="dot" aria-hidden="true"></span>Barangay Health Monitor</div>
+    </header>
+    <main class="auth-main">
+      <div class="auth-card">
+        <h1>Citizen sign in</h1>
+        <p class="lede">Use the username and password you registered on the health kiosk, or create an account below.</p>
+        <p id="loginError" class="form-error" role="alert"></p>
+        <form id="loginForm" novalidate>
+          <div class="field">
+            <label for="username">Username</label>
+            <input id="username" name="username" type="text" autocomplete="username" required>
+          </div>
+          <div class="field">
+            <label for="password">Password</label>
+            <input id="password" name="password" type="password" autocomplete="current-password" required>
+          </div>
+          <button id="loginSubmit" class="btn btn-primary" type="submit">Sign in</button>
+        </form>
+        <p class="alt-link">New here? <a href="/citizen/register.html">Create a citizen account</a></p>
+        <p class="auth-note">Barangay Health Workers sign in through the <a href="/bhw/login.html">BHW portal</a>.</p>
+      </div>
+    </main>
+    <footer class="foot">Data is stored under the Philippine Data Privacy Act (RA 10173).</footer>
+  </div>
+  <script src="/js/api.js"></script>
+  <script src="/js/citizen.js"></script>
+</body>
+</html>
