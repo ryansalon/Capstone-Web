@@ -226,7 +226,8 @@
       type: "line",
       data: {
         labels: trend.map(function (item) {
-          return item[0];
+          var d = new Date(item[0] + "T00:00:00Z");
+          return new Intl.DateTimeFormat("en-PH", { timeZone: "Asia/Manila", month: "short", day: "numeric" }).format(d);
         }),
         datasets: [
           {
@@ -279,20 +280,19 @@
     var distNode = document.getElementById("distributions");
     var days = periodNode.value;
 
-    U.loading(statusNode, "Loading community aggregates…");
-    U.clear(totalsNode);
-    U.clear(distNode);
-    U.clear(document.getElementById("concerns"));
-    var fallback = document.getElementById("feverFallback");
-    U.clear(fallback);
-    var feverCanvas = document.getElementById("feverChart");
-    if (feverCanvas) feverCanvas.hidden = false;
+    // Stale-while-revalidate: keep current content visible while fetching,
+    // show only a subtle "Updating…" indicator, and swap content on success.
+    U.clear(statusNode);
+    statusNode.appendChild(
+      U.el("span", { class: "muted", style: "font-size:0.85rem;" }, "Updating…")
+    );
 
     try {
       var data = await API.apiFetch("/api/bhw/dashboard?days=" + encodeURIComponent(days));
       U.clear(statusNode);
 
       var totals = data.totals || {};
+      U.clear(totalsNode);
       totalsNode.appendChild(totalCard("Measurements", totals.measurements || 0));
       totalsNode.appendChild(totalCard("Registered users", totals.users || 0));
       totalsNode.appendChild(totalCard("Consent grants", totals.consent_grants || 0));
@@ -300,19 +300,19 @@
       totalsNode.appendChild(totalCard("Alerts", totals.alerts || 0));
 
       var distributions = data.distributions || {};
+      U.clear(distNode);
       renderDistribution(distNode, "bmi", "BMI categories", distributions.bmi || {});
       renderDistribution(distNode, "bp", "Blood pressure categories", distributions.bp || {});
       renderDistribution(distNode, "spo2", "SpO2 categories", distributions.spo2 || {});
 
       renderFeverChart(data.fever_trend || []);
+      var concernsNode = document.getElementById("concerns");
+      U.clear(concernsNode);
       renderConcerns(data.top_concerns || []);
       return true;
     } catch (error) {
-      U.clear(totalsNode);
-      U.clear(distNode);
-      U.clear(document.getElementById("concerns"));
-      U.error(statusNode, error.message);
-      renderFeverChart([]);
+      // Keep the stale content visible; surface the error with a Retry button.
+      U.error(statusNode, error.message, loadDashboard);
       return false;
     }
   }
@@ -332,14 +332,26 @@
     var toggle = document.getElementById("autoRefreshToggle");
     var liveText = document.getElementById("liveText");
     var secondsLeft = 30;
+    var paused = false;
+
+    function updateLiveText() {
+      if (paused) {
+        if (liveText) liveText.textContent = "Paused (hidden tab)";
+      } else if (toggle && toggle.checked) {
+        if (liveText) liveText.textContent = "Live (" + secondsLeft + "s)";
+      } else {
+        if (liveText) liveText.textContent = "Paused";
+      }
+    }
 
     function startTimer() {
       if (refreshTimer) clearInterval(refreshTimer);
       secondsLeft = 30;
+      updateLiveText();
       refreshTimer = setInterval(function () {
-        if (!toggle || !toggle.checked) return;
+        if (paused || !toggle || !toggle.checked) return;
         secondsLeft--;
-        if (liveText) liveText.textContent = "Live (" + secondsLeft + "s)";
+        updateLiveText();
         if (secondsLeft <= 0) {
           secondsLeft = 30;
           loadDashboard();
@@ -347,14 +359,19 @@
       }, 1000);
     }
 
+    document.addEventListener("visibilitychange", function () {
+      paused = document.hidden;
+      updateLiveText();
+      if (!paused && toggle && toggle.checked) startTimer();
+    });
+
     if (toggle) {
       toggle.addEventListener("change", function () {
         if (toggle.checked) {
           startTimer();
-          if (liveText) liveText.textContent = "Live (30s)";
         } else {
           if (refreshTimer) clearInterval(refreshTimer);
-          if (liveText) liveText.textContent = "Paused";
+          updateLiveText();
         }
       });
       startTimer();
@@ -439,7 +456,7 @@
       renderCitizens(data.citizens || []);
     } catch (error) {
       U.clear(document.getElementById("results"));
-      U.error(statusNode, error.message);
+      U.error(statusNode, error.message, searchCitizens);
     }
   }
 
@@ -658,31 +675,68 @@
     });
 
     document.getElementById("referBtn").addEventListener("click", async function () {
-      var note = window.prompt(
-        "Optional note for the Rural Health Unit referral (leave blank to refer without a note):",
-        ""
-      );
-      if (note === null) return;
-      var feedbackNode = document.getElementById("referFeedback");
-      if (feedbackNode) feedbackNode.remove();
-      var button = document.getElementById("referBtn");
-      setBusy(button, true, "Referring…");
-      try {
-        await API.apiFetch(
-          "/api/bhw/citizen/" + encodeURIComponent(citizenId) + "/refer",
-          { method: "POST", body: { note: note.trim() } }
-        );
-        await loadNotes(citizenId);
-        var notice = U.el("p", { class: "notice", id: "referFeedback", role: "status" },
-          "Referral to the Rural Health Unit recorded.");
-        document.getElementById("consentLine").after(notice);
-        U.toast("Referral to RHU submitted", "success");
-      } catch (error) {
-        U.error(statusNode, error.message);
-        U.toast(error.message, "error");
-      } finally {
-        setBusy(button, false);
-      }
+      var citizenId = currentCitizenId();
+      if (!citizenId) return;
+
+      var backdrop = U.el("div", { class: "modal-backdrop" });
+      var card = U.el("div", { class: "modal-card" });
+
+      var header = U.el("div", { class: "modal-header" });
+      header.appendChild(U.el("h3", null, "Refer to Rural Health Unit"));
+      var closeBtn = U.el("button", { class: "btn btn-ghost", type: "button", "aria-label": "Close" }, "✕");
+      header.appendChild(closeBtn);
+      card.appendChild(header);
+
+      var body = U.el("div", { class: "modal-body" });
+      body.appendChild(U.el("label", { style: "display:block; font-weight:600; margin-bottom:0.35rem;" }, "Reason for referral (required)"));
+      var reason = U.el("textarea", { name: "reason", required: true, style: "width:100%; min-height:90px; padding:0.55rem 0.65rem; font:inherit; font-size:0.95rem; border:1px solid #b9cdc6; border-radius:8px;" });
+      body.appendChild(reason);
+      var reasonErr = U.el("p", { style: "color:#a5271d; font-size:0.85rem; margin-top:0.35rem; display:none;" }, "Please enter a reason for the referral.");
+      body.appendChild(reasonErr);
+      card.appendChild(body);
+
+      var footer = U.el("div", { class: "modal-footer" });
+      var cancelBtn = U.el("button", { class: "btn btn-secondary", type: "button" }, "Cancel");
+      var referBtnEl = U.el("button", { class: "btn btn-primary", type: "button" }, "Refer");
+      footer.appendChild(cancelBtn);
+      footer.appendChild(referBtnEl);
+      card.appendChild(footer);
+
+      backdrop.appendChild(card);
+      document.body.appendChild(backdrop);
+
+      var closeDialog = U.openDialog(backdrop, reason);
+      closeBtn.onclick = closeDialog;
+      cancelBtn.onclick = closeDialog;
+
+      referBtnEl.onclick = async function () {
+        var value = reason.value.trim();
+        if (!value) {
+          reasonErr.style.display = "block";
+          reason.focus();
+          return;
+        }
+        reasonErr.style.display = "none";
+        closeDialog();
+        setBusy(document.getElementById("referBtn"), true, "Referring…");
+        try {
+          await API.apiFetch(
+            "/api/bhw/citizen/" + encodeURIComponent(citizenId) + "/refer",
+            { method: "POST", body: { note: value } }
+          );
+          await loadNotes(citizenId);
+          var notice = U.el("p", { class: "notice", id: "referFeedback", role: "status" },
+            "Referral to the Rural Health Unit recorded.");
+          var consentLine = document.getElementById("consentLine");
+          if (consentLine) consentLine.after(notice);
+          U.toast("Referral to RHU submitted", "success");
+        } catch (error) {
+          U.error(statusNode, error.message);
+          U.toast(error.message, "error");
+        } finally {
+          setBusy(document.getElementById("referBtn"), false);
+        }
+      };
     });
   }
 
@@ -738,7 +792,7 @@
       renderAudit(data.audit || []);
     } catch (error) {
       U.clear(document.getElementById("results"));
-      U.error(statusNode, error.message);
+      U.error(statusNode, error.message, loadAudit);
     }
   }
 

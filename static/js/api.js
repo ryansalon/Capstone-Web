@@ -62,7 +62,7 @@
     if (/\/(login|register)\.html$/.test(location.pathname)) return;
     var target = currentLoginPage();
     clearSession();
-    if (location.pathname !== target) location.replace(target);
+    if (location.pathname !== target) location.replace(target + "?reason=expired");
   }
 
   function buildHeaders() {
@@ -86,7 +86,7 @@
     try {
       response = await fetch(path, init);
     } catch (networkError) {
-      var netErr = new Error("network error - is the server running?");
+      var netErr = new Error("Can't reach the health server. Check your connection.");
       netErr.status = 0;
       throw netErr;
     }
@@ -125,7 +125,7 @@
     try {
       response = await fetch(path, init);
     } catch (networkError) {
-      var netErr = new Error("network error - is the server running?");
+      var netErr = new Error("Can't reach the health server. Check your connection.");
       netErr.status = 0;
       throw netErr;
     }
@@ -206,21 +206,29 @@
     loading: function (target, message) {
       if (!target) return;
       UI.clear(target);
-      target.appendChild(
-        UI.el("div", { class: "status loading", role: "status" }, message || "Loading…")
-      );
+      var node = UI.el("div", { class: "status loading", role: "status" });
+      node.appendChild(UI.el("span", { class: "spinner", "aria-hidden": "true" }));
+      node.appendChild(document.createTextNode(" " + (message || "Loading…")));
+      target.appendChild(node);
     },
 
-    error: function (target, message) {
+    error: function (target, message, onRetry) {
       if (!target) return;
       UI.clear(target);
-      target.appendChild(
-        UI.el(
-          "div",
-          { class: "status error", role: "alert" },
-          message || "Something went wrong."
-        )
+      var box = UI.el(
+        "div",
+        { class: "status error", role: "alert" },
+        message || "Something went wrong."
       );
+      if (onRetry) {
+        var retry = UI.el("button", { class: "btn btn-secondary", type: "button" }, "Retry");
+        retry.onclick = function () {
+          UI.clearStatus(target);
+          onRetry();
+        };
+        box.appendChild(retry);
+      }
+      target.appendChild(box);
     },
 
     empty: function (target, message) {
@@ -318,7 +326,31 @@
 
     fmtDT: function (value) {
       if (!value) return "—";
-      return String(value).replace("T", " ").slice(0, 16);
+      var date = new Date(String(value).replace(" ", "T") + "Z");
+      if (isNaN(date.getTime())) return String(value);
+      // Asia/Manila (PHT = UTC+8) short format, e.g. "Nov 8, 22:30 PHT".
+      var parts = new Intl.DateTimeFormat("en-PH", {
+        timeZone: "Asia/Manila",
+        month: "short",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+      }).formatToParts(date);
+      var month = "", day = "", hour = "", minute = "";
+      parts.forEach(function (part) {
+        if (part.type === "month") month = part.value;
+        if (part.type === "day") day = part.value;
+        if (part.type === "hour") hour = part.value;
+        if (part.type === "minute") minute = part.value;
+      });
+      return month + " " + day + ", " + hour + ":" + minute + " PHT";
+    },
+
+    /* UTC form of a timestamp for title tooltips / footer notes. */
+    fmtUTC: function (value) {
+      if (!value) return "—";
+      return String(value).replace("T", " ").slice(0, 16) + " UTC";
     },
 
     fmtNum: function (value, digits, suffix) {
@@ -350,14 +382,17 @@
       };
       toast.appendChild(closeBtn);
       container.appendChild(toast);
-      setTimeout(function () {
-        if (toast.parentNode) {
-          toast.classList.add("toast-fadeout");
-          setTimeout(function () {
-            if (toast.parentNode) toast.parentNode.removeChild(toast);
-          }, 300);
-        }
-      }, 3500);
+      var dismissAfter = type === "error" ? 0 : 3500;
+      if (dismissAfter > 0) {
+        setTimeout(function () {
+          if (toast.parentNode) {
+            toast.classList.add("toast-fadeout");
+            setTimeout(function () {
+              if (toast.parentNode) toast.parentNode.removeChild(toast);
+            }, 300);
+          }
+        }, dismissAfter);
+      }
     },
   };
 

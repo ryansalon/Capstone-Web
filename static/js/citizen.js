@@ -6,6 +6,33 @@
   var U = API.UI;
   var charts = {};
 
+  /* Chart.js plugin that draws a horizontal fever threshold line at 37.9 °C. */
+  var feverThresholdPlugin = {
+    id: "feverThreshold",
+    afterDraw: function (chart) {
+      var ctx = chart.ctx;
+      var yAxis = chart.scales.y;
+      if (!yAxis) return;
+      var y = yAxis.getPixelForValue(37.9);
+      if (y === null || y === undefined) return;
+      ctx.save();
+      ctx.strokeStyle = "#a5271d";
+      ctx.lineDash = [6, 4];
+      ctx.lineWidth = 1.5;
+      ctx.font = "11px var(--font, sans-serif)";
+      ctx.fillStyle = "#a5271d";
+      ctx.textAlign = "right";
+      ctx.textBaseline = "bottom";
+      ctx.beginPath();
+      ctx.moveTo(yAxis.left, y);
+      ctx.lineTo(yAxis.right, y);
+      ctx.stroke();
+      ctx.fillText("Fever ≥ 37.9 °C", yAxis.right - 8, y - 6);
+      ctx.restore();
+    },
+  };
+  var thresholdRegistered = false;
+
   /* ---------------- classification (display only) ---------------- */
 
   function bmiCategory(value) {
@@ -115,26 +142,57 @@
     var successNode = document.getElementById("registerSuccess");
     var submit = document.getElementById("registerSubmit");
 
+    /* Per-field inline validation: show/clear an error line under a field. */
+    function fieldError(id, message) {
+      var node = document.getElementById(id);
+      var existing = document.getElementById(id + "-error");
+      if (existing) existing.remove();
+      if (!node || !message) return;
+      var err = U.el("p", { id: id + "-error", class: "form-error", role: "alert" }, message);
+      node.parentNode.insertBefore(err, node.nextSibling);
+    }
+
+    function clearFieldError(id) {
+      var existing = document.getElementById(id + "-error");
+      if (existing) existing.remove();
+    }
+
+    ["fullName", "username", "password", "confirmPassword", "birthdate"].forEach(function (id) {
+      var node = document.getElementById(id);
+      if (node) node.addEventListener("input", function () { clearFieldError(id); });
+    });
+
     form.addEventListener("submit", async function (event) {
       event.preventDefault();
       showFormError(errorNode, "");
       U.clear(successNode);
+      ["fullName", "username", "password", "confirmPassword", "birthdate"].forEach(clearFieldError);
+
+      var fullName = fieldValue("fullName");
+      var username = fieldValue("username");
+      var password = document.getElementById("password").value;
+      var confirm = document.getElementById("confirmPassword").value;
+      var birthdate = fieldValue("birthdate");
+      var gender = fieldValue("gender");
+      var ok = true;
+
+      if (!fullName) { fieldError("fullName", "Full name is required."); ok = false; }
+      if (!username) { fieldError("username", "Username is required."); ok = false; }
+      if (!password) { fieldError("password", "Password is required."); ok = false; }
+      else if (password.length < 8) { fieldError("password", "Password must be at least 8 characters."); ok = false; }
+      if (!confirm) { fieldError("confirmPassword", "Please confirm your password."); ok = false; }
+      else if (password !== confirm) { fieldError("confirmPassword", "Passwords do not match."); ok = false; }
+      if (!birthdate) { fieldError("birthdate", "Birthdate is required."); ok = false; }
+      if (!gender) { fieldError("gender", "Please select a gender."); ok = false; }
+      if (!ok) return;
 
       var payload = {
-        full_name: fieldValue("fullName"),
-        username: fieldValue("username"),
-        password: document.getElementById("password").value,
-        birthdate: fieldValue("birthdate"),
-        gender: fieldValue("gender"),
+        full_name: fullName,
+        username: username,
+        password: password,
+        birthdate: birthdate,
+        gender: gender,
       };
-      if (!payload.full_name || !payload.username || !payload.password || !payload.birthdate) {
-        showFormError(errorNode, "Please fill in every field.");
-        return;
-      }
-      if (payload.password.length < 8) {
-        showFormError(errorNode, "Password must be at least 8 characters.");
-        return;
-      }
 
       setBusy(submit, true, "Creating account…");
       try {
@@ -235,7 +293,7 @@
     passport.appendChild(grid);
 
     var foot = U.el("div", { class: "passport-footer" });
-    foot.appendChild(U.el("span", null, "Recorded: " + (log ? U.fmtDT(log.timestamp) + " UTC" : "—")));
+    foot.appendChild(U.el("span", null, "Recorded: " + (log ? U.fmtDT(log.timestamp) : "—")));
     foot.appendChild(U.el("span", { style: "font-weight:700; color:#0b3d30;" }, "✓ VERIFIED BY BARANGAY HEALTH KIOSK"));
     passport.appendChild(foot);
 
@@ -428,7 +486,7 @@
       }
       var latest = logs[0];
       var prev = logs.length > 1 ? logs[1] : null;
-      meta.textContent = "Latest reading: " + U.fmtDT(latest.timestamp) + " UTC";
+      meta.textContent = "Latest reading: " + U.fmtDT(latest.timestamp);
       renderLatest(latest, prev);
 
       var passportBtn = document.getElementById("passportBtn");
@@ -541,7 +599,7 @@
     var tbody = U.el("tbody");
     pageSlice.forEach(function (log) {
       var row = U.el("tr");
-      row.appendChild(U.el("td", { class: "nowrap" }, U.fmtDT(log.timestamp)));
+      row.appendChild(U.el("td", { class: "nowrap", title: U.fmtUTC(log.timestamp) }, U.fmtDT(log.timestamp)));
       [
         U.fmtNum(log.weight, 1),
         U.fmtNum(log.height, 1),
@@ -608,6 +666,10 @@
       return;
     }
     section.hidden = false;
+    if (!thresholdRegistered) {
+      window.Chart.register(feverThresholdPlugin);
+      thresholdRegistered = true;
+    }
 
     var ascending = logs.slice().reverse();
     var labels = ascending.map(function (log) {
@@ -680,22 +742,24 @@
             data: ascending.map(function (log) {
               return log.systolic_bp;
             }),
-            borderColor: red,
-            backgroundColor: "rgba(165, 39, 29, 0.10)",
+            borderColor: "#1565c0",
+            backgroundColor: "rgba(21, 101, 192, 0.10)",
             spanGaps: true,
             tension: 0.25,
             pointRadius: 3,
+            pointStyle: "circle",
           },
           {
             label: "Diastolic",
             data: ascending.map(function (log) {
               return log.diastolic_bp;
             }),
-            borderColor: green,
-            backgroundColor: "rgba(15, 107, 83, 0.10)",
+            borderColor: "#b9761b",
+            backgroundColor: "rgba(185, 118, 27, 0.10)",
             spanGaps: true,
             tension: 0.25,
             pointRadius: 3,
+            pointStyle: "rect",
           },
         ],
       },
@@ -741,6 +805,52 @@
         },
       },
     });
+
+    var temps = ascending.map(function (log) {
+      return log.temperature;
+    });
+    var tempMax = Math.max.apply(
+      null,
+      temps.filter(function (t) {
+        return t !== null && t !== undefined;
+      }).concat([38.5])
+    );
+    drawChart("temperature", "temperatureChart", {
+      type: "line",
+      data: {
+        labels: labels,
+        datasets: [
+          {
+            label: "Temperature (°C)",
+            data: temps,
+            borderColor: "#a5271d",
+            backgroundColor: "rgba(165, 39, 29, 0.12)",
+            fill: true,
+            spanGaps: true,
+            tension: 0.25,
+            pointRadius: 3,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        aspectRatio: 2,
+        plugins: {
+          legend: { display: false },
+          feverThreshold: {},
+        },
+        scales: {
+          x: { ticks: { maxTicksLimit: 6, maxRotation: 0 } },
+          y: {
+            beginAtZero: false,
+            suggestedMin: 34,
+            suggestedMax: tempMax,
+            title: { display: true, text: "°C" },
+          },
+        },
+      },
+    });
   }
 
   async function initHistory() {
@@ -783,7 +893,7 @@
     } catch (error) {
       section.hidden = true;
       U.clear(tableWrap);
-      U.error(statusNode, error.message);
+      U.error(statusNode, error.message, initHistory);
     }
   }
 
@@ -832,7 +942,7 @@
     var tbody = U.el("tbody");
     history.forEach(function (entry) {
       var row = U.el("tr");
-      row.appendChild(U.el("td", { class: "nowrap" }, U.fmtDT(entry.timestamp)));
+      row.appendChild(U.el("td", { class: "nowrap", title: U.fmtUTC(entry.timestamp) }, U.fmtDT(entry.timestamp)));
       var actionCell = U.el("td");
       actionCell.appendChild(
         U.el(
@@ -900,9 +1010,11 @@
     }
 
     grantBtn.addEventListener("click", function () {
+      if (!window.confirm("Grant Barangay Health Workers access to your health records?")) return;
       changeConsent(true);
     });
     revokeBtn.addEventListener("click", function () {
+      if (!window.confirm("Are you sure? Revoking consent means Barangay Health Workers will no longer be able to open your individual records.")) return;
       changeConsent(false);
     });
   }

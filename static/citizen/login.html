@@ -17,6 +17,7 @@
       <div class="auth-card">
         <h1>Citizen sign in</h1>
         <p class="lede">Use the username and password you registered on the health kiosk, or create an account below.</p>
+        <p id="sessionExpired" class="form-success" role="status" style="display:none;">Your session expired — please sign in again.</p>
         <p id="loginError" class="form-error" role="alert"></p>
         <form id="loginForm" novalidate>
           <div class="field">
@@ -37,5 +38,14 @@
   </div>
   <script src="/js/api.js"></script>
   <script src="/js/citizen.js"></script>
+  <script>
+    (function () {
+      var params = new URLSearchParams(location.search);
+      if (params.get("reason") === "expired") {
+        var node = document.getElementById("sessionExpired");
+        if (node) node.style.display = "";
+      }
+    })();
+  </script>
 </body>
 </html>

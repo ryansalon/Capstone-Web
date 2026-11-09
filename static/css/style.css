@@ -113,8 +113,11 @@ a:hover {
 .topnav a {
   color: #cfe9df;
   text-decoration: none;
-  padding: 0.25rem 0.15rem;
+  padding: 0.55rem 0.75rem;
   border-bottom: 2px solid transparent;
+  min-height: 2.75rem;
+  display: inline-flex;
+  align-items: center;
 }
 
 .topnav a:hover,
@@ -126,6 +129,11 @@ a:hover {
 .topnav .whoami {
   color: #eaf7f2;
   font-weight: 600;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 14ch;
 }
 
 /* ---------- layout ---------- */
@@ -1107,6 +1115,23 @@ footer.foot {
   100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(20, 135, 106, 0); }
 }
 
+/* Subtle spinner used inside loading states. */
+.spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(15, 107, 83, 0.25);
+  border-top-color: var(--green-700);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  vertical-align: middle;
+  margin-right: 0.5rem;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
 /* ---------- Citizen Health Passport (Printable Card) ---------- */
 .health-passport-modal {
   max-width: 620px;
@@ -1258,5 +1283,22 @@ footer.foot {
   body.printing-passport .modal-footer,
   body.printing-passport .modal-header {
     display: none;
+  }
+}
+
+/* Disable motion for users who prefer reduced motion. */
+@media (prefers-reduced-motion: reduce) {
+  .alert-banner,
+  .modal-card,
+  .toast,
+  .gauge-pin,
+  .chip,
+  .pulse-dot,
+  .spinner {
+    animation: none !important;
+    transition: none !important;
+  }
+  .spinner {
+    border-top-color: var(--green-700);
   }
 }
