@@ -1,5 +1,6 @@
 /* Smart Barangay Health Monitoring Kiosk - global styles */
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap');
+/* No external font CDN: the spec allows Chart.js only; a local system font
+ * stack keeps the site fully offline-capable and avoids leaking visitor IPs. */
 
 :root {
   --green-900: #0b3d30;
@@ -20,7 +21,7 @@
   --blue-fg: #1565c0;
   --radius: 12px;
   --shadow: 0 1px 3px rgba(11, 61, 48, 0.06), 0 8px 24px rgba(11, 61, 48, 0.08);
-  --font: "Plus Jakarta Sans", "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font: "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
 }
 
 * {
@@ -58,7 +59,11 @@ a:hover {
   left: -9999px;
   top: 0;
   background: var(--white);
+  color: var(--ink);
   padding: 0.6rem 1rem;
+  border-radius: 0 0 var(--radius) 0;
+  box-shadow: var(--shadow);
+  font-weight: 600;
   z-index: 100;
 }
 
@@ -703,7 +708,10 @@ th.num {
 
 .print-view iframe {
   width: 100%;
-  height: 640px;
+  /* Keeps the embedded report fully on screen down to 360px-wide /
+   * short viewports instead of forcing a 640px-tall box. */
+  height: min(640px, 70vh);
+  min-height: 360px;
   border: 1px solid var(--line);
   border-radius: var(--radius);
   background: var(--white);
@@ -751,6 +759,28 @@ footer.foot {
 
   .card .value {
     font-size: 1.2rem;
+  }
+}
+
+@media (max-width: 420px) {
+  /* Health passport stats stack to one column so values never clip
+   * at the 360px minimum viewport. */
+  .passport-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .passport-footer {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .modal-backdrop {
+    padding: 0.5rem;
+  }
+
+  .table-search {
+    max-width: none;
   }
 }
 
@@ -1198,20 +1228,35 @@ footer.foot {
   cursor: not-allowed;
 }
 
-/* Print Stylesheet for Health Passport */
+/* Print Stylesheet for Health Passport.
+ * Scoped to body.printing-passport (set only while window.print() runs):
+ * the old `body * { visibility: hidden }` rule blanked every other page
+ * whenever a user hit Ctrl+P anywhere in the app. */
 @media print {
-  body * {
+  .toast-container {
+    display: none !important;
+  }
+
+  body.printing-passport * {
     visibility: hidden;
   }
-  .passport-card, .passport-card * {
+
+  body.printing-passport .passport-card,
+  body.printing-passport .passport-card * {
     visibility: visible;
   }
-  .passport-card {
+
+  body.printing-passport .passport-card {
     position: absolute;
     left: 0;
     top: 0;
     width: 100%;
     border: 2px solid #000;
     box-shadow: none;
+  }
+
+  body.printing-passport .modal-footer,
+  body.printing-passport .modal-header {
+    display: none;
   }
 }

@@ -186,9 +186,17 @@
       var node = document.createElement(tag);
       if (attrs) {
         Object.keys(attrs).forEach(function (key) {
-          if (key === "class") node.className = attrs[key];
-          else if (key === "text") node.textContent = attrs[key];
-          else node.setAttribute(key, attrs[key]);
+          var value = attrs[key];
+          // Skip unset values: passing disabled:false used to call
+          // setAttribute("disabled", false), which yields the STRING "false"
+          // and still disables the control (broke pagination buttons).
+          if (value === false || value === null || value === undefined) return;
+          if (key === "class") node.className = value;
+          else if (key === "text") node.textContent = value;
+          // Boolean attributes (disabled, required, checked…) are set as
+          // empty strings so the presence of the attribute is the truth.
+          else if (value === true) node.setAttribute(key, "");
+          else node.setAttribute(key, String(value));
         });
       }
       if (text !== undefined && text !== null) node.textContent = String(text);
@@ -227,6 +235,87 @@
       if (target) UI.clear(target);
     },
 
+    /* Show a modal backdrop as an accessible dialog:
+     * role/aria-modal/aria-labelledby for screen readers, Escape and
+     * backdrop-click to close, focus moved in and restored on close, and a
+     * minimal Tab trap so keyboard users cannot tab behind the overlay.
+     * Returns a close() function (callers should invoke it from their own
+     * close buttons). */
+    openDialog: function (backdrop, focusTarget) {
+      if (!backdrop) return function () {};
+      var seq = (UI._dialogSeq = (UI._dialogSeq || 0) + 1);
+
+      backdrop.setAttribute("role", "dialog");
+      backdrop.setAttribute("aria-modal", "true");
+      if (!backdrop.getAttribute("aria-labelledby")) {
+        var heading = backdrop.querySelector("h1, h2, h3");
+        if (heading) {
+          if (!heading.id) heading.id = "dialog-title-" + seq;
+          backdrop.setAttribute("aria-labelledby", heading.id);
+        }
+      }
+
+      var previousFocus = document.activeElement;
+      var closed = false;
+
+      function focusables() {
+        return Array.prototype.filter.call(
+          backdrop.querySelectorAll(
+            'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+          ),
+          function (node) {
+            return node.offsetWidth > 0 || node.offsetHeight > 0;
+          }
+        );
+      }
+
+      function close() {
+        if (closed) return;
+        closed = true;
+        document.removeEventListener("keydown", onKeydown, true);
+        if (backdrop.parentNode) backdrop.parentNode.removeChild(backdrop);
+        if (previousFocus && typeof previousFocus.focus === "function") {
+          previousFocus.focus();
+        }
+      }
+
+      function onKeydown(event) {
+        if (event.key === "Escape" || event.key === "Esc") {
+          event.preventDefault();
+          close();
+          return;
+        }
+        if (event.key === "Tab") {
+          var items = focusables();
+          if (!items.length) return;
+          var first = items[0];
+          var last = items[items.length - 1];
+          var current = document.activeElement;
+          if (event.shiftKey && (current === first || !backdrop.contains(current))) {
+            event.preventDefault();
+            last.focus();
+          } else if (!event.shiftKey && (current === last || !backdrop.contains(current))) {
+            event.preventDefault();
+            first.focus();
+          }
+        }
+      }
+
+      backdrop.addEventListener("mousedown", function (event) {
+        if (event.target === backdrop) close();
+      });
+      document.addEventListener("keydown", onKeydown, true);
+
+      var target =
+        focusTarget ||
+        backdrop.querySelector(
+          'button:not([disabled]), [href], input:not([disabled]), select, textarea'
+        );
+      if (target && typeof target.focus === "function") target.focus();
+
+      return close;
+    },
+
     fmtDT: function (value) {
       if (!value) return "—";
       return String(value).replace("T", " ").slice(0, 16);
@@ -243,7 +332,14 @@
     toast: function (message, type) {
       var container = document.getElementById("toastContainer");
       if (!container) {
-        container = UI.el("div", { id: "toastContainer", class: "toast-container" });
+        // aria-live so screen readers announce transient messages.
+        container = UI.el("div", {
+          id: "toastContainer",
+          class: "toast-container",
+          role: "status",
+          "aria-live": "polite",
+          "aria-atomic": "false",
+        });
         document.body.appendChild(container);
       }
       var toast = UI.el("div", { class: "toast" + (type ? " toast-" + type : "") });

@@ -187,9 +187,6 @@
     var header = U.el("div", { class: "modal-header" });
     header.appendChild(U.el("h3", null, "Official Health Passport"));
     var closeBtn = U.el("button", { class: "btn btn-ghost", type: "button", "aria-label": "Close" }, "✕");
-    closeBtn.onclick = function () {
-      if (backdrop.parentNode) backdrop.parentNode.removeChild(backdrop);
-    };
     header.appendChild(closeBtn);
     card.appendChild(header);
 
@@ -248,18 +245,32 @@
     var mFoot = U.el("div", { class: "modal-footer" });
     var printBtn = U.el("button", { class: "btn btn-primary", type: "button" }, "🖨️ Print / Save as PDF");
     printBtn.onclick = function () {
+      // body.printing-passport scopes the @media print rules to the passport
+      // card only; without it Ctrl+P printed a blank page elsewhere too.
+      document.body.classList.add("printing-passport");
+      var clearPrintMode = function () {
+        document.body.classList.remove("printing-passport");
+        window.removeEventListener("afterprint", clearPrintMode);
+      };
+      window.addEventListener("afterprint", clearPrintMode);
       window.print();
+      // Fallback for browsers that never fire afterprint (e.g. some
+      // headless/print-to-PDF paths): restore after the print dialog closes.
+      setTimeout(clearPrintMode, 1000);
     };
     var dismissBtn = U.el("button", { class: "btn btn-secondary", type: "button" }, "Close");
-    dismissBtn.onclick = function () {
-      if (backdrop.parentNode) backdrop.parentNode.removeChild(backdrop);
-    };
     mFoot.appendChild(dismissBtn);
     mFoot.appendChild(printBtn);
     card.appendChild(mFoot);
 
     backdrop.appendChild(card);
     document.body.appendChild(backdrop);
+
+    // Accessible dialog: role/aria-modal/aria-labelledby, Escape and
+    // backdrop click close it, focus moves in and is restored on close.
+    var closeDialog = U.openDialog(backdrop, closeBtn);
+    closeBtn.onclick = closeDialog;
+    dismissBtn.onclick = closeDialog;
   }
 
   function addCard(container, label, value, sub, tone, gauge, delta) {
@@ -283,13 +294,17 @@
         alerts.push("Hypertensive Crisis Level (" + log.systolic_bp + "/" + log.diastolic_bp + " mmHg). Immediate clinical evaluation recommended.");
       } else if (log.systolic_bp >= 140 || log.diastolic_bp >= 90) {
         alerts.push("Stage 2 High Blood Pressure (" + log.systolic_bp + "/" + log.diastolic_bp + " mmHg). Please consult your Barangay Health Worker.");
+      } else if (log.systolic_bp >= 130 || log.diastolic_bp >= 80) {
+        alerts.push("Stage 1 High Blood Pressure (" + log.systolic_bp + "/" + log.diastolic_bp + " mmHg). Keep an eye on your readings and consult your Barangay Health Worker.");
       }
     }
     if (!isMissing(log.spo2) && log.spo2 <= 90) {
       alerts.push("Critical Low Oxygen Saturation (" + log.spo2 + "%). Please proceed to the health station or nearest facility.");
     }
-    if (!isMissing(log.temperature) && Number(log.temperature) >= 38.5) {
-      alerts.push("High Fever (" + log.temperature + " °C). Rest, stay hydrated, and report to your health worker if symptoms persist.");
+    // Spec alert rule: temperature >= 37.9 (was 38.5, which missed
+    // low-grade fevers the backend already counts as alerts).
+    if (!isMissing(log.temperature) && Number(log.temperature) >= 37.9) {
+      alerts.push("Fever (" + log.temperature + " °C). Rest, stay hydrated, and report to your health worker if symptoms persist.");
     }
 
     if (alerts.length > 0) {
@@ -455,7 +470,21 @@
     // Filter controls
     if (controls) {
       var searchDiv = U.el("div", { class: "table-search" });
+      // Visible label (placeholder alone is not an accessible label).
+      var inputId = "historyFilterInput";
+      searchDiv.appendChild(
+        U.el(
+          "label",
+          {
+            for: inputId,
+            class: "muted",
+            style: "display:block; font-size:0.8rem; margin-bottom:0.25rem;",
+          },
+          "Filter readings"
+        )
+      );
       var input = U.el("input", {
+        id: inputId,
         type: "search",
         placeholder: "Filter by date, BP, BMI…",
         value: historyState.filter,

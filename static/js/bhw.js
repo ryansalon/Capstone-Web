@@ -306,12 +306,14 @@
 
       renderFeverChart(data.fever_trend || []);
       renderConcerns(data.top_concerns || []);
+      return true;
     } catch (error) {
       U.clear(totalsNode);
       U.clear(distNode);
       U.clear(document.getElementById("concerns"));
       U.error(statusNode, error.message);
       renderFeverChart([]);
+      return false;
     }
   }
 
@@ -320,9 +322,11 @@
   function initDashboard() {
     if (!API.requireRole("bhw")) return;
     document.getElementById("period").addEventListener("change", loadDashboard);
-    document.getElementById("refreshBtn").addEventListener("click", function () {
-      loadDashboard();
-      U.toast("Dashboard refreshed", "success");
+    document.getElementById("refreshBtn").addEventListener("click", async function () {
+      // Only report success when the fetch actually succeeded — otherwise the
+      // user would see "Dashboard refreshed" over an error state.
+      var ok = await loadDashboard();
+      if (ok) U.toast("Dashboard refreshed", "success");
     });
 
     var toggle = document.getElementById("autoRefreshToggle");
@@ -380,8 +384,10 @@
     var table = U.el("table");
     var thead = U.el("thead");
     var headRow = U.el("tr");
-    ["Name", "Username", "Birthdate", "Last measurement (UTC)", "Consent", ""].forEach(function (label) {
-      headRow.appendChild(U.el("th", null, label));
+    ["Name", "Username", "Birthdate", "Last measurement (UTC)", "Consent", "Actions"].forEach(function (label, index) {
+      headRow.appendChild(
+        U.el("th", index === 5 ? { style: "text-align:right;" } : null, label)
+      );
     });
     thead.appendChild(headRow);
     table.appendChild(thead);
@@ -806,27 +812,46 @@
       var header = U.el("div", { class: "modal-header" });
       header.appendChild(U.el("h3", null, "Printable " + reportType.toUpperCase() + " Report Preview"));
       var closeBtn = U.el("button", { class: "btn btn-ghost", type: "button", "aria-label": "Close" }, "✕");
-      closeBtn.onclick = function () {
-        if (backdrop.parentNode) backdrop.parentNode.removeChild(backdrop);
-      };
       header.appendChild(closeBtn);
       card.appendChild(header);
 
-      var body = U.el("div", { class: "modal-body", style: "padding:0; height:500px;" });
-      var iframe = U.el("iframe", { style: "width:100%; height:100%; border:none; background:#ffffff;" });
+      var body = U.el("div", {
+        class: "modal-body",
+        style: "padding:0; height:min(500px, 62vh); min-height:260px;",
+      });
+      // srcdoc + sandbox instead of document.write(): the preview renders in
+      // an isolated frame (no popups/top-navigation/forms), gets a title for
+      // screen readers, and a failed render can no longer fail silently.
+      var iframe = U.el("iframe", {
+        title: reportType.charAt(0).toUpperCase() + reportType.slice(1) + " report preview",
+        sandbox: "allow-scripts allow-modals allow-same-origin",
+        style: "width:100%; height:100%; border:none; background:#ffffff;",
+      });
       body.appendChild(iframe);
       card.appendChild(body);
 
+      // Dedicated node for failure notes (showNote clears its target, so it
+      // must never be the iframe's container).
+      var noteNode = U.el("div", { style: "padding:0 1.25rem;" });
+      card.appendChild(noteNode);
+
       var footer = U.el("div", { class: "modal-footer" });
       var dismiss = U.el("button", { class: "btn btn-secondary", type: "button" }, "Close");
-      dismiss.onclick = function () {
-        if (backdrop.parentNode) backdrop.parentNode.removeChild(backdrop);
-      };
       var print = U.el("button", { class: "btn btn-primary", type: "button" }, "🖨️ Print Now");
       print.onclick = function () {
-        if (iframe.contentWindow) {
-          iframe.contentWindow.focus();
-          iframe.contentWindow.print();
+        try {
+          if (iframe.contentWindow) {
+            iframe.contentWindow.focus();
+            iframe.contentWindow.print();
+          }
+        } catch (printError) {
+          // Sandboxed frames can refuse print(); tell the user instead of
+          // failing silently — the report has its own Print button.
+          showNote(
+            noteNode,
+            "The browser blocked printing from the preview. Use the Print button inside the report.",
+            true
+          );
         }
       };
       footer.appendChild(dismiss);
@@ -836,16 +861,12 @@
       backdrop.appendChild(card);
       document.body.appendChild(backdrop);
 
-      setTimeout(function () {
-        try {
-          var doc = iframe.contentDocument || iframe.contentWindow.document;
-          doc.open();
-          doc.write(reportHtml);
-          doc.close();
-        } catch (e) {
-          /* fallback */
-        }
-      }, 50);
+      iframe.srcdoc = reportHtml;
+
+      // Accessible dialog: Escape / backdrop click close, focus restored.
+      var closeDialog = U.openDialog(backdrop, closeBtn);
+      closeBtn.onclick = closeDialog;
+      dismiss.onclick = closeDialog;
     }
 
     document.getElementById("printBtn").addEventListener("click", async function () {
