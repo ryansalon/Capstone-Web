@@ -84,10 +84,14 @@
 
   /* ---------------- dashboard ---------------- */
 
-  function totalCard(label, value) {
-    var card = U.el("div", { class: "total" });
+  function totalCard(label, value, options) {
+    options = options || {};
+    var card = U.el("div", { class: "total" + (options.tone ? " " + options.tone : "") });
     card.appendChild(U.el("div", { class: "label" }, label));
     card.appendChild(U.el("div", { class: "value" }, String(value)));
+    if (options.link) {
+      card.appendChild(U.el("a", { class: "total-link", href: options.link.href }, options.link.text));
+    }
     return card;
   }
 
@@ -98,13 +102,14 @@
     }
   }
 
-  function distributionTable(keys, data) {
+  function distributionTable(keys, data, total) {
     var wrap = U.el("div");
     var table = U.el("table");
     var thead = U.el("thead");
     var headRow = U.el("tr");
     headRow.appendChild(U.el("th", null, "Category"));
     headRow.appendChild(U.el("th", { class: "num" }, "Count"));
+    headRow.appendChild(U.el("th", { class: "num" }, "Share"));
     thead.appendChild(headRow);
     table.appendChild(thead);
     var tbody = U.el("tbody");
@@ -112,6 +117,8 @@
       var row = U.el("tr");
       row.appendChild(U.el("td", null, key));
       row.appendChild(U.el("td", { class: "num" }, String(data[key])));
+      var pct = total > 0 ? Math.round((data[key] / total) * 100) : 0;
+      row.appendChild(U.el("td", { class: "num" }, pct + "%"));
       tbody.appendChild(row);
     });
     table.appendChild(tbody);
@@ -138,7 +145,39 @@
     Critical: "#a5271d",
   };
 
-  function renderDistribution(container, key, title, data) {
+  /* Inline per-chart plugin: draws "count (xx%)" at the end of each
+   * horizontal bar so values are readable without hovering. Positions come
+   * from the scales (not bar element geometry) to stay exact. */
+  function valueLabelPlugin(total) {
+    return {
+      id: "valueLabels",
+      afterDatasetsDraw: function (chart) {
+        var xScale = chart.scales.x;
+        var yScale = chart.scales.y;
+        if (!xScale || !yScale) return;
+        var ctx = chart.ctx;
+        ctx.save();
+        ctx.font = '700 11px "Segoe UI", system-ui, sans-serif';
+        ctx.fillStyle = "#14332b";
+        ctx.textBaseline = "middle";
+        ctx.textAlign = "left";
+        chart.data.datasets.forEach(function (dataset, datasetIndex) {
+          var meta = chart.getDatasetMeta(datasetIndex);
+          if (meta.hidden) return;
+          dataset.data.forEach(function (value, index) {
+            if (value === null || value === undefined) return;
+            var pct = total > 0 ? Math.round((value / total) * 100) : 0;
+            var xPos = xScale.getPixelForValue(value);
+            var yPos = yScale.getPixelForIndex(index);
+            ctx.fillText(value + " (" + pct + "%)", xPos + 6, yPos);
+          });
+        });
+        ctx.restore();
+      },
+    };
+  }
+
+  function renderDistribution(container, key, title, data, animate) {
     var box = U.el("div", { class: "chart-box" });
     box.appendChild(U.el("h2", null, title));
     var order = DIST_ORDER[key] || [];
@@ -155,9 +194,15 @@
       return;
     }
 
+    var total = keys.reduce(function (sum, name) {
+      return sum + data[name];
+    }, 0);
+    box.appendChild(
+      U.el("p", { class: "chart-caption muted" }, "n = " + total + " readings classified in this period")
+    );
+
     if (window.Chart) {
       var canvas = U.el("canvas", {
-        height: "170",
         role: "img",
         "aria-label": title + " bar chart: " + keys.map(function (name) {
           return name + " " + data[name];
@@ -166,6 +211,20 @@
       box.appendChild(canvas);
       container.appendChild(box);
       destroyChart("dist-" + key);
+      var chartOptions = {
+        indexAxis: "y",
+        responsive: true,
+        maintainAspectRatio: true,
+        aspectRatio: 1.8,
+        layout: { padding: { right: 72 } },
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { beginAtZero: true, ticks: { precision: 0 } },
+          y: { ticks: { autoSkip: false } },
+        },
+      };
+      // Auto-refresh ticks redraw without animation to avoid flicker.
+      if (animate === false || prefersReducedMotion()) chartOptions.animation = false;
       dashboardCharts["dist-" + key] = new window.Chart(canvas, {
         type: "bar",
         data: {
@@ -182,27 +241,19 @@
             },
           ],
         },
-        options: {
-          responsive: true,
-          maintainAspectRatio: true,
-          aspectRatio: 1.9,
-          plugins: { legend: { display: false } },
-          scales: {
-            x: { ticks: { maxRotation: 0, autoSkip: false } },
-            y: { beginAtZero: true, ticks: { precision: 0 } },
-          },
-        },
+        options: chartOptions,
+        plugins: [valueLabelPlugin(total)],
       });
       return;
     }
 
     var wrap = U.el("div", { class: "table-wrap", style: "box-shadow:none" });
-    wrap.appendChild(distributionTable(keys, data));
+    wrap.appendChild(distributionTable(keys, data, total));
     box.appendChild(wrap);
     container.appendChild(box);
   }
 
-  function renderFeverChart(trend) {
+  function renderFeverChart(trend, animate) {
     var note = document.getElementById("feverFallback");
     var canvas = document.getElementById("feverChart");
     U.clear(note);
@@ -222,6 +273,19 @@
       return;
     }
     canvas.hidden = false;
+    var feverOptions = {
+      responsive: true,
+      maintainAspectRatio: true,
+      // Full-width hero panel: wider aspect on desktop, taller on phones.
+      aspectRatio: window.innerWidth < 640 ? 1.5 : 3,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { ticks: { maxTicksLimit: 8, maxRotation: 0 } },
+        y: { beginAtZero: true, ticks: { precision: 0 } },
+      },
+    };
+    // Auto-refresh ticks redraw without animation to avoid flicker.
+    if (animate === false || prefersReducedMotion()) feverOptions.animation = false;
     dashboardCharts.fever = new window.Chart(canvas, {
       type: "line",
       data: {
@@ -243,18 +307,23 @@
           },
         ],
       },
-      options: {
-        responsive: true,
-        maintainAspectRatio: true,
-        aspectRatio: 2,
-        plugins: { legend: { display: false } },
-        scales: {
-          x: { ticks: { maxTicksLimit: 8, maxRotation: 0 } },
-          y: { beginAtZero: true, ticks: { precision: 0 } },
-        },
-      },
+      options: feverOptions,
     });
   }
+
+  /* Severity tone per concern label (aligned with DIST_COLORS). */
+  var CONCERN_TONE = {
+    "Stage 2 Hypertension": "tone-red",
+    "BP Crisis": "tone-red",
+    "High Fever": "tone-red",
+    "Critical SpO2": "tone-red",
+    "Obese": "tone-red",
+    "Stage 1 Hypertension": "tone-amber",
+    "Elevated BP": "tone-amber",
+    "Low SpO2": "tone-amber",
+    "Overweight": "tone-amber",
+    "Underweight": "tone-amber",
+  };
 
   function renderConcerns(concerns) {
     var list = document.getElementById("concerns");
@@ -265,18 +334,166 @@
       return;
     }
     emptyNode.hidden = true;
+    var max = 1;
+    concerns.forEach(function (item) {
+      if (item[1] > max) max = item[1];
+    });
     concerns.forEach(function (item) {
       var row = U.el("li");
-      row.appendChild(U.el("span", null, item[0]));
-      row.appendChild(U.el("span", { class: "count" }, String(item[1])));
+      var head = U.el("div", { class: "concern-head" });
+      head.appendChild(U.el("span", null, item[0]));
+      head.appendChild(U.el("span", { class: "count" }, String(item[1])));
+      row.appendChild(head);
+      var track = U.el("div", { class: "concern-track" });
+      var bar = U.el("div", {
+        class: ("concern-bar " + (CONCERN_TONE[item[0]] || "")).trim(),
+      });
+      bar.style.width = Math.max(4, Math.round((item[1] / max) * 100)) + "%";
+      track.appendChild(bar);
+      row.appendChild(track);
       list.appendChild(row);
     });
   }
 
-  async function loadDashboard() {
+  /* Resolved date range for the period select (shown next to the filter). */
+  function fmtDay(date, withYear) {
+    var opts = { timeZone: "Asia/Manila", month: "short", day: "numeric" };
+    if (withYear) opts.year = "numeric";
+    return new Intl.DateTimeFormat("en-PH", opts).format(date);
+  }
+
+  function rangeLabelFor(days) {
+    if (days === "all") return "All time";
+    var end = new Date();
+    var start = new Date(end.getTime() - Number(days) * 86400000);
+    var withYear = start.getFullYear() !== end.getFullYear();
+    return fmtDay(start, withYear) + " – " + fmtDay(end, true) + " PHT";
+  }
+
+  function nowPht() {
+    return (
+      new Intl.DateTimeFormat("en-PH", {
+        timeZone: "Asia/Manila",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+      }).format(new Date()) + " PHT"
+    );
+  }
+
+  /* Chart animation is skipped for reduced-motion users (mirrors the CSS
+   * prefers-reduced-motion block) as well as for auto-refresh ticks. */
+  function prefersReducedMotion() {
+    return Boolean(
+      window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    );
+  }
+
+  /* At-a-glance context: consent coverage + kiosk freshness, computed
+   * client-side from the existing /api/bhw/citizens payload — counts and
+   * timestamps only; names never reach this dashboard. Failures degrade to
+   * a quiet note and never touch the main dashboard (this runs outside
+   * loadDashboard's try/catch). Loaded once at startup and on manual
+   * refresh — not on the 30s tick, to avoid needless churn. */
+  async function loadContext() {
+    var donutNode = document.getElementById("consentDonut");
+    var summaryNode = document.getElementById("consentDonutText");
+    var freshnessNode = document.getElementById("kioskFreshness");
+    if (!donutNode || !summaryNode || !freshnessNode) return;
+
+    var data;
+    try {
+      data = await API.apiFetch("/api/bhw/citizens");
+    } catch (error) {
+      U.empty(summaryNode, "Coverage unavailable right now — try Refresh.");
+      U.clear(freshnessNode);
+      freshnessNode.appendChild(
+        U.el("p", { class: "freshness none" }, "Freshness unavailable right now")
+      );
+      return;
+    }
+
+    var citizens = data.citizens || [];
+    var granted = citizens.filter(function (citizen) {
+      return Boolean(citizen.consent);
+    }).length;
+    var total = citizens.length;
+    var pct = total > 0 ? Math.round((granted / total) * 100) : 0;
+
+    // Consent coverage donut (falls back to the summary line without Chart.js).
+    destroyChart("consentDonut");
+    if (window.Chart && total > 0) {
+      donutNode.hidden = false;
+      dashboardCharts.consentDonut = new window.Chart(donutNode, {
+        type: "doughnut",
+        data: {
+          labels: ["Consented", "Not consented"],
+          datasets: [
+            {
+              data: [granted, total - granted],
+              backgroundColor: ["#14876a", "#e6efeb"],
+              borderColor: "#ffffff",
+              borderWidth: 2,
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: true,
+          aspectRatio: 1.7,
+          cutout: "66%",
+          animation: prefersReducedMotion() ? false : undefined,
+          plugins: { legend: { position: "bottom" } },
+        },
+      });
+    } else {
+      donutNode.hidden = true;
+    }
+    U.empty(
+      summaryNode,
+      total > 0
+        ? granted + " of " + total + " citizens have granted consent (" + pct + "%)."
+        : "No registered citizens yet."
+    );
+
+    // Kiosk freshness: newest last_measurement across the registry.
+    var latestRaw = null;
+    var latestMs = null;
+    citizens.forEach(function (citizen) {
+      var raw = citizen.last_measurement;
+      if (!raw) return;
+      var ms = Date.parse(String(raw).replace(" ", "T") + "Z");
+      if (!isNaN(ms) && (latestMs === null || ms > latestMs)) {
+        latestMs = ms;
+        latestRaw = raw;
+      }
+    });
+
+    U.clear(freshnessNode);
+    if (!latestRaw) {
+      freshnessNode.appendChild(U.el("p", { class: "freshness none" }, "No kiosk readings yet"));
+      freshnessNode.appendChild(
+        U.el("p", { class: "freshness-sub" }, "The health kiosk has not uploaded any measurements.")
+      );
+      return;
+    }
+    var hours = (Date.now() - latestMs) / 3600000;
+    var tone = hours < 24 ? "" : hours < 72 ? " warn" : " stale";
+    freshnessNode.appendChild(
+      U.el("p", { class: ("freshness" + tone).trim() }, "Last reading " + U.fmtAge(latestRaw))
+    );
+    freshnessNode.appendChild(
+      U.el("p", { class: "freshness-sub" }, U.fmtDT(latestRaw) + " · from the barangay kiosk")
+    );
+  }
+
+  async function loadDashboard(options) {
+    // animate:false is used by the 30s auto-refresh tick to avoid flicker.
+    var animate = !options || options.animate !== false;
     var periodNode = document.getElementById("period");
     var statusNode = document.getElementById("status");
     var totalsNode = document.getElementById("totals");
+    var registryNode = document.getElementById("registryTotals");
     var distNode = document.getElementById("distributions");
     var days = periodNode.value;
 
@@ -291,23 +508,54 @@
       var data = await API.apiFetch("/api/bhw/dashboard?days=" + encodeURIComponent(days));
       U.clear(statusNode);
 
+      // Resolved date range + last-updated stamp.
+      var rangeNode = document.getElementById("rangeLabel");
+      if (rangeNode) rangeNode.textContent = rangeLabelFor(days);
+      var updatedNode = document.getElementById("lastUpdated");
+      if (updatedNode) updatedNode.textContent = "Updated " + nowPht();
+
       var totals = data.totals || {};
+      var alerts = totals.alerts || 0;
+
+      // Period-scoped totals.
       U.clear(totalsNode);
       totalsNode.appendChild(totalCard("Measurements", totals.measurements || 0));
-      totalsNode.appendChild(totalCard("Registered users", totals.users || 0));
-      totalsNode.appendChild(totalCard("Consent grants", totals.consent_grants || 0));
       totalsNode.appendChild(totalCard("Guest measurements", totals.guest_measurements || 0));
-      totalsNode.appendChild(totalCard("Alerts", totals.alerts || 0));
+      totalsNode.appendChild(
+        totalCard("Alerts", alerts, {
+          tone: alerts > 0 ? "alert" : null,
+          link: { href: "/bhw/search.html", text: "Review citizens →" },
+        })
+      );
+      totalsNode.appendChild(totalCard("Consent grants (period)", totals.consent_grants || 0));
+
+      // Registry totals are all-time and never change with the period filter,
+      // so they live in their own labelled group.
+      U.clear(registryNode);
+      registryNode.appendChild(totalCard("Registered users", totals.users || 0));
+
+      // An empty period gets an explanation instead of only bare zeros.
+      var emptyNode = document.getElementById("emptyState");
+      U.clear(emptyNode);
+      if (!totals.measurements) {
+        emptyNode.appendChild(
+          U.el(
+            "div",
+            { class: "status empty" },
+            days === "all"
+              ? "No measurements recorded yet. Check that the health kiosk is online and syncing."
+              : "No measurements in this period. Try a longer period, or check that the health kiosk is online and syncing."
+          )
+        );
+      }
 
       var distributions = data.distributions || {};
       U.clear(distNode);
-      renderDistribution(distNode, "bmi", "BMI categories", distributions.bmi || {});
-      renderDistribution(distNode, "bp", "Blood pressure categories", distributions.bp || {});
-      renderDistribution(distNode, "spo2", "SpO2 categories", distributions.spo2 || {});
+      renderDistribution(distNode, "bmi", "BMI categories", distributions.bmi || {}, animate);
+      renderDistribution(distNode, "bp", "Blood pressure categories", distributions.bp || {}, animate);
+      renderDistribution(distNode, "spo2", "SpO2 categories", distributions.spo2 || {}, animate);
 
-      renderFeverChart(data.fever_trend || []);
-      var concernsNode = document.getElementById("concerns");
-      U.clear(concernsNode);
+      renderFeverChart(data.fever_trend || [], animate);
       renderConcerns(data.top_concerns || []);
       return true;
     } catch (error) {
@@ -321,12 +569,15 @@
 
   function initDashboard() {
     if (!API.requireRole("bhw")) return;
-    document.getElementById("period").addEventListener("change", loadDashboard);
+    document.getElementById("period").addEventListener("change", function () {
+      loadDashboard({ animate: true });
+    });
     document.getElementById("refreshBtn").addEventListener("click", async function () {
       // Only report success when the fetch actually succeeded — otherwise the
       // user would see "Dashboard refreshed" over an error state.
-      var ok = await loadDashboard();
+      var ok = await loadDashboard({ animate: true });
       if (ok) U.toast("Dashboard refreshed", "success");
+      loadContext(); // context panels refresh alongside the manual refresh
     });
 
     var toggle = document.getElementById("autoRefreshToggle");
@@ -354,7 +605,8 @@
         updateLiveText();
         if (secondsLeft <= 0) {
           secondsLeft = 30;
-          loadDashboard();
+          // Timer ticks redraw without animation so the page never flickers.
+          loadDashboard({ animate: false });
         }
       }, 1000);
     }
@@ -377,7 +629,8 @@
       startTimer();
     }
 
-    loadDashboard();
+    loadDashboard({ animate: true });
+    loadContext(); // consent donut + kiosk freshness (isolated failures)
   }
 
   /* ---------------- search ---------------- */
@@ -401,7 +654,7 @@
     var table = U.el("table");
     var thead = U.el("thead");
     var headRow = U.el("tr");
-    ["Name", "Username", "Birthdate", "Last measurement (UTC)", "Consent", "Actions"].forEach(function (label, index) {
+    ["Name", "Username", "Birthdate", "Last measurement (PHT)", "Consent", "Actions"].forEach(function (label, index) {
       headRow.appendChild(
         U.el("th", index === 5 ? { style: "text-align:right;" } : null, label)
       );
@@ -481,7 +734,7 @@
     var table = U.el("table");
     var thead = U.el("thead");
     var headRow = U.el("tr");
-    ["Timestamp (UTC)", "Weight (kg)", "Height (cm)", "BMI", "Temp (°C)", "Pulse (bpm)", "SpO2 (%)", "Blood pressure"].forEach(function (label, index) {
+    ["Time (PHT)", "Weight (kg)", "Height (cm)", "BMI", "Temp (°C)", "Pulse (bpm)", "SpO2 (%)", "Blood pressure"].forEach(function (label, index) {
       headRow.appendChild(U.el("th", index === 0 ? null : { class: "num" }, label));
     });
     thead.appendChild(headRow);
@@ -528,7 +781,7 @@
         U.el(
           "div",
           { class: "meta" },
-          "By " + note.bhw + " · " + U.fmtDT(note.timestamp) + " UTC"
+          "By " + note.bhw + " · " + U.fmtDT(note.timestamp)
         )
       );
       list.appendChild(item);
@@ -616,7 +869,7 @@
 
     var consent = data.consent || {};
     document.getElementById("consentLine").textContent =
-      "Consent granted on " + U.fmtDT(consent.timestamp) + " UTC.";
+      "Consent granted on " + U.fmtDT(consent.timestamp) + ".";
 
     var readings = document.getElementById("readings");
     U.clear(readings);
@@ -753,7 +1006,7 @@
     var table = U.el("table");
     var thead = U.el("thead");
     var headRow = U.el("tr");
-    ["Timestamp (UTC)", "Health worker", "Citizen", "Action", "IP address"].forEach(function (label) {
+    ["Time (PHT)", "Health worker", "Citizen", "Action", "IP address"].forEach(function (label) {
       headRow.appendChild(U.el("th", null, label));
     });
     thead.appendChild(headRow);
@@ -941,6 +1194,20 @@
   /* ---------------- router ---------------- */
 
   document.addEventListener("DOMContentLoaded", function () {
+    // Administrator badge next to the signed-in name. The backend gives the
+    // admin role identical permissions to a BHW, so the board is shared —
+    // the badge is the only visible difference. Guarded: pages without a
+    // #whoami (login) simply skip it.
+    if (API.getRole() === "admin") {
+      var whoami = document.getElementById("whoami");
+      if (whoami && !document.querySelector(".badge-admin")) {
+        whoami.insertAdjacentElement(
+          "afterend",
+          U.el("span", { class: "badge badge-admin" }, "Administrator")
+        );
+      }
+    }
+
     var page = document.body.getAttribute("data-page");
     if (page === "bhw-login") initBhwLogin();
     else if (page === "bhw-dashboard") initDashboard();

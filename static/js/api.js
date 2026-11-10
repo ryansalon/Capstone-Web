@@ -353,6 +353,22 @@
       return String(value).replace("T", " ").slice(0, 16) + " UTC";
     },
 
+    /* Relative age of a timestamp: "2 min ago", "3 h ago", "1 day ago". */
+    fmtAge: function (value) {
+      if (!value) return "—";
+      var date = new Date(String(value).replace(" ", "T") + "Z");
+      if (isNaN(date.getTime())) return "—";
+      var diffMs = Date.now() - date.getTime();
+      if (diffMs < 0) diffMs = 0;
+      var diffMin = Math.floor(diffMs / 60000);
+      var diffHour = Math.floor(diffMs / 3600000);
+      var diffDay = Math.floor(diffMs / 86400000);
+      if (diffDay > 0) return diffDay + " day" + (diffDay > 1 ? "s" : "") + " ago";
+      if (diffHour > 0) return diffHour + " h ago";
+      if (diffMin > 0) return diffMin + " min ago";
+      return "just now";
+    },
+
     fmtNum: function (value, digits, suffix) {
       if (value === null || value === undefined || value === "") return "—";
       var number = Number(value);

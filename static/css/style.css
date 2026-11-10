@@ -149,13 +149,17 @@ a:hover {
 }
 
 h1 {
-  font-size: 1.55rem;
+  font-size: 1.45rem;
   line-height: 1.25;
-  margin: 0 0 0.35rem;
+  margin: 0 0 0.5rem;
+  font-weight: 700;
+  color: var(--ink);
 }
 
 h2 {
-  font-size: 1.12rem;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--ink);
   margin: 0 0 0.75rem;
 }
 
@@ -175,6 +179,12 @@ h2 {
   border-radius: var(--radius);
   box-shadow: var(--shadow);
   padding: 1.15rem 1.25rem;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.card-surface:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(11, 61, 48, 0.1), 0 16px 32px rgba(11, 61, 48, 0.08);
 }
 
 /* ---------- buttons ---------- */
@@ -368,6 +378,12 @@ h2 {
   box-shadow: var(--shadow);
   padding: 0.9rem 1rem;
   border-top: 4px solid var(--green-600);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(11, 61, 48, 0.1), 0 16px 32px rgba(11, 61, 48, 0.08);
 }
 
 .card .label {
@@ -427,7 +443,13 @@ h2 {
   background: var(--green-800);
   color: var(--white);
   border-radius: var(--radius);
-  padding: 0.9rem 1rem;
+  padding: 1rem 1.1rem;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.total:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(11, 61, 48, 0.12);
 }
 
 .total .label {
@@ -439,7 +461,7 @@ h2 {
 }
 
 .total .value {
-  font-size: 1.6rem;
+  font-size: 1.75rem;
   font-weight: 700;
 }
 
@@ -467,7 +489,9 @@ h2 {
 
 .chart-box canvas {
   width: 100% !important;
-  max-height: 260px;
+  /* Raised from 260px so the horizontal distribution charts (aspect 1.8)
+   * are not clamped mid-height on wide layouts. */
+  max-height: 340px;
 }
 
 /* ---------- tables ---------- */
@@ -623,10 +647,8 @@ th.num {
 }
 
 .concern-list li {
-  display: flex;
-  justify-content: space-between;
-  gap: 1rem;
-  padding: 0.45rem 0.15rem;
+  display: block;
+  padding: 0.5rem 0.15rem;
   border-bottom: 1px solid #e6efeb;
   font-size: 0.92rem;
 }
@@ -635,9 +657,39 @@ th.num {
   border-bottom: 0;
 }
 
+.concern-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
 .concern-list .count {
   font-weight: 700;
   font-variant-numeric: tabular-nums;
+}
+
+/* Proportional severity bar behind each concern (width set by bhw.js). */
+.concern-track {
+  height: 6px;
+  border-radius: 999px;
+  background: #e6efeb;
+  margin-top: 0.3rem;
+  overflow: hidden;
+}
+
+.concern-bar {
+  height: 100%;
+  border-radius: 999px;
+  background: var(--green-600);
+  min-width: 4px;
+}
+
+.concern-bar.tone-amber {
+  background: #b9761b;
+}
+
+.concern-bar.tone-red {
+  background: var(--red-fg);
 }
 
 .notes-list {
@@ -1253,6 +1305,239 @@ footer.foot {
   cursor: not-allowed;
 }
 
+/* ==========================================================================
+   Dashboard refinements (Option A: polished green system)
+   ========================================================================== */
+
+/* Section label (caption) */
+.section-caption {
+  display: block;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--ink-soft);
+  font-weight: 700;
+  margin: 0 0 0.5rem;
+}
+
+/* Consent / status chip */
+.status-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  border-radius: 999px;
+  padding: 0.2rem 0.75rem;
+  white-space: nowrap;
+}
+
+.status-chip.granted {
+  background: var(--green-100);
+  color: var(--green-800);
+}
+
+.status-chip.not-granted {
+  background: var(--amber-bg);
+  color: var(--amber-fg);
+}
+
+/* Sparkline container */
+.sparkline-wrap {
+  position: relative;
+  height: 56px;
+  margin-top: 0.5rem;
+}
+
+.sparkline-wrap canvas {
+  display: block;
+  max-height: 56px;
+  width: 100% !important;
+}
+
+/* Last-updated timestamp */
+.last-updated {
+  font-size: 0.8rem;
+  color: var(--ink-soft);
+  margin-top: 0.2rem;
+  display: block;
+}
+
+/* Caps Lock hint */
+.caps-lock {
+  font-size: 0.8rem;
+  color: var(--amber-fg);
+  margin-top: 0.2rem;
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* Button active press state */
+.btn:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+/* ==========================================================================
+   Dashboard upgrade (citizen + BHW): meta row, hints, totals groups,
+   concern bars, action links, filter-row extras.
+   ========================================================================== */
+
+/* Citizen meta row: reading age · consent chip · refresh control */
+.meta-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.75rem;
+}
+
+/* Consent chip is a link to the Consent page */
+a.status-chip {
+  text-decoration: none;
+}
+
+a.status-chip:hover {
+  text-decoration: underline;
+}
+
+/* Citizen health-literacy hints */
+.vital-hints {
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 0.75rem 1rem;
+  margin-top: 1rem;
+}
+
+.vital-hints summary {
+  font-weight: 600;
+  color: var(--green-800);
+  cursor: pointer;
+}
+
+.vital-hints .hint-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 0.6rem 1.5rem;
+  margin-top: 0.75rem;
+}
+
+.vital-hints dt {
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.vital-hints dd {
+  margin: 0.1rem 0 0;
+  font-size: 0.83rem;
+  color: var(--ink-soft);
+}
+
+/* BHW filter row extras: resolved date range + live controls */
+.filters-live {
+  align-items: center;
+}
+
+.range-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+
+.filters-live-right {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-left: auto;
+}
+
+.auto-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* Totals split by scope: in-period vs registry (all time) */
+.totals-group {
+  margin-bottom: 1rem;
+}
+
+.totals-group:last-child {
+  margin-bottom: 0;
+}
+
+/* Alerts total is toned amber while any alert exists in the period */
+.total.alert {
+  background: var(--amber-fg);
+}
+
+.total.alert .label {
+  color: #ffe7b8;
+}
+
+.total.alert:hover {
+  box-shadow: 0 4px 12px rgba(138, 90, 0, 0.25);
+}
+
+.total-link {
+  display: inline-block;
+  margin-top: 0.45rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #bfe3d6;
+  text-decoration: underline;
+}
+
+.total.alert .total-link {
+  color: #fff3d6;
+}
+
+.total-link:hover {
+  color: var(--white);
+}
+
+/* Quick link inside a card surface */
+.card-link {
+  display: inline-block;
+  margin-top: 0.75rem;
+  font-size: 0.87rem;
+  font-weight: 600;
+}
+
+/* Denominator caption above a distribution chart */
+.chart-caption {
+  font-size: 0.78rem;
+  margin: -0.3rem 0 0.55rem;
+}
+
+/* Responsive: stack dashboard grids to single column on small viewports */
+@media (max-width: 640px) {
+  .totals,
+  .grid-2,
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .total {
+    padding: 0.95rem 1rem;
+  }
+
+  .total .value {
+    font-size: 1.5rem;
+  }
+}
+
+/* Login page: password field tap target */
+.login-field input[type="password"] {
+  min-height: 2.6rem;
+}
+
 /* Print Stylesheet for Health Passport.
  * Scoped to body.printing-passport (set only while window.print() runs):
  * the old `body * { visibility: hidden }` rule blanked every other page
@@ -1301,4 +1586,326 @@ footer.foot {
   .spinner {
     border-top-color: var(--green-700);
   }
+}
+
+/* ==========================================================================
+   Portal personalities — one design system, two temperaments.
+   .portal-citizen: warm "My Health" companion (hero, headline vitals,
+   sentence-case labels, trust strip).
+   .portal-staff: dense "Barangay Health Desk" ops board (context band,
+   hero trend, privacy badge, quick links).
+   ========================================================================== */
+
+/* ---------- shared helpers ---------- */
+
+.grid-3 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1rem;
+}
+
+.chart-box h3 {
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin: 0 0 0.5rem;
+}
+
+/* ---------- citizen: hero status panel ---------- */
+
+.portal-citizen .hero {
+  position: relative;
+  background: linear-gradient(135deg, var(--green-900) 0%, var(--green-700) 100%);
+  color: var(--white);
+  border-radius: 16px;
+  padding: 1.35rem 1.5rem;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  box-shadow: 0 10px 30px rgba(11, 61, 48, 0.18);
+  margin-bottom: 1.1rem;
+  overflow: hidden;
+}
+
+/* Soft decorative halo — pointer-transparent so it never blocks clicks. */
+.portal-citizen .hero::after {
+  content: "";
+  position: absolute;
+  right: -70px;
+  top: -70px;
+  width: 240px;
+  height: 240px;
+  border-radius: 50%;
+  background: rgba(126, 224, 189, 0.12);
+  pointer-events: none;
+}
+
+.portal-citizen .hero-body {
+  position: relative;
+  z-index: 1;
+  min-width: 0;
+}
+
+.portal-citizen .hero-eyebrow {
+  margin: 0 0 0.3rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: #7ee0bd;
+}
+
+.portal-citizen .hero-greeting {
+  color: var(--white);
+  font-size: 1.55rem;
+  margin: 0 0 0.4rem;
+}
+
+.portal-citizen .hero-sentence {
+  margin: 0;
+  font-size: 1.02rem;
+  line-height: 1.55;
+  color: #dff1ea;
+  max-width: 58ch;
+}
+
+.portal-citizen .hero-next {
+  margin: 0.55rem 0 0;
+  font-size: 0.88rem;
+  color: #bfe3d6;
+  max-width: 58ch;
+}
+
+/* Big status pill, right-aligned; tone set by citizen.js. */
+.portal-citizen .hero-pill {
+  position: relative;
+  z-index: 1;
+  flex: 0 0 auto;
+  align-self: center;
+  padding: 0.45rem 1.05rem;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  white-space: nowrap;
+  background: rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  color: #eaf7f2;
+}
+
+.portal-citizen .hero-pill.ok {
+  background: #7ee0bd;
+  border-color: transparent;
+  color: var(--green-900);
+}
+
+.portal-citizen .hero-pill.warn {
+  background: #ffd98a;
+  border-color: transparent;
+  color: #6b4300;
+}
+
+.portal-citizen .hero-pill.bad {
+  background: #ffb3ab;
+  border-color: transparent;
+  color: #7d1a13;
+}
+
+.portal-citizen .hero-pill.muted {
+  background: rgba(255, 255, 255, 0.9);
+  border-color: transparent;
+  color: var(--ink-soft);
+}
+
+/* ---------- citizen: two-tier vitals ---------- */
+
+.portal-citizen .cards-headline {
+  grid-template-columns: repeat(auto-fit, minmax(215px, 1fr));
+}
+
+.portal-citizen .cards-headline .card .value {
+  font-size: 2rem;
+}
+
+/* Sentence-case labels: the citizen portal reads like prose, not a console. */
+.portal-citizen .card .label {
+  text-transform: none;
+  letter-spacing: 0.01em;
+  font-size: 0.86rem;
+}
+
+.portal-citizen .cards-support .card {
+  padding: 0.7rem 0.9rem;
+}
+
+.portal-citizen .cards-support .card .value {
+  font-size: 1.15rem;
+}
+
+/* ---------- citizen: trends ---------- */
+
+.portal-citizen .chart-box h2 {
+  font-size: 0.98rem;
+}
+
+/* ---------- citizen: trust strip ---------- */
+
+.portal-citizen .trust-line {
+  font-size: 0.87rem;
+  color: var(--ink-soft);
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--green-600);
+  border-radius: 8px;
+  padding: 0.55rem 0.9rem;
+  margin: 0 0 1rem;
+  max-width: 72ch;
+}
+
+.portal-citizen .trust-line a {
+  font-weight: 600;
+}
+
+/* ---------- staff: at-a-glance context band ---------- */
+
+.portal-staff .context-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.portal-staff .context-panel {
+  padding: 0.9rem 1rem 1rem;
+}
+
+.donut-summary {
+  font-size: 0.87rem;
+  color: var(--ink-soft);
+  margin: 0.5rem 0 0;
+}
+
+.donut-summary strong {
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Kiosk freshness: tone dot + headline, detail underneath. */
+.freshness {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.98rem;
+  font-weight: 700;
+  margin: 0;
+  color: var(--green-700);
+}
+
+.freshness::before {
+  content: "";
+  width: 0.65rem;
+  height: 0.65rem;
+  border-radius: 50%;
+  background: currentColor;
+  flex: 0 0 auto;
+}
+
+.freshness.warn { color: var(--amber-fg); }
+.freshness.stale { color: var(--red-fg); }
+.freshness.none { color: var(--ink-soft); }
+
+.freshness-sub {
+  font-size: 0.83rem;
+  color: var(--ink-soft);
+  margin: 0.4rem 0 0;
+  padding-left: 1.15rem;
+}
+
+/* Slightly denser KPI strip for the ops board. */
+.portal-staff .total {
+  padding: 0.85rem 1rem;
+}
+
+.portal-staff .total .value {
+  font-size: 1.6rem;
+}
+
+/* ---------- staff: hero trend ---------- */
+
+.chart-hero canvas {
+  max-height: 420px;
+}
+
+/* ---------- staff: quick links ---------- */
+
+.quick-links {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+}
+
+.quick-link {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  background: var(--green-050);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 0.75rem 0.9rem;
+  text-decoration: none;
+  color: var(--green-800);
+  font-weight: 700;
+  font-size: 0.9rem;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.quick-link:hover {
+  background: var(--green-100);
+  border-color: var(--green-600);
+  color: var(--green-900);
+  text-decoration: none;
+}
+
+.quick-link small {
+  font-weight: 400;
+  color: var(--ink-soft);
+  font-size: 0.78rem;
+}
+
+/* ---------- staff: privacy badge ---------- */
+
+.privacy-badge {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.7rem;
+  background: var(--green-100);
+  border: 1px solid #bfe0d4;
+  border-left: 5px solid var(--green-700);
+  border-radius: var(--radius);
+  padding: 0.8rem 1rem;
+  margin-top: 1.5rem;
+  font-size: 0.89rem;
+  color: var(--green-900);
+}
+
+.privacy-badge .shield {
+  font-size: 1.1rem;
+  line-height: 1.3;
+}
+
+.privacy-badge strong {
+  display: block;
+  margin-bottom: 0.1rem;
+}
+
+/* ---------- staff: admin badge in the topbar ---------- */
+
+.badge-admin {
+  background: #7ee0bd;
+  color: var(--green-900);
+  border: 1px solid #bfe3d6;
+}
+
+.topnav .badge-admin {
+  margin-left: 0.15rem;
 }

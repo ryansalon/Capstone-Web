@@ -21,15 +21,82 @@
     </nav>
   </header>
 
-  <main id="main" class="page">
-    <h1>My latest reading</h1>
-    <p class="lede">Measurements uploaded from the barangay health kiosk. Values outside the healthy range are highlighted.</p>
+  <main id="main" class="page portal-citizen">
+    <!-- Hero status panel: greeting, plain-language status, next step. -->
+    <section class="hero" id="heroPanel" aria-labelledby="heroGreeting">
+      <div class="hero-body">
+        <p class="hero-eyebrow">My health</p>
+        <h1 class="hero-greeting" id="heroGreeting">Welcome</h1>
+        <p class="hero-sentence" id="heroSentence">Checking your latest reading…</p>
+        <p class="hero-next" id="heroNext"></p>
+      </div>
+      <span class="hero-pill" id="heroPill">Checking…</span>
+    </section>
 
     <div id="status" aria-live="polite"></div>
     <div id="alertBanner" aria-live="assertive"></div>
-    <div id="latestMeta" class="muted"></div>
-    <div id="cards" class="cards section" aria-live="polite"></div>
+    <div class="meta-row">
+      <div id="latestMeta" class="muted"></div>
+      <a id="consentChip" class="status-chip" href="/citizen/consent.html" title="Consent status — open the Consent page to change it.">Consent status</a>
+      <button id="citizenRefreshBtn" class="btn btn-secondary" type="button">Refresh</button>
+    </div>
+    <p class="trust-line" id="consentExplain"></p>
+
+    <section class="section" id="headlineSection" aria-labelledby="headlineHeading" hidden>
+      <h2 id="headlineHeading">Key vitals</h2>
+      <div id="cards" class="cards cards-headline" aria-live="polite"></div>
+    </section>
+    <section class="section" id="supportSection" aria-labelledby="supportHeading" hidden>
+      <h2 id="supportHeading">Your other measurements</h2>
+      <div id="supportCards" class="cards cards-support"></div>
+    </section>
     <div id="emptyState"></div>
+
+    <section class="section" id="trendsSection" aria-labelledby="trendsHeading" hidden>
+      <h2 id="trendsHeading">Trends at a glance</h2>
+      <div class="grid-2">
+        <div class="chart-box">
+          <h3>Blood pressure — last 10 readings</h3>
+          <canvas id="bpMiniChart" role="img" aria-label="Systolic and diastolic blood pressure trend for your last readings"></canvas>
+          <div id="bpMiniNote" class="muted"></div>
+        </div>
+        <div class="chart-box">
+          <h3>Weight &amp; BMI — last 10 readings</h3>
+          <canvas id="weightMiniChart" role="img" aria-label="Weight and BMI trend for your last readings"></canvas>
+          <div id="weightMiniNote" class="muted"></div>
+        </div>
+      </div>
+    </section>
+
+    <details class="vital-hints">
+      <summary>What do these numbers mean?</summary>
+      <dl class="hint-grid">
+        <div>
+          <dt>Blood pressure</dt>
+          <dd>Normal below 120/80 mmHg · elevated 120–129/&lt;80 · Stage 1 130–139 or 80–89 · Stage 2 140/90 or above · crisis 180/120 or above.</dd>
+        </div>
+        <div>
+          <dt>SpO₂ (blood oxygen)</dt>
+          <dd>95% and above is normal · 90–94% is low · below 90% is critical — proceed to the health station.</dd>
+        </div>
+        <div>
+          <dt>Temperature</dt>
+          <dd>37.9 °C or above counts as a fever. Rest, hydrate, and report to your health worker if it persists.</dd>
+        </div>
+        <div>
+          <dt>Pulse rate</dt>
+          <dd>A typical resting pulse for adults is 60–100 bpm.</dd>
+        </div>
+        <div>
+          <dt>BMI</dt>
+          <dd>Underweight below 18.5 · normal 18.5–24.9 · overweight 25–29.9 · obese 30 and above.</dd>
+        </div>
+        <div>
+          <dt>Weight &amp; height</dt>
+          <dd>Measured at the barangay kiosk and used to work out your BMI.</dd>
+        </div>
+      </dl>
+    </details>
 
     <section class="section">
       <h2>Quick actions</h2>
@@ -42,6 +109,7 @@
   </main>
 
   <footer class="foot">Readings are shown in Philippine time (PHT); hover a timestamp for the UTC original.</footer>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <script src="/js/api.js"></script>
   <script src="/js/citizen.js"></script>
 </body>

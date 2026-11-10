@@ -5,6 +5,7 @@
 
   var U = API.UI;
   var charts = {};
+  var sparkCharts = [];
 
   /* Chart.js plugin that draws a horizontal fever threshold line at 37.9 °C. */
   var feverThresholdPlugin = {
@@ -227,14 +228,16 @@
     return wrap;
   }
 
-  function createDelta(diff, unit, lowerIsBetter) {
+  function createDelta(diff, unit, lowerIsBetter, neutral, digits) {
     if (diff === null || diff === undefined || isNaN(diff)) return null;
+    var places = digits === undefined ? 1 : digits;
+    var epsilon = places === 0 ? 0.5 : 0.05;
     var sign = diff > 0 ? "+" : diff < 0 ? "−" : "±";
     var abs = Math.abs(diff);
-    if (abs < 0.05) return U.el("span", { class: "delta neutral" }, "No change");
+    if (abs < epsilon) return U.el("span", { class: "delta neutral" }, "No change");
     var isGood = lowerIsBetter ? diff < 0 : diff > 0;
-    var tone = isGood ? "good" : "warn";
-    var text = (diff > 0 ? "▲ " : "▼ ") + sign + abs.toFixed(1) + (unit ? " " + unit : "");
+    var tone = neutral ? "neutral" : isGood ? "good" : "warn";
+    var text = (diff > 0 ? "▲ " : "▼ ") + sign + abs.toFixed(places) + (unit ? " " + unit : "");
     return U.el("span", { class: "delta " + tone }, text);
   }
 
@@ -331,15 +334,17 @@
     dismissBtn.onclick = closeDialog;
   }
 
-  function addCard(container, label, value, sub, tone, gauge, delta) {
+function addCard(container, label, value, sub, tone, gauge, delta, spark) {
     var card = U.el("div", { class: "card" + (tone ? " " + tone : "") });
     card.appendChild(U.el("div", { class: "label" }, label));
     card.appendChild(U.el("div", { class: "value" }, value));
     if (sub) card.appendChild(U.el("div", { class: "sub" }, sub));
     if (delta) card.appendChild(delta);
     if (gauge) card.appendChild(gauge);
+    if (spark) renderSparkline(card, spark.values, spark.color);
     container.appendChild(card);
-  }
+    return card;
+}
 
   function renderAlertBanner(log) {
     var banner = document.getElementById("alertBanner");
@@ -380,67 +385,356 @@
     }
   }
 
-  function renderLatest(log, prevLog) {
-    var cards = document.getElementById("cards");
-    U.clear(cards);
-    renderAlertBanner(log);
+  /* Tiny sparkline for a single vital across the recent time series.
+   * Wrapped in .sparkline-wrap (fixed height) so Chart.js sizes against a
+   * bounded parent instead of looping on the card's auto height. */
+  function renderSparkline(card, values, color) {
+    if (!window.Chart || !values || values.length < 2) return;
+    var wrap = U.el("div", { class: "sparkline-wrap" });
+    var canvas = U.el("canvas", { class: "sparkline" });
+    wrap.appendChild(canvas);
+    card.appendChild(wrap);
+    var ascendingVals = values.slice().reverse();
+    var ctx = canvas.getContext("2d");
+    sparkCharts.push(new window.Chart(ctx, {
+      type: "line",
+      data: {
+        labels: ascendingVals.map(function () { return ""; }),
+        datasets: [{
+          data: ascendingVals,
+          borderColor: color,
+          backgroundColor: "transparent",
+          fill: false,
+          spanGaps: true,
+          tension: 0.25,
+          pointRadius: 0,
+          borderWidth: 2,
+        }],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: false,
+        plugins: { legend: { display: false }, tooltip: { enabled: false } },
+        scales: { x: { display: false }, y: { display: false } },
+        layout: { padding: 0 },
+      },
+    }));
+  }
 
-    // Delta calculations
+  /* Newest-first series for a sparkline: up to 10 non-null values. */
+  function sparkSeries(logs, key) {
+    var out = [];
+    for (var i = 0; i < logs.length && out.length < 10; i++) {
+      var value = logs[i][key];
+      if (!isMissing(value)) out.push(value);
+    }
+    return out;
+  }
+
+  function spark(logs, key, color) {
+    var values = sparkSeries(logs, key);
+    return values.length >= 2 ? { values: values, color: color } : null;
+  }
+
+  /* ---------------- hero status panel ---------------- */
+
+  /* Overall status derived from the latest reading (display only).
+   * Levels mirror the clinical alert rules: crisis/Stage 2 BP, critical
+   * SpO2 and fever are "action"; Stage 1/Elevated BP, low SpO2 and a BMI
+   * outside normal are "attention"; everything else is "normal". */
+  function deriveStatus(log) {
+    var findings = [];
+
+    var bpCat = bpCategory(log.systolic_bp, log.diastolic_bp);
+    var bpText =
+      isMissing(log.systolic_bp) || isMissing(log.diastolic_bp)
+        ? null
+        : " (" + log.systolic_bp + "/" + log.diastolic_bp + " mmHg)";
+    if (bpCat === "Crisis" || bpCat === "Stage 2") {
+      findings.push({ text: "your blood pressure is in the " + bpCat + " range" + (bpText || ""), tone: "bad" });
+    } else if (bpCat === "Stage 1") {
+      findings.push({ text: "your blood pressure is in the Stage 1 range" + (bpText || ""), tone: "warn" });
+    } else if (bpCat === "Elevated") {
+      findings.push({ text: "your blood pressure is a little high" + (bpText || ""), tone: "warn" });
+    }
+
+    var spo2Cat = spo2Category(log.spo2);
+    if (spo2Cat === "Critical") {
+      findings.push({ text: "your blood oxygen is critically low (" + log.spo2 + "%)", tone: "bad" });
+    } else if (spo2Cat === "Low") {
+      findings.push({ text: "your blood oxygen is a little low (" + log.spo2 + "%)", tone: "warn" });
+    }
+
+    if (!isMissing(log.temperature) && Number(log.temperature) >= 37.9) {
+      findings.push({ text: "you have a fever (" + log.temperature + " °C)", tone: "bad" });
+    }
+
+    var bmiCat = bmiCategory(log.bmi);
+    if (bmiCat && bmiCat !== "Normal") {
+      findings.push({ text: "your BMI is in the " + bmiCat + " range (" + U.fmtNum(log.bmi, 1) + ")", tone: "warn" });
+    }
+
+    var level = findings.some(function (f) { return f.tone === "bad"; })
+      ? "action"
+      : findings.length
+        ? "attention"
+        : "normal";
+
+    var sentence;
+    if (level === "normal") {
+      sentence = "Your latest readings are all within the healthy range.";
+    } else {
+      var texts = findings.map(function (f) { return f.text; });
+      var joined =
+        texts.length === 1
+          ? texts[0]
+          : texts.slice(0, -1).join(", ") + " and " + texts[texts.length - 1];
+      sentence = "In your latest reading, " + joined + ".";
+    }
+
+    var next;
+    if (level === "action") {
+      next = "Next step: contact your Barangay Health Worker or visit the health station today.";
+    } else if (level === "attention") {
+      next = "Next step: mention this at your next visit, and recheck at the kiosk in a few days.";
+    } else {
+      next = "Next step: keep it up — take your next reading at the kiosk as usual.";
+    }
+
+    return {
+      level: level,
+      label: level === "action" ? "Action required" : level === "attention" ? "Some attention" : "All normal",
+      tone: level === "action" ? "bad" : level === "attention" ? "warn" : "ok",
+      sentence: sentence,
+      next: next,
+    };
+  }
+
+  /* Time-of-day greeting in PHT using the stored name (no extra request). */
+  function renderGreeting() {
+    var node = document.getElementById("heroGreeting");
+    if (!node) return;
+    var hour = Number(
+      new Intl.DateTimeFormat("en-PH", {
+        timeZone: "Asia/Manila",
+        hour: "2-digit",
+        hour12: false,
+      }).format(new Date())
+    );
+    hour = hour % 24; // some locales format midnight as "24"
+    var part = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
+    var first = (API.getName() || "").trim().split(/\s+/)[0];
+    node.textContent = first ? part + ", " + first : part;
+  }
+
+  function renderHero(log) {
+    var pill = document.getElementById("heroPill");
+    var sentence = document.getElementById("heroSentence");
+    var next = document.getElementById("heroNext");
+    if (!pill || !sentence || !next) return;
+    var status = deriveStatus(log);
+    pill.className = "hero-pill " + status.tone;
+    pill.textContent = status.label;
+    sentence.textContent = status.sentence;
+    next.textContent = status.next;
+  }
+
+  /* No-readings onboarding state lives in the hero itself. */
+  function renderHeroOnboarding() {
+    var pill = document.getElementById("heroPill");
+    var sentence = document.getElementById("heroSentence");
+    var next = document.getElementById("heroNext");
+    if (!pill || !sentence || !next) return;
+    pill.className = "hero-pill muted";
+    pill.textContent = "Not measured yet";
+    sentence.textContent =
+      "You haven't taken a kiosk measurement yet — your first visit starts your health story.";
+    next.textContent =
+      "Visit the barangay health center kiosk; your reading will appear here automatically.";
+  }
+
+  /* Hero on a failed first load, so it never sits on "Checking…". */
+  function renderHeroUnavailable() {
+    var pill = document.getElementById("heroPill");
+    var sentence = document.getElementById("heroSentence");
+    var next = document.getElementById("heroNext");
+    if (!pill || !sentence || !next) return;
+    pill.className = "hero-pill muted";
+    pill.textContent = "Unavailable";
+    sentence.textContent = "We couldn't load your health data right now.";
+    next.textContent = "Use Retry below, or check your connection and try again.";
+  }
+
+  /* ---------------- mini trends (dashboard at a glance) ---------------- */
+
+  function miniSeries(logs, key) {
+    return logs.map(function (log) {
+      return isMissing(log[key]) ? null : log[key];
+    });
+  }
+
+  function hasEnough(values) {
+    return values.filter(function (v) { return v !== null; }).length >= 2;
+  }
+
+  function setMiniNote(canvasId, noteId, message) {
+    var canvas = document.getElementById(canvasId);
+    var note = document.getElementById(noteId);
+    if (canvas) canvas.hidden = Boolean(message);
+    if (note) U.empty(note, message || "");
+  }
+
+  /* Two compact trend charts for the last ≤10 readings. Chart.js is a
+   * progressive enhancement: when the CDN is unreachable the canvases are
+   * hidden and a text pointer to History is shown instead. */
+  function renderMiniTrends(logs) {
+    var section = document.getElementById("trendsSection");
+    if (!section) return;
+    if (logs.length < 2) {
+      section.hidden = true;
+      return;
+    }
+    section.hidden = false;
+
+    var recent = logs.slice(0, 10).reverse(); // ascending, newest last
+    var labels = recent.map(function (log) {
+      return U.fmtDT(log.timestamp);
+    });
+
+    if (!window.Chart) {
+      setMiniNote("bpMiniChart", "bpMiniNote", "Charts unavailable (the Chart.js CDN is unreachable) — open History for the full table.");
+      setMiniNote("weightMiniChart", "weightMiniNote", "Charts unavailable (the Chart.js CDN is unreachable) — open History for the full table.");
+      return;
+    }
+
+    var sys = miniSeries(recent, "systolic_bp");
+    var dia = miniSeries(recent, "diastolic_bp");
+    if (hasEnough(sys) || hasEnough(dia)) {
+      setMiniNote("bpMiniChart", "bpMiniNote", "");
+      drawChart("bpMini", "bpMiniChart", {
+        type: "line",
+        data: {
+          labels: labels,
+          datasets: [
+            {
+              label: "Systolic",
+              data: sys,
+              borderColor: "#1565c0",
+              spanGaps: true,
+              tension: 0.25,
+              pointRadius: 2.5,
+            },
+            {
+              label: "Diastolic",
+              data: dia,
+              borderColor: "#b9761b",
+              spanGaps: true,
+              tension: 0.25,
+              pointRadius: 2.5,
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: true,
+          aspectRatio: 1.7,
+          plugins: { legend: { display: true, position: "bottom" } },
+          scales: {
+            x: { ticks: { maxTicksLimit: 5, maxRotation: 0 } },
+            y: { beginAtZero: false },
+          },
+        },
+      });
+    } else {
+      setMiniNote("bpMiniChart", "bpMiniNote", "Not enough blood pressure readings yet to show a trend.");
+    }
+
+    var weight = miniSeries(recent, "weight");
+    var bmi = miniSeries(recent, "bmi");
+    if (hasEnough(weight) || hasEnough(bmi)) {
+      setMiniNote("weightMiniChart", "weightMiniNote", "");
+      drawChart("weightMini", "weightMiniChart", {
+        type: "line",
+        data: {
+          labels: labels,
+          datasets: [
+            {
+              label: "Weight (kg)",
+              data: weight,
+              borderColor: "#0f6b53",
+              backgroundColor: "rgba(15, 107, 83, 0.12)",
+              fill: true,
+              spanGaps: true,
+              tension: 0.25,
+              pointRadius: 2.5,
+              yAxisID: "y",
+            },
+            {
+              label: "BMI",
+              data: bmi,
+              borderColor: "#8a5a00",
+              spanGaps: true,
+              tension: 0.25,
+              pointRadius: 2.5,
+              yAxisID: "y1",
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: true,
+          aspectRatio: 1.7,
+          plugins: { legend: { display: true, position: "bottom" } },
+          scales: {
+            x: { ticks: { maxTicksLimit: 5, maxRotation: 0 } },
+            y: { position: "left", beginAtZero: false },
+            y1: {
+              position: "right",
+              beginAtZero: false,
+              grid: { drawOnChartArea: false },
+            },
+          },
+        },
+      });
+    } else {
+      setMiniNote("weightMiniChart", "weightMiniNote", "Not enough weight readings yet to show a trend.");
+    }
+  }
+
+  function renderLatest(logs) {
+    var log = logs[0];
+    var prevLog = logs.length > 1 ? logs[1] : null;
+    // Release the previous reading's sparkline instances (their canvases are
+    // about to be removed) so repeated kiosk readings never leak charts.
+    sparkCharts.forEach(function (chart) {
+      chart.destroy();
+    });
+    sparkCharts = [];
+    var cards = document.getElementById("cards");
+    var supportCards = document.getElementById("supportCards");
+    U.clear(cards);
+    U.clear(supportCards);
+    renderAlertBanner(log);
+    renderHero(log);
+    renderMiniTrends(logs);
+
+    // Delta calculations (vs the previous reading, when both exist)
     var weightDelta = prevLog && !isMissing(log.weight) && !isMissing(prevLog.weight)
       ? createDelta(log.weight - prevLog.weight, "kg", true) : null;
     var bmiDelta = prevLog && !isMissing(log.bmi) && !isMissing(prevLog.bmi)
       ? createDelta(log.bmi - prevLog.bmi, "", true) : null;
     var bpDelta = prevLog && !isMissing(log.systolic_bp) && !isMissing(prevLog.systolic_bp)
-      ? createDelta(log.systolic_bp - prevLog.systolic_bp, "sys", true) : null;
+      ? createDelta(log.systolic_bp - prevLog.systolic_bp, "sys", true, false, 0) : null;
+    var tempDelta = prevLog && !isMissing(log.temperature) && !isMissing(prevLog.temperature)
+      ? createDelta(log.temperature - prevLog.temperature, "°C", true) : null;
+    var pulseDelta = prevLog && !isMissing(log.pulse_rate) && !isMissing(prevLog.pulse_rate)
+      ? createDelta(log.pulse_rate - prevLog.pulse_rate, "bpm", false, true, 0) : null;
+    var spo2Delta = prevLog && !isMissing(log.spo2) && !isMissing(prevLog.spo2)
+      ? createDelta(log.spo2 - prevLog.spo2, "%", false, false, 0) : null;
 
-    addCard(cards, "Weight", U.fmtNum(log.weight, 1, "kg"), null, isMissing(log.weight) ? "missing" : null, null, weightDelta);
-    addCard(cards, "Height", U.fmtNum(log.height, 1, "cm"), null, isMissing(log.height) ? "missing" : null);
-
-    var bmiCat = bmiCategory(log.bmi);
-    var bmiGauge = !isMissing(log.bmi)
-      ? createGauge("track-bmi", ((log.bmi - 15) / (35 - 15)) * 100, "15 Under", "35+ Obese") : null;
-    addCard(
-      cards,
-      "BMI",
-      isMissing(log.bmi) ? "—" : U.fmtNum(log.bmi, 1),
-      bmiCat ? "Category: " + bmiCat : "Not measured",
-      isMissing(log.bmi) ? "missing" : bmiCat === "Normal" ? null : "abnormal",
-      bmiGauge,
-      bmiDelta
-    );
-
-    var hasFever = !isMissing(log.temperature) && Number(log.temperature) >= 37.9;
-    var tempGauge = !isMissing(log.temperature)
-      ? createGauge("track-temp", ((log.temperature - 35) / (40 - 35)) * 100, "35°C", "40°C Fever") : null;
-    addCard(
-      cards,
-      "Temperature",
-      U.fmtNum(log.temperature, 1, "°C"),
-      isMissing(log.temperature) ? "Not measured" : hasFever ? "Elevated — fever range" : "Within normal range",
-      isMissing(log.temperature) ? "missing" : hasFever ? "abnormal" : null,
-      tempGauge
-    );
-
-    addCard(
-      cards,
-      "Pulse rate",
-      U.fmtNum(log.pulse_rate, 0, "bpm"),
-      null,
-      isMissing(log.pulse_rate) ? "missing" : null
-    );
-
-    var spo2Cat = spo2Category(log.spo2);
-    var spo2Gauge = !isMissing(log.spo2)
-      ? createGauge("track-spo2", ((log.spo2 - 80) / (100 - 80)) * 100, "80% Crit", "100% OK") : null;
-    addCard(
-      cards,
-      "SpO2",
-      U.fmtNum(log.spo2, 0, "%"),
-      spo2Cat ? "Category: " + spo2Cat : "Not measured",
-      isMissing(log.spo2) ? "missing" : spo2Cat === "Normal" ? null : "abnormal",
-      spo2Gauge
-    );
-
+    // Cards are ordered by clinical priority: actionable vitals first,
+    // anthropometrics (BMI / weight / height) last.
     var bpCat = bpCategory(log.systolic_bp, log.diastolic_bp);
     var bpGauge = !isMissing(log.systolic_bp)
       ? createGauge("track-bp", ((log.systolic_bp - 90) / (190 - 90)) * 100, "90 Normal", "190 Crisis") : null;
@@ -457,54 +751,204 @@
           ? null
           : "abnormal",
       bpGauge,
-      bpDelta
+      bpDelta,
+      spark(logs, "systolic_bp", "#1565c0")
     );
+
+    var spo2Cat = spo2Category(log.spo2);
+    var spo2Gauge = !isMissing(log.spo2)
+      ? createGauge("track-spo2", ((log.spo2 - 80) / (100 - 80)) * 100, "80% Crit", "100% OK") : null;
+    addCard(
+      cards,
+      "SpO2",
+      U.fmtNum(log.spo2, 0, "%"),
+      spo2Cat ? "Category: " + spo2Cat : "Not measured",
+      isMissing(log.spo2) ? "missing" : spo2Cat === "Normal" ? null : "abnormal",
+      spo2Gauge,
+      spo2Delta,
+      spark(logs, "spo2", "#0b3d30")
+    );
+
+    var hasFever = !isMissing(log.temperature) && Number(log.temperature) >= 37.9;
+    var tempGauge = !isMissing(log.temperature)
+      ? createGauge("track-temp", ((log.temperature - 35) / (40 - 35)) * 100, "35°C", "40°C Fever") : null;
+    addCard(
+      cards,
+      "Temperature",
+      U.fmtNum(log.temperature, 1, "°C"),
+      isMissing(log.temperature) ? "Not measured" : hasFever ? "Elevated — fever range" : "Within normal range",
+      isMissing(log.temperature) ? "missing" : hasFever ? "abnormal" : null,
+      tempGauge,
+      tempDelta,
+      spark(logs, "temperature", "#a5271d")
+    );
+
+    addCard(
+      supportCards,
+      "Pulse rate",
+      U.fmtNum(log.pulse_rate, 0, "bpm"),
+      null,
+      isMissing(log.pulse_rate) ? "missing" : null,
+      null,
+      pulseDelta,
+      spark(logs, "pulse_rate", "#0f6b53")
+    );
+
+    var bmiCat = bmiCategory(log.bmi);
+    var bmiGauge = !isMissing(log.bmi)
+      ? createGauge("track-bmi", ((log.bmi - 15) / (35 - 15)) * 100, "15 Under", "35+ Obese") : null;
+    addCard(
+      supportCards,
+      "BMI",
+      isMissing(log.bmi) ? "—" : U.fmtNum(log.bmi, 1),
+      bmiCat ? "Category: " + bmiCat : "Not measured",
+      isMissing(log.bmi) ? "missing" : bmiCat === "Normal" ? null : "abnormal",
+      bmiGauge,
+      bmiDelta,
+      spark(logs, "bmi", "#8a5a00")
+    );
+
+    addCard(supportCards, "Weight", U.fmtNum(log.weight, 1, "kg"), null, isMissing(log.weight) ? "missing" : null, null, weightDelta, spark(logs, "weight", "#0f6b53"));
+    addCard(supportCards, "Height", U.fmtNum(log.height, 1, "cm"), null, isMissing(log.height) ? "missing" : null);
+  }
+
+  function renderConsentChip(granted) {
+    var chip = document.getElementById("consentChip");
+    if (chip) {
+      chip.className = "status-chip " + (granted ? "granted" : "not-granted");
+      chip.textContent = granted ? "Consent: Granted" : "Consent: Not granted";
+      chip.title = granted
+        ? "Barangay Health Workers can open your individual records. Change this on the Consent page."
+        : "Barangay Health Workers only see anonymous totals. Change this on the Consent page.";
+    }
+    // Trust strip: plain-language explanation of what the chip means.
+    var explain = document.getElementById("consentExplain");
+    if (explain) {
+      U.clear(explain);
+      explain.appendChild(
+        document.createTextNode(
+          granted
+            ? "Barangay Health Workers can open your individual records — this is what you agreed to. "
+            : "Barangay Health Workers only see anonymous totals; they cannot open your individual records. "
+        )
+      );
+      explain.appendChild(U.el("a", { href: "/citizen/consent.html" }, "Change this on the Consent page"));
+      explain.appendChild(document.createTextNode("."));
+    }
   }
 
   async function initDashboard() {
     if (!API.requireRole("citizen")) return;
     var statusNode = document.getElementById("status");
     var cards = document.getElementById("cards");
+    var supportCards = document.getElementById("supportCards");
+    var headlineSection = document.getElementById("headlineSection");
+    var supportSection = document.getElementById("supportSection");
+    var trendsSection = document.getElementById("trendsSection");
     var emptyNode = document.getElementById("emptyState");
     var meta = document.getElementById("latestMeta");
+    var passportBtn = document.getElementById("passportBtn");
 
-    U.loading(statusNode, "Loading your latest reading…");
-    U.clear(cards);
-    U.clear(emptyNode);
-    meta.textContent = "";
+    var knownTimestamp = null;
+    var latestLog = null;
+    var loaded = false;
 
-    try {
-      var data = await API.apiFetch("/api/health-data");
-      U.clear(statusNode);
-      var logs = data.logs || [];
-      if (logs.length === 0) {
-        U.empty(
-          emptyNode,
-          "No readings yet. Visit the barangay health center kiosk to take your first measurement — it will appear here automatically."
-        );
-        return;
-      }
-      var latest = logs[0];
-      var prev = logs.length > 1 ? logs[1] : null;
-      meta.textContent = "Latest reading: " + U.fmtDT(latest.timestamp);
-      renderLatest(latest, prev);
-
-      var passportBtn = document.getElementById("passportBtn");
-      if (passportBtn) {
-        passportBtn.onclick = async function () {
-          var me = {};
-          try {
-            me = await API.apiFetch("/api/me");
-          } catch (e) {
-            me = { full_name: API.getName() };
-          }
-          showHealthPassportModal(me, latest);
-        };
-      }
-    } catch (error) {
-      U.clear(cards);
-      U.error(statusNode, error.message);
+    function setVitalsVisible(visible) {
+      [headlineSection, supportSection, trendsSection].forEach(function (node) {
+        if (node) node.hidden = !visible;
+      });
     }
+
+    renderGreeting();
+
+    async function load(options) {
+      var isAuto = Boolean(options && options.auto);
+      // First load shows a spinner; later refreshes keep content on screen
+      // (stale-while-revalidate) so nothing flashes.
+      if (!loaded && !isAuto) U.loading(statusNode, "Loading your latest reading…");
+      try {
+        var results = await Promise.all([
+          API.apiFetch("/api/health-data"),
+          API.apiFetch("/api/consent"),
+        ]);
+        U.clear(statusNode);
+        var logs = results[0].logs || [];
+        renderConsentChip(Boolean(results[1].consent_granted));
+
+        if (logs.length === 0) {
+          knownTimestamp = null;
+          latestLog = null;
+          U.clear(cards);
+          U.clear(supportCards);
+          setVitalsVisible(false);
+          renderHeroOnboarding();
+          U.clear(emptyNode);
+          meta.textContent = "";
+          if (passportBtn) passportBtn.hidden = true;
+          loaded = true;
+          return true;
+        }
+
+        U.clear(emptyNode);
+        setVitalsVisible(true);
+        if (passportBtn) passportBtn.hidden = false;
+        var latest = logs[0];
+        meta.textContent =
+          "Latest reading: " + U.fmtDT(latest.timestamp) + " · " + U.fmtAge(latest.timestamp);
+
+        // Re-render only when a new kiosk reading actually arrived, so the
+        // 60s poll never disturbs the screen or screen-reader users.
+        if (knownTimestamp !== latest.timestamp) {
+          knownTimestamp = latest.timestamp;
+          latestLog = latest;
+          renderLatest(logs);
+        }
+        loaded = true;
+        return true;
+      } catch (error) {
+        // First-load/manual failures surface an error with Retry; auto-refresh
+        // failures keep the stale (still valid) content on screen.
+        if (!isAuto) {
+          if (!loaded) {
+            U.clear(cards);
+            U.clear(supportCards);
+            renderHeroUnavailable();
+          }
+          U.error(statusNode, error.message, function () {
+            load({});
+          });
+        }
+        return false;
+      }
+    }
+
+    if (passportBtn) {
+      passportBtn.onclick = async function () {
+        if (!latestLog) return;
+        var me = {};
+        try {
+          me = await API.apiFetch("/api/me");
+        } catch (e) {
+          me = { full_name: API.getName() };
+        }
+        showHealthPassportModal(me, latestLog);
+      };
+    }
+
+    var refreshBtn = document.getElementById("citizenRefreshBtn");
+    if (refreshBtn) {
+      refreshBtn.addEventListener("click", async function () {
+        var ok = await load({});
+        if (ok) U.toast("Dashboard refreshed", "success");
+      });
+    }
+
+    await load({});
+
+    // Gentle 60s poll: skips hidden tabs; re-renders only on new data.
+    setInterval(function () {
+      if (!document.hidden) load({ auto: true });
+    }, 60000);
   }
 
   /* ---------------- history ---------------- */
@@ -589,7 +1033,7 @@
     var table = U.el("table");
     var thead = U.el("thead");
     var headRow = U.el("tr");
-    ["Timestamp (UTC)", "Weight (kg)", "Height (cm)", "BMI", "Temp (°C)", "Pulse (bpm)", "SpO2 (%)", "Blood pressure"]
+    ["Time (PHT)", "Weight (kg)", "Height (cm)", "BMI", "Temp (°C)", "Pulse (bpm)", "SpO2 (%)", "Blood pressure"]
       .forEach(function (label, index) {
         headRow.appendChild(U.el("th", index === 0 ? null : { class: "num" }, label));
       });
@@ -933,7 +1377,7 @@
     var table = U.el("table");
     var thead = U.el("thead");
     var headRow = U.el("tr");
-    ["Timestamp (UTC)", "Action", "IP address"].forEach(function (label) {
+    ["Time (PHT)", "Action", "IP address"].forEach(function (label) {
       headRow.appendChild(U.el("th", null, label));
     });
     thead.appendChild(headRow);

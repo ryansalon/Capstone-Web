@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Community dashboard — Barangay Health Monitor</title>
+  <title>Barangay Health Desk — Barangay Health Monitor</title>
   <link rel="icon" href="data:,">
   <link rel="stylesheet" href="/css/style.css">
 </head>
@@ -21,11 +21,11 @@
     </nav>
   </header>
 
-  <main id="main" class="page">
-    <h1>Community health dashboard</h1>
-    <p class="lede">Anonymous aggregates for the barangay. Individual records are never shown here.</p>
+  <main id="main" class="page portal-staff">
+    <h1>Barangay Health Desk</h1>
+    <p class="lede">Live aggregates for the barangay — individual records and names are never shown on this board.</p>
 
-    <div class="filters" style="align-items:center;">
+    <div class="filters filters-live">
       <div class="field">
         <label for="period">Period</label>
         <select id="period">
@@ -36,38 +36,88 @@
         </select>
       </div>
       <button id="refreshBtn" class="btn btn-secondary" type="button">Refresh</button>
-      <div style="display:flex; align-items:center; gap:0.75rem; margin-left:auto;">
+      <span id="rangeLabel" class="range-label"></span>
+      <div class="filters-live-right">
         <span id="liveStatus" class="live-badge"><span class="pulse-dot"></span> <span id="liveText">Live (30s)</span></span>
-        <label style="display:inline-flex; align-items:center; gap:0.35rem; font-size:0.85rem; font-weight:600; cursor:pointer;">
+        <label class="auto-toggle">
           <input type="checkbox" id="autoRefreshToggle" checked> Auto
         </label>
       </div>
     </div>
 
+    <div id="lastUpdated" class="last-updated"></div>
     <div id="status" aria-live="polite"></div>
+    <div id="emptyState"></div>
 
+    <!-- 1. At a glance: period KPIs, registry totals, consent + kiosk context -->
     <section class="section" aria-labelledby="totalsHeading">
-      <h2 id="totalsHeading">Totals</h2>
-      <div id="totals" class="totals"></div>
+      <h2 id="totalsHeading">At a glance</h2>
+      <div class="totals-group">
+        <span class="section-caption">In this period</span>
+        <div id="totals" class="totals"></div>
+      </div>
+      <div class="totals-group">
+        <span class="section-caption">Registry (all time)</span>
+        <div id="registryTotals" class="totals"></div>
+      </div>
+      <div class="context-row">
+        <div class="chart-box context-panel">
+          <h3>Consent coverage</h3>
+          <canvas id="consentDonut" role="img" aria-label="Citizens who granted consent versus not"></canvas>
+          <p id="consentDonutText" class="donut-summary">Loading coverage…</p>
+        </div>
+        <div class="chart-box context-panel">
+          <h3>Kiosk freshness</h3>
+          <div id="kioskFreshness"><p class="freshness none">Checking the latest reading…</p></div>
+        </div>
+      </div>
     </section>
 
-    <section class="section" aria-labelledby="distHeading">
-      <h2 id="distHeading">Measurements by category</h2>
-      <div class="grid-2" id="distributions"></div>
-    </section>
-
-    <section class="grid-2 section">
-      <div class="chart-box">
-        <h2>Fever trend (temperature ≥ 37.9 °C)</h2>
+    <!-- 2. Community trend: the surveillance signal, promoted to hero -->
+    <section class="section" aria-labelledby="trendHeading">
+      <h2 id="trendHeading">Community trend</h2>
+      <div class="chart-box chart-hero">
+        <h3>Fever trend (temperature ≥ 37.9 °C)</h3>
         <canvas id="feverChart" height="190" aria-label="Fever cases per day" role="img"></canvas>
         <div id="feverFallback"></div>
       </div>
-      <div class="card-surface">
-        <h2>Top concerns</h2>
-        <ul id="concerns" class="concern-list"></ul>
-        <p id="concernsEmpty" class="status empty" hidden>No concerns recorded in this period.</p>
+    </section>
+
+    <!-- 3. Distributions: supporting row -->
+    <section class="section" aria-labelledby="distHeading">
+      <h2 id="distHeading">Measurements by category</h2>
+      <div class="grid-3" id="distributions"></div>
+    </section>
+
+    <!-- 4. What's driving alerts + quick links -->
+    <section class="section" aria-labelledby="alertsHeading">
+      <div class="grid-2">
+        <div class="card-surface">
+          <h2 id="alertsHeading">What's driving alerts</h2>
+          <p class="muted" style="font-size:0.85rem; margin:-0.4rem 0 0.7rem;">Derived from this period's category counts — a guide for follow-up, not a per-alert breakdown.</p>
+          <ul id="concerns" class="concern-list"></ul>
+          <p id="concernsEmpty" class="status empty" hidden>No concerns recorded in this period.</p>
+          <a class="card-link" href="/bhw/search.html">Review citizens →</a>
+        </div>
+        <div class="card-surface">
+          <h2>Quick actions</h2>
+          <div class="quick-links">
+            <a class="quick-link" href="/bhw/search.html">Find citizens<small>Search the registry and open records</small></a>
+            <a class="quick-link" href="/bhw/reports.html">Reports<small>Summary, alerts and printable output</small></a>
+            <a class="quick-link" href="/bhw/audit-trail.html">Audit trail<small>Who viewed what, and when</small></a>
+          </div>
+        </div>
       </div>
     </section>
+
+    <!-- 5. Privacy guarantee, visible instead of fine print -->
+    <div class="privacy-badge" role="note">
+      <span class="shield" aria-hidden="true">🛡️</span>
+      <div>
+        <strong>Aggregates only</strong>
+        Individual records and names are never shown on this dashboard. Citizens who have not granted consent are still counted in the totals — but never identified.
+      </div>
+    </div>
   </main>
 
   <footer class="foot">
