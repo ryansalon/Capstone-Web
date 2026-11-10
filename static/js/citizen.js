@@ -334,14 +334,20 @@
     dismissBtn.onclick = closeDialog;
   }
 
-function addCard(container, label, value, sub, tone, gauge, delta, spark) {
+function addCard(container, label, value, sub, tone, gauge, delta, spark, pendingSparks) {
     var card = U.el("div", { class: "card" + (tone ? " " + tone : "") });
     card.appendChild(U.el("div", { class: "label" }, label));
     card.appendChild(U.el("div", { class: "value" }, value));
     if (sub) card.appendChild(U.el("div", { class: "sub" }, sub));
     if (delta) card.appendChild(delta);
     if (gauge) card.appendChild(gauge);
-    if (spark) renderSparkline(card, spark.values, spark.color);
+    if (spark) {
+      if (pendingSparks) {
+        pendingSparks.push({ card: card, values: spark.values, color: spark.color });
+      } else {
+        renderSparkline(card, spark.values, spark.color);
+      }
+    }
     container.appendChild(card);
     return card;
 }
@@ -612,6 +618,11 @@ function addCard(container, label, value, sub, tone, gauge, delta, spark) {
     var dia = miniSeries(recent, "diastolic_bp");
     if (hasEnough(sys) || hasEnough(dia)) {
       setMiniNote("bpMiniChart", "bpMiniNote", "");
+      var bpSummary = document.getElementById("bpMiniSummary");
+      if (bpSummary && recent[0]) {
+        bpSummary.textContent = "Recent blood pressure trend. Latest reading is " +
+          (recent[0].systolic_bp || "—") + "/" + (recent[0].diastolic_bp || "—") + " mmHg.";
+      }
       drawChart("bpMini", "bpMiniChart", {
         type: "line",
         data: {
@@ -654,6 +665,11 @@ function addCard(container, label, value, sub, tone, gauge, delta, spark) {
     var bmi = miniSeries(recent, "bmi");
     if (hasEnough(weight) || hasEnough(bmi)) {
       setMiniNote("weightMiniChart", "weightMiniNote", "");
+      var weightSummary = document.getElementById("weightMiniSummary");
+      if (weightSummary && recent[0]) {
+        weightSummary.textContent = "Recent weight and BMI trend. Latest weight is " +
+          (recent[0].weight || "—") + " kg, BMI is " + (recent[0].bmi || "—") + ".";
+      }
       drawChart("weightMini", "weightMiniChart", {
         type: "line",
         data: {
@@ -719,6 +735,10 @@ function addCard(container, label, value, sub, tone, gauge, delta, spark) {
     renderHero(log);
     renderMiniTrends(logs);
 
+    var fragHeadline = document.createDocumentFragment();
+    var fragSupport = document.createDocumentFragment();
+    var pendingSparks = [];
+
     // Delta calculations (vs the previous reading, when both exist)
     var weightDelta = prevLog && !isMissing(log.weight) && !isMissing(prevLog.weight)
       ? createDelta(log.weight - prevLog.weight, "kg", true) : null;
@@ -739,7 +759,7 @@ function addCard(container, label, value, sub, tone, gauge, delta, spark) {
     var bpGauge = !isMissing(log.systolic_bp)
       ? createGauge("track-bp", ((log.systolic_bp - 90) / (190 - 90)) * 100, "90 Normal", "190 Crisis") : null;
     addCard(
-      cards,
+      fragHeadline,
       "Blood pressure",
       isMissing(log.systolic_bp) || isMissing(log.diastolic_bp)
         ? "—"
@@ -752,64 +772,78 @@ function addCard(container, label, value, sub, tone, gauge, delta, spark) {
           : "abnormal",
       bpGauge,
       bpDelta,
-      spark(logs, "systolic_bp", "#1565c0")
+      spark(logs, "systolic_bp", "#1565c0"),
+      pendingSparks
     );
 
     var spo2Cat = spo2Category(log.spo2);
     var spo2Gauge = !isMissing(log.spo2)
       ? createGauge("track-spo2", ((log.spo2 - 80) / (100 - 80)) * 100, "80% Crit", "100% OK") : null;
     addCard(
-      cards,
+      fragHeadline,
       "SpO2",
       U.fmtNum(log.spo2, 0, "%"),
       spo2Cat ? "Category: " + spo2Cat : "Not measured",
       isMissing(log.spo2) ? "missing" : spo2Cat === "Normal" ? null : "abnormal",
       spo2Gauge,
       spo2Delta,
-      spark(logs, "spo2", "#0b3d30")
+      spark(logs, "spo2", "#0b3d30"),
+      pendingSparks
     );
 
     var hasFever = !isMissing(log.temperature) && Number(log.temperature) >= 37.9;
     var tempGauge = !isMissing(log.temperature)
       ? createGauge("track-temp", ((log.temperature - 35) / (40 - 35)) * 100, "35°C", "40°C Fever") : null;
     addCard(
-      cards,
+      fragHeadline,
       "Temperature",
       U.fmtNum(log.temperature, 1, "°C"),
       isMissing(log.temperature) ? "Not measured" : hasFever ? "Elevated — fever range" : "Within normal range",
       isMissing(log.temperature) ? "missing" : hasFever ? "abnormal" : null,
       tempGauge,
       tempDelta,
-      spark(logs, "temperature", "#a5271d")
+      spark(logs, "temperature", "#a5271d"),
+      pendingSparks
     );
 
     addCard(
-      supportCards,
+      fragSupport,
       "Pulse rate",
       U.fmtNum(log.pulse_rate, 0, "bpm"),
       null,
       isMissing(log.pulse_rate) ? "missing" : null,
       null,
       pulseDelta,
-      spark(logs, "pulse_rate", "#0f6b53")
+      spark(logs, "pulse_rate", "#0f6b53"),
+      pendingSparks
     );
 
     var bmiCat = bmiCategory(log.bmi);
     var bmiGauge = !isMissing(log.bmi)
       ? createGauge("track-bmi", ((log.bmi - 15) / (35 - 15)) * 100, "15 Under", "35+ Obese") : null;
     addCard(
-      supportCards,
+      fragSupport,
       "BMI",
       isMissing(log.bmi) ? "—" : U.fmtNum(log.bmi, 1),
       bmiCat ? "Category: " + bmiCat : "Not measured",
       isMissing(log.bmi) ? "missing" : bmiCat === "Normal" ? null : "abnormal",
       bmiGauge,
       bmiDelta,
-      spark(logs, "bmi", "#8a5a00")
+      spark(logs, "bmi", "#8a5a00"),
+      pendingSparks
     );
 
-    addCard(supportCards, "Weight", U.fmtNum(log.weight, 1, "kg"), null, isMissing(log.weight) ? "missing" : null, null, weightDelta, spark(logs, "weight", "#0f6b53"));
-    addCard(supportCards, "Height", U.fmtNum(log.height, 1, "cm"), null, isMissing(log.height) ? "missing" : null);
+    addCard(fragSupport, "Weight", U.fmtNum(log.weight, 1, "kg"), null, isMissing(log.weight) ? "missing" : null, null, weightDelta, spark(logs, "weight", "#0f6b53"), pendingSparks);
+    addCard(fragSupport, "Height", U.fmtNum(log.height, 1, "cm"), null, isMissing(log.height) ? "missing" : null);
+
+    // Batch append to DOM in a single reflow/repaint pass
+    cards.appendChild(fragHeadline);
+    supportCards.appendChild(fragSupport);
+
+    // Render sparklines after canvases are attached to live DOM
+    pendingSparks.forEach(function (p) {
+      renderSparkline(p.card, p.values, p.color);
+    });
   }
 
   function renderConsentChip(granted) {
@@ -938,8 +972,13 @@ function addCard(container, label, value, sub, tone, gauge, delta, spark) {
     var refreshBtn = document.getElementById("citizenRefreshBtn");
     if (refreshBtn) {
       refreshBtn.addEventListener("click", async function () {
-        var ok = await load({});
-        if (ok) U.toast("Dashboard refreshed", "success");
+        setBusy(refreshBtn, true, "Refreshing…");
+        try {
+          var ok = await load({});
+          if (ok) U.toast("Dashboard refreshed", "success");
+        } finally {
+          setBusy(refreshBtn, false);
+        }
       });
     }
 

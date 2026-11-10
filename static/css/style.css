@@ -1,31 +1,33 @@
 /* Smart Barangay Health Monitoring Kiosk - global styles
- * "Ops shell" design system: fixed dark sidebar, cool slate canvas, green as
- * accent only, bold display type, tabular data readouts.
+ * Design language: deep forest shell, warm stone canvas, emerald accent,
+ * editorial display type and tabular data readouts.
  * No external font CDN: the spec allows Chart.js only; a local system font
  * stack keeps the site fully offline-capable and avoids leaking visitor IPs. */
 
 :root {
-  /* neutrals — slate canvas, ink text */
-  --canvas: #f2f4f7;
-  --ink: #101828;
-  --ink-soft: #475467;
-  --line: #e4e7ec;
-  --line-strong: #d0d5dd;
+  /* neutrals — stone canvas, near-black ink */
+  --canvas: #eef1ee;
+  --paper: #f6f3ec;
+  --ink: #101a16;
+  --ink-soft: #4c5a54;
+  --line: #e1e6e1;
+  --line-strong: #ccd4cd;
   --white: #ffffff;
 
-  /* dark ops shell — sidebar, KPI tiles, toasts, modal headers */
-  --shell: #0b1d18;
-  --shell-line: rgba(255, 255, 255, 0.09);
-  --shell-text: #c6d6d0;
-  --mint: #7ee0bd;
+  /* dark forest shell — sidebar, KPI tiles, toasts, modal headers */
+  --shell: #071811;
+  --shell-2: #0d2a21;
+  --shell-line: rgba(255, 255, 255, 0.08);
+  --shell-text: #b9ccc4;
+  --mint: #5fe3b2;
 
   /* brand green — accent only: actions, links, focus, success tones */
   --green-900: #06392e;
-  --green-800: #085343;
-  --green-700: #0b6b53;
-  --green-600: #109376;
-  --green-100: #d9f2e9;
-  --green-050: #f4faf8;
+  --green-800: #07503f;
+  --green-700: #0a6b52;
+  --green-600: #0f9075;
+  --green-100: #d9f3e8;
+  --green-050: #f3faf6;
 
   /* semantic tones */
   --amber-bg: #fff6e0;
@@ -35,8 +37,8 @@
   --blue-bg: #e8f4fd;
   --blue-fg: #1565c0;
 
-  --radius: 12px;
-  --shadow: 0 1px 2px rgba(16, 24, 40, 0.05), 0 12px 28px rgba(16, 24, 40, 0.07);
+  --radius: 14px;
+  --shadow: 0 1px 2px rgba(16, 26, 22, 0.04), 0 12px 28px rgba(16, 26, 22, 0.06);
   --font: "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
 }
 
@@ -57,9 +59,9 @@ body {
   min-height: 100vh;
 }
 
-/* Citizen pages run on a warmer bone canvas; staff pages stay cool slate. */
+/* Citizen pages run on a warmer paper canvas; staff pages stay stone. */
 body[data-page^="citizen"] {
-  background: #f7f5f1;
+  background: var(--paper);
 }
 
 a {
@@ -91,6 +93,37 @@ a:hover {
 .skip-link:focus {
   left: 0.5rem;
   top: 0.5rem;
+}
+
+#main:focus {
+  outline: none;
+}
+
+#main:focus-visible {
+  outline: 3px solid var(--green-600);
+  outline-offset: 2px;
+}
+
+/* Screen-reader-only utility for WCAG accessible alternatives */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Accessible button icon decorator */
+.btn-icon {
+  display: inline-block;
+  margin-right: 0.35rem;
+  font-style: normal;
+  vertical-align: -0.05em;
+  line-height: 1;
 }
 
 /* ---------- shell: fixed dark sidebar + light workspace ---------- */
@@ -663,6 +696,50 @@ h2 {
   color: var(--ink-soft);
   font-weight: 600;
   font-size: 1.05rem;
+}
+
+/* Skeleton loader states to prevent layout shift */
+.skeleton-card {
+  min-height: 110px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.6rem;
+  pointer-events: none;
+}
+
+.skeleton {
+  background: linear-gradient(90deg, rgba(16, 26, 22, 0.05) 25%, rgba(16, 26, 22, 0.1) 50%, rgba(16, 26, 22, 0.05) 75%);
+  background-size: 200% 100%;
+  animation: skeletonShimmer 1.5s infinite;
+  border-radius: 4px;
+}
+
+.skeleton-label {
+  width: 45%;
+  height: 0.75rem;
+}
+
+.skeleton-value {
+  width: 70%;
+  height: 1.6rem;
+}
+
+.skeleton-sub {
+  width: 55%;
+  height: 0.75rem;
+}
+
+@keyframes skeletonShimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton {
+    animation: none;
+    background: rgba(16, 26, 22, 0.07);
+  }
 }
 
 /* ---------- totals ---------- */
@@ -1518,6 +1595,19 @@ footer.foot {
 }
 
 /* ---------- Table Search & Pagination Controls ---------- */
+.history-table-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.history-table-header h2 {
+  margin: 0;
+}
+
 .table-controls {
   display: flex;
   flex-wrap: wrap;

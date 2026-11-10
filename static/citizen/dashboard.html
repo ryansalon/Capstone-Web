@@ -25,7 +25,7 @@
     </aside>
     <div class="workspace">
 
-    <main id="main" class="page portal-citizen">
+    <main id="main" class="page portal-citizen" tabindex="-1">
       <!-- Hero status panel: greeting, plain-language status, next step. -->
       <section class="hero" id="heroPanel" aria-labelledby="heroGreeting">
         <div class="hero-body">
@@ -46,9 +46,25 @@
       </div>
       <p class="trust-line" id="consentExplain"></p>
 
-      <section class="section" id="headlineSection" aria-labelledby="headlineHeading" hidden>
+      <section class="section" id="headlineSection" aria-labelledby="headlineHeading">
         <h2 id="headlineHeading">Key vitals</h2>
-        <div id="cards" class="cards cards-headline" aria-live="polite"></div>
+        <div id="cards" class="cards cards-headline" aria-live="polite">
+          <div class="card skeleton-card" aria-hidden="true">
+            <div class="skeleton skeleton-label"></div>
+            <div class="skeleton skeleton-value"></div>
+            <div class="skeleton skeleton-sub"></div>
+          </div>
+          <div class="card skeleton-card" aria-hidden="true">
+            <div class="skeleton skeleton-label"></div>
+            <div class="skeleton skeleton-value"></div>
+            <div class="skeleton skeleton-sub"></div>
+          </div>
+          <div class="card skeleton-card" aria-hidden="true">
+            <div class="skeleton skeleton-label"></div>
+            <div class="skeleton skeleton-value"></div>
+            <div class="skeleton skeleton-sub"></div>
+          </div>
+        </div>
       </section>
       <section class="section" id="supportSection" aria-labelledby="supportHeading" hidden>
         <h2 id="supportHeading">Your other measurements</h2>
@@ -62,11 +78,13 @@
           <div class="chart-box">
             <h3>Blood pressure — last 10 readings</h3>
             <canvas id="bpMiniChart" role="img" aria-label="Systolic and diastolic blood pressure trend for your last readings"></canvas>
+            <div id="bpMiniSummary" class="sr-only" aria-live="polite"></div>
             <div id="bpMiniNote" class="muted"></div>
           </div>
           <div class="chart-box">
             <h3>Weight &amp; BMI — last 10 readings</h3>
             <canvas id="weightMiniChart" role="img" aria-label="Weight and BMI trend for your last readings"></canvas>
+            <div id="weightMiniSummary" class="sr-only" aria-live="polite"></div>
             <div id="weightMiniNote" class="muted"></div>
           </div>
         </div>
@@ -107,7 +125,7 @@
         <div class="btn-row">
           <a class="btn btn-secondary" href="/citizen/history.html">View history &amp; charts</a>
           <a class="btn btn-secondary" href="/citizen/consent.html">Manage consent</a>
-          <button id="passportBtn" class="btn btn-primary" type="button">🪪 Print my health passport</button>
+          <button id="passportBtn" class="btn btn-primary" type="button"><span class="btn-icon" aria-hidden="true">🪪</span> Print my health passport</button>
         </div>
       </section>
     </main>
