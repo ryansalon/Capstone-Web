@@ -1279,9 +1279,7 @@ def register_routes(app: Flask):
     @app.route("/")
     def index():
         resp = send_from_directory(STATIC_DIR, "index.html")
-        resp.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
-        resp.headers["Pragma"] = "no-cache"
-        resp.headers["Expires"] = "0"
+        resp.headers["Cache-Control"] = "no-cache, must-revalidate"
         return resp
 
     @app.route("/<path:filename>")
@@ -1294,9 +1292,15 @@ def register_routes(app: Flask):
         full_path = os.path.join(STATIC_DIR, normalized)
         if os.path.isfile(full_path):
             resp = send_from_directory(STATIC_DIR, normalized)
-            resp.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
-            resp.headers["Pragma"] = "no-cache"
-            resp.headers["Expires"] = "0"
+            ext = os.path.splitext(normalized)[1].lower()
+            if ext in (".png", ".svg", ".jpg", ".jpeg", ".ico", ".webp"):
+                # Cache static images so they never blink, flicker, or re-download on interaction/navigation
+                resp.headers["Cache-Control"] = "public, max-age=86400, stale-while-revalidate=604800"
+            elif ext in (".css", ".js"):
+                # Style and scripts use version query strings (e.g. ?v=5)
+                resp.headers["Cache-Control"] = "public, max-age=3600"
+            else:
+                resp.headers["Cache-Control"] = "no-cache, must-revalidate"
             return resp
         return jsonify({"error": "not found"}), 404
 

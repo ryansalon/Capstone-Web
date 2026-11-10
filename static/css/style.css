@@ -211,11 +211,11 @@ a:hover {
   padding: 0 !important;
   box-shadow: none !important;
   filter: none !important;
-  transition: transform 0.15s ease;
-}
-
-.brand-logo:hover {
-  transform: scale(1.08);
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+  contain: layout paint;
+  transform: translateZ(0);
+  backface-visibility: hidden;
 }
 
 .brand-text {
@@ -1300,11 +1300,11 @@ th.num {
   padding: 0 !important;
   box-shadow: none !important;
   filter: none !important;
-  transition: transform 0.2s ease;
-}
-
-.auth-partner-logo:hover {
-  transform: translateY(-2px) scale(1.04);
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+  contain: layout paint;
+  transform: translateZ(0);
+  backface-visibility: hidden;
 }
 
 .auth-brand-name {
