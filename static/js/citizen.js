@@ -952,7 +952,7 @@ function addCard(container, label, value, sub, tone, gauge, delta, spark, pendin
           renderHeroOnboarding();
           U.clear(emptyNode);
           meta.textContent = "";
-          if (passportBtn) passportBtn.hidden = true;
+          if (passportBtn) passportBtn.hidden = false;
           loaded = true;
           return true;
         }
@@ -992,12 +992,14 @@ function addCard(container, label, value, sub, tone, gauge, delta, spark, pendin
 
     if (passportBtn) {
       passportBtn.onclick = async function () {
-        if (!latestLog) return;
+        setBusy(passportBtn, true, "Opening…");
         var me = {};
         try {
           me = await API.apiFetch("/api/me");
         } catch (e) {
           me = { full_name: API.getName() };
+        } finally {
+          setBusy(passportBtn, false);
         }
         showHealthPassportModal(me, latestLog);
       };
@@ -1377,6 +1379,23 @@ function addCard(container, label, value, sub, tone, gauge, delta, spark, pendin
     var statusNode = document.getElementById("status");
     var tableWrap = document.getElementById("tableWrap");
     var section = document.getElementById("chartsSection");
+    var passportBtn = document.getElementById("passportBtnHistory");
+
+    if (passportBtn) {
+      passportBtn.onclick = async function () {
+        setBusy(passportBtn, true, "Opening…");
+        var me = {};
+        try {
+          me = await API.apiFetch("/api/me");
+        } catch (e) {
+          me = { full_name: API.getName() };
+        } finally {
+          setBusy(passportBtn, false);
+        }
+        var latest = (historyState.logs && historyState.logs.length) ? historyState.logs[0] : null;
+        showHealthPassportModal(me, latest);
+      };
+    }
 
     U.loading(statusNode, "Loading your readings…");
     U.clear(tableWrap);
@@ -1386,6 +1405,7 @@ function addCard(container, label, value, sub, tone, gauge, delta, spark, pendin
       var data = await API.apiFetch("/api/health-data");
       U.clear(statusNode);
       var logs = data.logs || [];
+      historyState.logs = logs;
       if (logs.length === 0) {
         U.empty(
           statusNode,
@@ -1396,19 +1416,6 @@ function addCard(container, label, value, sub, tone, gauge, delta, spark, pendin
       }
       renderLogTable(logs);
       renderCharts(logs);
-
-      var passportBtn = document.getElementById("passportBtnHistory");
-      if (passportBtn) {
-        passportBtn.onclick = async function () {
-          var me = {};
-          try {
-            me = await API.apiFetch("/api/me");
-          } catch (e) {
-            me = { full_name: API.getName() };
-          }
-          showHealthPassportModal(me, logs[0]);
-        };
-      }
     } catch (error) {
       section.hidden = true;
       U.clear(tableWrap);
