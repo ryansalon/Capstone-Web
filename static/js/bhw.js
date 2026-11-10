@@ -338,6 +338,7 @@
     concerns.forEach(function (item) {
       if (item[1] > max) max = item[1];
     });
+    var frag = document.createDocumentFragment();
     concerns.forEach(function (item) {
       var row = U.el("li");
       var head = U.el("div", { class: "concern-head" });
@@ -351,8 +352,9 @@
       bar.style.width = Math.max(4, Math.round((item[1] / max) * 100)) + "%";
       track.appendChild(bar);
       row.appendChild(track);
-      list.appendChild(row);
+      frag.appendChild(row);
     });
+    list.appendChild(frag);
   }
 
   /* Resolved date range for the period select (shown next to the filter). */
@@ -663,6 +665,7 @@
     table.appendChild(thead);
 
     var tbody = U.el("tbody");
+    var rowsFrag = document.createDocumentFragment();
     citizens.forEach(function (citizen) {
       var row = U.el("tr");
       if (citizen.consent) {
@@ -689,8 +692,9 @@
       });
       actionCell.appendChild(button);
       row.appendChild(actionCell);
-      tbody.appendChild(row);
+      rowsFrag.appendChild(row);
     });
+    tbody.appendChild(rowsFrag);
     table.appendChild(tbody);
     tableWrap.appendChild(table);
     results.appendChild(tableWrap);

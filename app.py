@@ -58,7 +58,7 @@ API_KEY = os.getenv("API_KEY", "dev-kiosk-key")
 ENV = os.getenv("FLASK_ENV", os.getenv("ENV", "development")).lower()
 
 if ENV in ("production", "prod") and (
-    JWT_SECRET == "change-me-jwt-secret-min-32-chars-long" or API_KEY == "dev-kiosk-key"
+    JWT_SECRET.startswith("change-me-") or API_KEY == "dev-kiosk-key"
 ):
     raise RuntimeError("FATAL: JWT_SECRET and API_KEY must be configured in production.")
 
@@ -1008,45 +1008,33 @@ def register_routes(app: Flask):
             for note, bhw_name in rows
         ]
 
-    def notes_gate(citizen_id, action):
-        """Open a session, verify consent, and audit the access."""
-        session = get_db().Session()
+    def check_consent_and_audit(session, citizen_id, action):
         citizen = session.get(User, citizen_id)
         if citizen is None:
-            session.close()
-            return None, None, (jsonify({"error": "citizen not found"}), 404)
+            return None, (jsonify({"error": "citizen not found"}), 404)
         consent_row = latest_consent(session, citizen.id)
         if not (consent_row and consent_row.consent_granted == 1):
-            session.close()
-            return None, None, (
-                jsonify({"error": "citizen has not granted consent"}),
-                403,
-            )
+            return None, (jsonify({"error": "citizen has not granted consent"}), 403)
         write_audit(session, g.user.id, citizen.id, action)
-        return session, citizen, None
+        return citizen, None
 
     @app.route("/api/bhw/citizen/<int:citizen_id>/notes", methods=["GET", "POST"])
     @require_staff
     def citizen_notes(citizen_id):
-        if request.method == "GET":
-            session, citizen, error = notes_gate(citizen_id, "view_notes")
+        with get_db().session() as session:
+            if request.method == "GET":
+                citizen, error = check_consent_and_audit(session, citizen_id, "view_notes")
+                if error:
+                    return error
+                notes = notes_payload(session, citizen)
+                return jsonify({"notes": notes})
+
+            citizen, error = check_consent_and_audit(session, citizen_id, "add_note")
             if error:
                 return error
-            try:
-                notes = notes_payload(session, citizen)
-                session.commit()
-            finally:
-                session.close()
-            return jsonify({"notes": notes})
-
-        session, citizen, error = notes_gate(citizen_id, "add_note")
-        if error:
-            return error
-        try:
             data = json_body()
             note_text = data.get("note")
             if not isinstance(note_text, str) or not note_text.strip():
-                session.rollback()
                 return jsonify({"error": "note is empty"}), 400
             session.add(
                 BhwNote(
@@ -1058,18 +1046,15 @@ def register_routes(app: Flask):
             )
             session.flush()
             notes = notes_payload(session, citizen)
-            session.commit()
-        finally:
-            session.close()
-        return jsonify({"notes": notes})
+            return jsonify({"notes": notes})
 
     @app.route("/api/bhw/citizen/<int:citizen_id>/refer", methods=["POST"])
     @require_staff
     def refer_citizen(citizen_id):
-        session, citizen, error = notes_gate(citizen_id, "refer_to_rhu")
-        if error:
-            return error
-        try:
+        with get_db().session() as session:
+            citizen, error = check_consent_and_audit(session, citizen_id, "refer_to_rhu")
+            if error:
+                return error
             data = json_body()
             note_text = data.get("note")
             if isinstance(note_text, str) and note_text.strip():
@@ -1081,10 +1066,7 @@ def register_routes(app: Flask):
                         created_at=utcnow(),
                     )
                 )
-            session.commit()
-        finally:
-            session.close()
-        return jsonify({"ok": True}), 201
+            return jsonify({"ok": True}), 201
 
     def audit_rows(session, start=None, end=None, bhw_name=None, limit=500):
         bhw_alias = aliased(User)

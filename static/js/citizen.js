@@ -1080,6 +1080,7 @@ function addCard(container, label, value, sub, tone, gauge, delta, spark, pendin
     table.appendChild(thead);
 
     var tbody = U.el("tbody");
+    var rowsFrag = document.createDocumentFragment();
     pageSlice.forEach(function (log) {
       var row = U.el("tr");
       row.appendChild(U.el("td", { class: "nowrap", title: U.fmtUTC(log.timestamp) }, U.fmtDT(log.timestamp)));
@@ -1096,8 +1097,9 @@ function addCard(container, label, value, sub, tone, gauge, delta, spark, pendin
       ].forEach(function (value) {
         row.appendChild(U.el("td", { class: "num" }, value));
       });
-      tbody.appendChild(row);
+      rowsFrag.appendChild(row);
     });
+    tbody.appendChild(rowsFrag);
     table.appendChild(tbody);
     tableWrap.appendChild(table);
     wrap.appendChild(tableWrap);

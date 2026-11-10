@@ -778,3 +778,21 @@ def test_static_site_and_json_404(client):
     missing_api = client.get("/api/does-not-exist")
     assert missing_api.status_code == 404
     assert missing_api.get_json() == {"error": "not found"}
+
+
+def test_rate_limiter_and_consent_subquery(client):
+    from app import check_rate_limit, latest_consent_map, get_db
+
+    # 1. Rate limiter test
+    for _ in range(5):
+        assert check_rate_limit("test-ip", max_attempts=5, window_seconds=10) is True
+    assert check_rate_limit("test-ip", max_attempts=5, window_seconds=10) is False
+
+    # 2. Consent subquery test
+    grant_consent(client, granted=True)
+    with client.application.app_context():
+        with get_db().session() as session:
+            consent_map = latest_consent_map(session)
+            assert 1 in consent_map
+            assert consent_map[1].consent_granted == 1
+

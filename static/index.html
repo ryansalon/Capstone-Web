@@ -9,14 +9,14 @@
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to main content</a>
-  <main id="main" class="auth-main">
+  <main id="main" class="auth-main" tabindex="-1">
     <div class="auth-card">
       <h1>Barangay Health Monitor</h1>
       <p class="lede">Checking your session…</p>
       <noscript>
         <p class="form-error">JavaScript is required to use this site.</p>
       </noscript>
-      <p><a href="/landing.html">Explore Platform</a> · <a href="/citizen/login.html">Continue to sign in</a></p>
+      <p><a href="/citizen/login.html">Continue to sign in</a></p>
     </div>
   </main>
   <script src="/js/api.js"></script>
@@ -27,7 +27,7 @@
       if (token && role) {
         location.replace(API.homeForRole(role));
       } else {
-        location.replace("/landing.html");
+        location.replace("/citizen/login.html");
       }
     })();
   </script>
