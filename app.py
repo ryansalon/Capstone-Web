@@ -24,19 +24,23 @@ from dotenv import load_dotenv
 from flask import Flask, Response, current_app, g, jsonify, request, send_from_directory
 from flask_cors import CORS
 from sqlalchemy import (
-    Column,
-    DateTime,
-    Float,
-    ForeignKey,
-    Integer,
-    String,
     create_engine,
     func,
     or_,
     select,
 )
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import aliased, declarative_base, sessionmaker
+from sqlalchemy.orm import aliased, sessionmaker
+
+from models import AccessAuditTrail, Base, BhwNote, ConsentAudit, HealthLog, User, utcnow
+from vitals import (
+    build_concerns,
+    classify_bmi,
+    classify_bp,
+    classify_spo2,
+    is_alert,
+    log_alert_types,
+)
 
 load_dotenv()
 
@@ -49,8 +53,30 @@ if DATABASE_URL.startswith("postgres://"):
 # plain "postgresql://" URL to psycopg (v3), but we install psycopg2-binary.
 if DATABASE_URL.startswith("postgresql://"):
     DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+psycopg2://", 1)
-JWT_SECRET = os.getenv("JWT_SECRET", "change-me-jwt-secret")
+JWT_SECRET = os.getenv("JWT_SECRET", "change-me-jwt-secret-min-32-chars-long")
 API_KEY = os.getenv("API_KEY", "dev-kiosk-key")
+ENV = os.getenv("FLASK_ENV", os.getenv("ENV", "development")).lower()
+
+if ENV in ("production", "prod") and (
+    JWT_SECRET == "change-me-jwt-secret-min-32-chars-long" or API_KEY == "dev-kiosk-key"
+):
+    raise RuntimeError("FATAL: JWT_SECRET and API_KEY must be configured in production.")
+
+_AUTH_ATTEMPTS: dict[str, list[float]] = {}
+
+
+def check_rate_limit(key: str, max_attempts: int = 15, window_seconds: int = 60) -> bool:
+    """Sliding-window in-memory rate limiter."""
+    now = datetime.now(timezone.utc).timestamp()
+    attempts = _AUTH_ATTEMPTS.get(key, [])
+    cutoff = now - window_seconds
+    valid_attempts = [t for t in attempts if t > cutoff]
+    if len(valid_attempts) >= max_attempts:
+        _AUTH_ATTEMPTS[key] = valid_attempts
+        return False
+    valid_attempts.append(now)
+    _AUTH_ATTEMPTS[key] = valid_attempts
+    return True
 
 try:
     JWT_EXPIRATION_HOURS = int(os.getenv("JWT_EXPIRATION_HOURS", "24"))
@@ -166,147 +192,6 @@ def check_password(password_hash: str, password: str) -> bool:
 
 
 # ---------------------------------------------------------------------------
-# Classification rules (server-side, never trusted from the client)
-# ---------------------------------------------------------------------------
-
-
-def classify_bmi(bmi):
-    if bmi is None:
-        return None
-    if bmi < 18.5:
-        return "Underweight"
-    if bmi < 25:
-        return "Normal"
-    if bmi < 30:
-        return "Overweight"
-    return "Obese"
-
-
-def classify_bp(systolic, diastolic):
-    if systolic is None or diastolic is None:
-        return None
-    if systolic >= 180 or diastolic >= 120:
-        return "Crisis"
-    if systolic >= 140 or diastolic >= 90:
-        return "Stage 2"
-    if systolic >= 130 or diastolic >= 80:
-        return "Stage 1"
-    if systolic >= 120:
-        return "Elevated"
-    return "Normal"
-
-
-def classify_spo2(spo2):
-    if spo2 is None:
-        return None
-    if spo2 < 90:
-        return "Critical"
-    if spo2 < 95:
-        return "Low"
-    return "Normal"
-
-
-def is_alert(temperature, systolic, diastolic, spo2) -> bool:
-    if temperature is not None and temperature >= 37.9:
-        return True
-    if systolic is not None and systolic >= 130:
-        return True
-    if diastolic is not None and diastolic >= 80:
-        return True
-    if spo2 is not None and spo2 <= 90:
-        return True
-    return False
-
-
-def log_alert_types(log):
-    """Per-alert breakdown used by the alerts report."""
-    fired = []
-    if log.temperature is not None and log.temperature >= 37.9:
-        fired.append(("High Fever", log.temperature))
-    if (log.systolic_bp is not None and log.systolic_bp >= 130) or (
-        log.diastolic_bp is not None and log.diastolic_bp >= 80
-    ):
-        sys_text = "-" if log.systolic_bp is None else log.systolic_bp
-        dia_text = "-" if log.diastolic_bp is None else log.diastolic_bp
-        fired.append(("High Blood Pressure", f"{sys_text}/{dia_text} mmHg"))
-    if log.spo2 is not None and log.spo2 <= 90:
-        fired.append(("Low SpO2", f"{log.spo2}%"))
-    return fired
-
-
-# ---------------------------------------------------------------------------
-# Database models
-# ---------------------------------------------------------------------------
-
-Base = declarative_base()
-
-
-class User(Base):
-    __tablename__ = "users"
-
-    id = Column(Integer, primary_key=True)
-    username = Column(String(50), unique=True, nullable=False)
-    password_hash = Column(String(255), nullable=False)
-    full_name = Column(String(100), nullable=False)
-    birthdate = Column(String(10), nullable=False)
-    gender = Column(String(10), nullable=False)
-    role = Column(String(10), default="citizen")
-    created_at = Column(DateTime, default=utcnow)
-
-
-class HealthLog(Base):
-    __tablename__ = "health_logs"
-
-    id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
-    timestamp = Column(DateTime, default=utcnow)
-    weight = Column(Float, nullable=True)
-    height = Column(Float, nullable=True)
-    bmi = Column(Float, nullable=True)
-    temperature = Column(Float, nullable=True)
-    pulse_rate = Column(Integer, nullable=True)
-    spo2 = Column(Integer, nullable=True)
-    systolic_bp = Column(Integer, nullable=True)
-    diastolic_bp = Column(Integer, nullable=True)
-    source = Column(String(10), default="kiosk")
-    is_guest = Column(Integer, default=0)
-    age_group = Column(String(20), nullable=True)
-    gender = Column(String(10), nullable=True)
-
-
-class ConsentAudit(Base):
-    __tablename__ = "consent_audit"
-
-    id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-    consent_granted = Column(Integer, nullable=False)
-    timestamp = Column(DateTime, default=utcnow)
-    ip_address = Column(String(64), nullable=True)
-    user_agent = Column(String(255), nullable=True)
-
-
-class AccessAuditTrail(Base):
-    __tablename__ = "access_audit_trail"
-
-    id = Column(Integer, primary_key=True)
-    bhw_user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-    citizen_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-    access_timestamp = Column(DateTime, default=utcnow)
-    action_type = Column(String(40), nullable=False)
-    ip_address = Column(String(64), nullable=True)
-
-
-class BhwNote(Base):
-    __tablename__ = "bhw_notes"
-
-    id = Column(Integer, primary_key=True)
-    citizen_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-    bhw_user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-    note = Column(String(1000), nullable=False)
-    created_at = Column(DateTime, default=utcnow)
-
-
-# ---------------------------------------------------------------------------
 # Database wrapper (one engine per app instance, so tests can use temp files)
 # ---------------------------------------------------------------------------
 
@@ -389,15 +274,14 @@ def has_consent(session, user_id) -> bool:
     return bool(row and row.consent_granted == 1)
 
 
-def latest_consent_map(session):
-    """user_id -> latest ConsentAudit row."""
-    rows = session.execute(
-        select(ConsentAudit).order_by(ConsentAudit.timestamp.asc(), ConsentAudit.id.asc())
-    ).scalars()
-    latest = {}
-    for row in rows:
-        latest[row.user_id] = row
-    return latest
+def latest_consent_map(session, user_ids=None):
+    """user_id -> latest ConsentAudit row queried via SQL subquery."""
+    subq = select(func.max(ConsentAudit.id)).group_by(ConsentAudit.user_id)
+    if user_ids is not None:
+        subq = subq.where(ConsentAudit.user_id.in_(user_ids))
+    stmt = select(ConsentAudit).where(ConsentAudit.id.in_(subq.scalar_subquery()))
+    rows = session.execute(stmt).scalars()
+    return {row.user_id: row for row in rows}
 
 
 def write_audit(session, bhw_user_id, citizen_id, action_type):
@@ -485,26 +369,6 @@ def compute_metrics(session, logs):
     }
 
 
-def build_concerns(metrics):
-    bp = metrics["bp"]
-    bmi = metrics["bmi"]
-    spo2 = metrics["spo2"]
-    fever_total = sum(count for _, count in metrics["fever_trend"])
-    concerns = {
-        "Stage 2 Hypertension": bp.get("Stage 2", 0),
-        "BP Crisis": bp.get("Crisis", 0),
-        "Stage 1 Hypertension": bp.get("Stage 1", 0),
-        "Elevated BP": bp.get("Elevated", 0),
-        "High Fever": fever_total,
-        "Obese": bmi.get("Obese", 0),
-        "Overweight": bmi.get("Overweight", 0),
-        "Underweight": bmi.get("Underweight", 0),
-        "Critical SpO2": spo2.get("Critical", 0),
-        "Low SpO2": spo2.get("Low", 0),
-    }
-    items = [[label, count] for label, count in concerns.items() if count > 0]
-    items.sort(key=lambda item: (-item[1], item[0]))
-    return items
 
 
 # ---------------------------------------------------------------------------
@@ -779,6 +643,10 @@ def register_routes(app: Flask):
 
     @app.route("/api/register", methods=["POST"])
     def register():
+        if not current_app.config.get("TESTING"):
+            client_ip = request.remote_addr or "unknown"
+            if not check_rate_limit(f"auth:{client_ip}"):
+                return jsonify({"error": "too many requests, please try again later"}), 429
         data = json_body()
         fields = ("full_name", "username", "password", "birthdate", "gender")
         if any(not str(data.get(field) or "").strip() for field in fields):
@@ -808,6 +676,10 @@ def register_routes(app: Flask):
 
     @app.route("/api/login", methods=["POST"])
     def login():
+        if not current_app.config.get("TESTING"):
+            client_ip = request.remote_addr or "unknown"
+            if not check_rate_limit(f"auth:{client_ip}"):
+                return jsonify({"error": "too many requests, please try again later"}), 429
         data = json_body()
         username = data.get("username")
         password = data.get("password")
@@ -1015,13 +887,17 @@ def register_routes(app: Flask):
         stmt = stmt.order_by(User.full_name.asc(), User.id.asc())
         citizens = list(session.execute(stmt).scalars())
 
-        last_rows = session.execute(
-            select(HealthLog.user_id, func.max(HealthLog.timestamp))
-            .where(HealthLog.user_id.isnot(None))
-            .group_by(HealthLog.user_id)
-        ).all()
-        last_map = {user_id: stamp for user_id, stamp in last_rows}
-        latest = latest_consent_map(session)
+        citizen_ids = [c.id for c in citizens]
+        last_map = {}
+        latest = {}
+        if citizen_ids:
+            last_rows = session.execute(
+                select(HealthLog.user_id, func.max(HealthLog.timestamp))
+                .where(HealthLog.user_id.in_(citizen_ids))
+                .group_by(HealthLog.user_id)
+            ).all()
+            last_map = {user_id: stamp for user_id, stamp in last_rows}
+            latest = latest_consent_map(session, user_ids=citizen_ids)
 
         payload = []
         for citizen in citizens:

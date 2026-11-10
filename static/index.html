@@ -16,7 +16,7 @@
       <noscript>
         <p class="form-error">JavaScript is required to use this site.</p>
       </noscript>
-      <p><a href="/citizen/login.html">Continue to sign in</a></p>
+      <p><a href="/landing.html">Explore Platform</a> · <a href="/citizen/login.html">Continue to sign in</a></p>
     </div>
   </main>
   <script src="/js/api.js"></script>
@@ -27,7 +27,7 @@
       if (token && role) {
         location.replace(API.homeForRole(role));
       } else {
-        location.replace("/citizen/login.html");
+        location.replace("/landing.html");
       }
     })();
   </script>

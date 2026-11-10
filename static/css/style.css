@@ -1,45 +1,52 @@
 /* Smart Barangay Health Monitoring Kiosk - global styles
- * Design language: deep forest shell, warm stone canvas, emerald accent,
- * editorial display type and tabular data readouts.
- * No external font CDN: the spec allows Chart.js only; a local system font
- * stack keeps the site fully offline-capable and avoids leaking visitor IPs. */
+ * Design language: Obsidian ground (#0f1012), flat slate surface (#161719),
+ * hairline rule dividers (#252729), periwinkle ice accent (#b4d3ff).
+ * Clean editorial type hierarchy, high-contrast tabular readouts, zero-blur elevation.
+ */
+@import url('https://fonts.googleapis.com/css2?family=Host+Grotesk:wght@400;500;600;700&family=Instrument+Sans:wght@400;500;600;700&display=swap');
 
 :root {
-  /* neutrals — stone canvas, near-black ink */
-  --canvas: #eef1ee;
-  --paper: #f6f3ec;
-  --ink: #101a16;
-  --ink-soft: #4c5a54;
-  --line: #e1e6e1;
-  --line-strong: #ccd4cd;
-  --white: #ffffff;
+  /* ground & surface neutrals — obsidian ground, flat slate surface */
+  --canvas: #0f1012;
+  --surface: #161719;
+  --paper: #161719;
+  --ink: #faf9fa;
+  --ink-soft: #a1a1aa;
+  --line: #252729;
+  --line-strong: #383b3e;
+  --white: #161719;
+  --white-pure: #ffffff;
 
-  /* dark forest shell — sidebar, KPI tiles, toasts, modal headers */
-  --shell: #071811;
-  --shell-2: #0d2a21;
-  --shell-line: rgba(255, 255, 255, 0.08);
-  --shell-text: #b9ccc4;
-  --mint: #5fe3b2;
+  /* dark ops shell — sidebar, KPI tiles, toasts, modal headers */
+  --shell: #090a0c;
+  --shell-2: #121316;
+  --shell-line: #252729;
+  --shell-text: #a1a1aa;
+  --mint: #b4d3ff;
 
-  /* brand green — accent only: actions, links, focus, success tones */
-  --green-900: #06392e;
-  --green-800: #07503f;
-  --green-700: #0a6b52;
-  --green-600: #0f9075;
-  --green-100: #d9f3e8;
-  --green-050: #f3faf6;
+  /* brand accent (#b4d3ff per reference spec) */
+  --accent: #b4d3ff;
+  --accent-hover: #d2e4ff;
+  --accent-ink: #040404;
+  --green-900: #d2e4ff;
+  --green-800: #b4d3ff;
+  --green-700: #b4d3ff;
+  --green-600: #8bb8f8;
+  --green-100: rgba(180, 211, 255, 0.15);
+  --green-050: rgba(180, 211, 255, 0.08);
 
   /* semantic tones */
-  --amber-bg: #fff6e0;
-  --amber-fg: #8a5200;
-  --red-bg: #fdeceb;
-  --red-fg: #b42318;
-  --blue-bg: #e8f4fd;
-  --blue-fg: #1565c0;
+  --amber-bg: rgba(217, 119, 6, 0.16);
+  --amber-fg: #f59e0b;
+  --red-bg: rgba(239, 68, 68, 0.16);
+  --red-fg: #f87171;
+  --blue-bg: rgba(59, 130, 246, 0.16);
+  --blue-fg: #60a5fa;
 
-  --radius: 14px;
-  --shadow: 0 1px 2px rgba(16, 26, 22, 0.04), 0 12px 28px rgba(16, 26, 22, 0.06);
-  --font: "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+  --radius: 8px;
+  --shadow: none;
+  --font-display: "Host Grotesk", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font: "Instrument Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
 * {
@@ -65,15 +72,15 @@ body[data-page^="citizen"] {
 }
 
 a {
-  color: var(--green-700);
+  color: var(--accent);
 }
 
 a:hover {
-  color: var(--green-900);
+  color: var(--accent-hover);
 }
 
 :focus-visible {
-  outline: 3px solid var(--green-600);
+  outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
 
@@ -385,45 +392,54 @@ a:hover {
 }
 
 h1 {
-  font-size: 1.7rem;
+  font-family: var(--font-display);
+  font-size: 1.85rem;
   line-height: 1.15;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.025em;
   margin: 0 0 0.5rem;
-  font-weight: 700;
+  font-weight: 500;
   color: var(--ink);
 }
 
 h2 {
-  font-size: 1.08rem;
-  font-weight: 700;
-  letter-spacing: -0.01em;
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 500;
+  letter-spacing: -0.02em;
   color: var(--ink);
   margin: 0 0 0.75rem;
+}
+
+h3 {
+  font-family: var(--font-display);
+  font-weight: 500;
+  letter-spacing: -0.015em;
 }
 
 .lede {
   color: var(--ink-soft);
   margin: 0 0 1.25rem;
   max-width: 68ch;
-  font-size: 0.97rem;
+  font-size: 0.98rem;
+  line-height: 1.6;
 }
 
 .section {
-  margin-top: 1.75rem;
+  margin-top: 2rem;
 }
 
 .card-surface {
-  background: var(--white);
+  background: var(--surface);
   border: 1px solid var(--line);
   border-radius: var(--radius);
-  box-shadow: var(--shadow);
-  padding: 1.15rem 1.25rem;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  box-shadow: none;
+  padding: 1.25rem 1.35rem;
+  transition: transform 0.15s ease, border-color 0.15s ease;
 }
 
 .card-surface:hover {
   transform: translateY(-1px);
-  box-shadow: 0 2px 6px rgba(16, 24, 40, 0.06), 0 18px 36px rgba(16, 24, 40, 0.09);
+  border-color: var(--line-strong);
 }
 
 /* ---------- buttons ---------- */
@@ -434,10 +450,11 @@ h2 {
   justify-content: center;
   gap: 0.45rem;
   font: inherit;
+  font-family: var(--font);
   font-weight: 600;
   font-size: 0.93rem;
   letter-spacing: 0.01em;
-  border-radius: 10px;
+  border-radius: var(--radius);
   border: 1px solid transparent;
   padding: 0.55rem 1.15rem;
   cursor: pointer;
@@ -448,52 +465,58 @@ h2 {
 }
 
 .btn-primary {
-  background: var(--green-700);
-  color: var(--white);
-  box-shadow: 0 1px 2px rgba(6, 57, 46, 0.25);
+  background: var(--accent);
+  color: var(--accent-ink);
+  border-color: var(--accent);
+  box-shadow: none;
 }
 
 .btn-primary:hover {
-  background: var(--green-800);
-  color: var(--white);
-  box-shadow: 0 3px 10px rgba(6, 57, 46, 0.28);
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
+  color: var(--accent-ink);
+  transform: translateY(-1px);
 }
 
 .btn-secondary {
-  background: var(--white);
+  background: var(--surface);
   color: var(--ink);
-  border-color: var(--line-strong);
-  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
+  border-color: var(--line);
+  box-shadow: none;
 }
 
 .btn-secondary:hover {
-  background: var(--canvas);
-  border-color: var(--ink-soft);
+  background: #1c1e21;
+  border-color: var(--line-strong);
+  color: var(--ink);
+  transform: translateY(-1px);
 }
 
 .btn-danger {
-  background: var(--white);
+  background: var(--red-bg);
   color: var(--red-fg);
-  border-color: #e8a49e;
+  border-color: rgba(239, 68, 68, 0.4);
 }
 
 .btn-danger:hover {
-  background: var(--red-bg);
+  background: rgba(239, 68, 68, 0.25);
   border-color: var(--red-fg);
+  color: #fca5a5;
 }
 
 .btn-ghost {
   background: transparent;
-  color: var(--shell-text);
-  border-color: rgba(255, 255, 255, 0.22);
+  color: var(--ink-soft);
+  border-color: var(--line);
   padding: 0.35rem 0.7rem;
   min-height: 2rem;
   font-size: 0.85rem;
 }
 
 .btn-ghost:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: var(--white);
+  background: rgba(255, 255, 255, 0.06);
+  border-color: var(--line-strong);
+  color: var(--ink);
 }
 
 .btn:disabled {
@@ -611,20 +634,21 @@ h2 {
 }
 
 .status.loading {
-  background: var(--green-100);
-  color: var(--green-900);
+  background: rgba(180, 211, 255, 0.12);
+  color: var(--accent);
+  border: 1px solid rgba(180, 211, 255, 0.25);
 }
 
 .status.error {
   background: var(--red-bg);
   color: var(--red-fg);
-  border: 1px solid #f3c4c0;
+  border: 1px solid rgba(239, 68, 68, 0.35);
 }
 
 .status.empty {
-  background: var(--white);
+  background: var(--surface);
   color: var(--ink-soft);
-  border: 1px dashed var(--line-strong);
+  border: 1px dashed var(--line);
 }
 
 /* ---------- cards ---------- */
@@ -636,18 +660,18 @@ h2 {
 }
 
 .card {
-  background: var(--white);
+  background: var(--surface);
   border: 1px solid var(--line);
   border-radius: var(--radius);
-  box-shadow: var(--shadow);
-  padding: 0.95rem 1.05rem;
-  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+  box-shadow: none;
+  padding: 1.1rem 1.15rem;
+  transition: transform 0.15s ease, border-color 0.15s ease;
 }
 
 .card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 2px 6px rgba(16, 24, 40, 0.06), 0 18px 36px rgba(16, 24, 40, 0.1);
-  border-color: #cbd5e1;
+  transform: translateY(-1px);
+  box-shadow: none;
+  border-color: var(--line-strong);
 }
 
 .card .label {
@@ -751,33 +775,36 @@ h2 {
 }
 
 .total {
-  background: var(--shell);
-  color: var(--white);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--surface);
+  color: var(--ink);
+  border: 1px solid var(--line);
   border-radius: var(--radius);
   padding: 1rem 1.1rem;
-  box-shadow: 0 2px 6px rgba(11, 29, 24, 0.25);
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  box-shadow: none;
+  transition: transform 0.15s ease, border-color 0.15s ease;
 }
 
 .total:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 18px rgba(11, 29, 24, 0.32);
+  transform: translateY(-1px);
+  border-color: var(--line-strong);
+  box-shadow: none;
 }
 
 .total .label {
   font-size: 0.72rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: var(--mint);
+  color: var(--accent);
   font-weight: 700;
 }
 
 .total .value {
+  font-family: var(--font-display);
   font-size: 1.85rem;
-  font-weight: 700;
+  font-weight: 600;
   letter-spacing: -0.02em;
   font-variant-numeric: tabular-nums;
+  color: var(--ink);
 }
 
 /* ---------- grids / charts ---------- */
@@ -789,17 +816,21 @@ h2 {
 }
 
 .chart-box {
-  background: var(--white);
+  background: var(--surface);
   border: 1px solid var(--line);
   border-radius: var(--radius);
-  box-shadow: var(--shadow);
-  padding: 0.9rem 1rem 1rem;
+  box-shadow: none;
+  padding: 1.1rem 1.2rem;
   min-width: 0;
 }
 
-.chart-box h2 {
-  font-size: 1rem;
+.chart-box h2,
+.chart-box h3 {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 500;
   margin: 0 0 0.6rem;
+  color: var(--ink);
 }
 
 .chart-box canvas {
@@ -813,7 +844,7 @@ h2 {
 
 .table-wrap {
   overflow-x: auto;
-  background: var(--white);
+  background: var(--surface);
   border: 1px solid var(--line);
   border-radius: var(--radius);
   box-shadow: var(--shadow);
@@ -835,13 +866,13 @@ td {
 }
 
 th {
-  background: var(--canvas);
-  font-size: 0.71rem;
+  background: #111215;
+  font-size: 0.72rem;
   text-transform: uppercase;
-  letter-spacing: 0.07em;
+  letter-spacing: 0.08em;
   color: var(--ink-soft);
   white-space: nowrap;
-  border-bottom: 2px solid var(--line-strong);
+  border-bottom: 1px solid var(--line-strong);
 }
 
 tbody tr {
@@ -849,7 +880,7 @@ tbody tr {
 }
 
 tbody tr:hover {
-  background: #f8fafc;
+  background: rgba(255, 255, 255, 0.04);
 }
 
 tbody tr:last-child td {
@@ -866,31 +897,34 @@ th.num {
 
 .badge {
   display: inline-block;
-  font-size: 0.78rem;
-  font-weight: 700;
-  border-radius: 999px;
-  padding: 0.15rem 0.6rem;
+  font-size: 0.76rem;
+  font-weight: 600;
+  border-radius: 4px;
+  padding: 0.2rem 0.55rem;
   white-space: nowrap;
 }
 
 .badge-ok {
-  background: var(--green-100);
-  color: var(--green-800);
+  background: rgba(180, 211, 255, 0.15);
+  color: var(--accent);
+  border: 1px solid rgba(180, 211, 255, 0.3);
 }
 
 .badge-no {
-  background: #eceff1;
-  color: #48585f;
+  background: #252729;
+  color: var(--ink-soft);
 }
 
 .badge-warn {
   background: var(--amber-bg);
   color: var(--amber-fg);
+  border: 1px solid rgba(245, 158, 11, 0.3);
 }
 
 .badge-danger {
   background: var(--red-bg);
   color: var(--red-fg);
+  border: 1px solid rgba(239, 68, 68, 0.3);
 }
 
 /* ---------- login page ---------- */
@@ -911,25 +945,25 @@ th.num {
 
 .auth-card {
   width: 100%;
-  max-width: 430px;
-  background: var(--white);
+  max-width: 440px;
+  background: var(--surface);
   border: 1px solid var(--line);
-  border-radius: 16px;
-  box-shadow: 0 2px 6px rgba(16, 24, 40, 0.05), 0 24px 48px rgba(16, 24, 40, 0.12);
-  padding: 1.8rem 1.6rem;
+  border-radius: var(--radius);
+  box-shadow: none;
+  padding: 2.2rem 2rem;
   position: relative;
   overflow: hidden;
 }
 
-/* Mint accent edge ties the card to the shell brand mark. */
+/* Accent edge ties the card to the brand mark. */
 .auth-card::before {
   content: "";
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
-  height: 4px;
-  background: linear-gradient(90deg, var(--green-700), var(--mint));
+  height: 2px;
+  background: var(--accent);
 }
 
 .auth-card h1 {
@@ -1980,30 +2014,18 @@ a.status-chip:hover {
 
 .portal-citizen .hero {
   position: relative;
-  background: linear-gradient(135deg, var(--green-900) 0%, var(--green-700) 100%);
-  color: var(--white);
-  border-radius: 16px;
-  padding: 1.35rem 1.5rem;
+  background: var(--surface);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 1.4rem 1.6rem;
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: 1rem;
-  box-shadow: 0 10px 30px rgba(6, 57, 46, 0.35);
+  box-shadow: none;
   margin-bottom: 1.1rem;
   overflow: hidden;
-}
-
-/* Soft decorative halo — pointer-transparent so it never blocks clicks. */
-.portal-citizen .hero::after {
-  content: "";
-  position: absolute;
-  right: -70px;
-  top: -70px;
-  width: 240px;
-  height: 240px;
-  border-radius: 50%;
-  background: rgba(126, 224, 189, 0.12);
-  pointer-events: none;
 }
 
 .portal-citizen .hero-body {
@@ -2018,12 +2040,14 @@ a.status-chip:hover {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.09em;
-  color: #7ee0bd;
+  color: var(--accent);
 }
 
 .portal-citizen .hero-greeting {
-  color: var(--white);
-  font-size: 1.55rem;
+  font-family: var(--font-display);
+  color: var(--ink);
+  font-size: 1.65rem;
+  font-weight: 500;
   margin: 0 0 0.4rem;
 }
 
@@ -2031,14 +2055,14 @@ a.status-chip:hover {
   margin: 0;
   font-size: 1.02rem;
   line-height: 1.55;
-  color: var(--green-100);
+  color: var(--ink);
   max-width: 58ch;
 }
 
 .portal-citizen .hero-next {
   margin: 0.55rem 0 0;
   font-size: 0.88rem;
-  color: #bfe3d6;
+  color: var(--ink-soft);
   max-width: 58ch;
 }
 
@@ -2048,37 +2072,37 @@ a.status-chip:hover {
   z-index: 1;
   flex: 0 0 auto;
   align-self: center;
-  padding: 0.45rem 1.05rem;
-  border-radius: 999px;
-  font-weight: 700;
-  font-size: 0.95rem;
+  padding: 0.45rem 1rem;
+  border-radius: var(--radius);
+  font-weight: 600;
+  font-size: 0.88rem;
   white-space: nowrap;
-  background: rgba(255, 255, 255, 0.16);
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  color: #eaf7f2;
+  background: var(--ground);
+  border: 1px solid var(--line);
+  color: var(--ink);
 }
 
 .portal-citizen .hero-pill.ok {
-  background: #7ee0bd;
-  border-color: transparent;
-  color: var(--green-900);
+  background: rgba(180, 211, 255, 0.15);
+  border-color: var(--accent);
+  color: var(--accent);
 }
 
 .portal-citizen .hero-pill.warn {
-  background: #ffd98a;
-  border-color: transparent;
-  color: #6b4300;
+  background: var(--amber-bg);
+  border-color: rgba(245, 158, 11, 0.4);
+  color: var(--amber-fg);
 }
 
 .portal-citizen .hero-pill.bad {
-  background: #ffb3ab;
-  border-color: transparent;
-  color: #7d1a13;
+  background: var(--red-bg);
+  border-color: rgba(239, 68, 68, 0.4);
+  color: var(--red-fg);
 }
 
 .portal-citizen .hero-pill.muted {
-  background: rgba(255, 255, 255, 0.9);
-  border-color: transparent;
+  background: var(--surface);
+  border-color: var(--line);
   color: var(--ink-soft);
 }
 

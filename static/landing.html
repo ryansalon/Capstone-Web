@@ -1,0 +1,1465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Smart Barangay Health Monitoring Kiosk — Edge Triage Platform</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Host+Grotesk:wght@400;500;600;700&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --ground: #0f1012;
+      --alternate: #161719;
+      --surface: #161719;
+      --hairline: #252729;
+      --hairline-hover: #383b3e;
+      --accent: #b4d3ff;
+      --accent-hover: #d2e4ff;
+      --accent-ink: #040404;
+      --primary-text: #faf9fa;
+      --secondary-text: #e5e5e4;
+      --muted-text: #a1a1aa;
+      --inverse-ground: #efedef;
+      --inverse-text: #040404;
+      --inverse-muted: #4e5054;
+      
+      --font-display: "Host Grotesk", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-body: "Instrument Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      
+      --radius-surface: 8px;
+      --radius-control: 8px;
+      --container: 1200px;
+      --margin: 24px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      background-color: var(--ground);
+      color: var(--primary-text);
+      font-family: var(--font-body);
+      font-size: 16px;
+      line-height: 1.55;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    .container {
+      width: 100%;
+      max-width: var(--container);
+      margin: 0 auto;
+      padding: 0 var(--margin);
+    }
+
+    /* Typography */
+    h1, h2, h3, h4 {
+      font-family: var(--font-display);
+      font-weight: 500;
+      color: var(--primary-text);
+      letter-spacing: -0.025em;
+    }
+
+    p { color: var(--secondary-text); }
+    a { color: inherit; text-decoration: none; }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 11px 20px;
+      border-radius: var(--radius-control);
+      font-family: var(--font-body);
+      font-weight: 600;
+      font-size: 0.95rem;
+      transition: all 0.15s ease;
+      cursor: pointer;
+      white-space: nowrap;
+      text-decoration: none;
+    }
+
+    .btn-sm {
+      padding: 7px 14px;
+      font-size: 0.85rem;
+      border-radius: var(--radius-control);
+    }
+
+    .btn-primary {
+      background-color: var(--accent);
+      color: var(--accent-ink);
+      border: 1px solid var(--accent);
+    }
+    .btn-primary:hover {
+      background-color: var(--accent-hover);
+      border-color: var(--accent-hover);
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+      background-color: var(--surface);
+      color: var(--primary-text);
+      border: 1px solid var(--hairline);
+    }
+    .btn-secondary:hover {
+      background-color: #1c1e21;
+      border-color: var(--hairline-hover);
+      transform: translateY(-1px);
+    }
+
+    .btn-inverse {
+      background-color: var(--inverse-text);
+      color: var(--inverse-ground);
+      border: 1px solid var(--inverse-text);
+    }
+    .btn-inverse:hover {
+      background-color: #262626;
+      border-color: #262626;
+    }
+
+    .btn-inverse-secondary {
+      background-color: transparent;
+      color: var(--inverse-text);
+      border: 1px solid rgba(4, 4, 4, 0.25);
+    }
+    .btn-inverse-secondary:hover {
+      background-color: rgba(4, 4, 4, 0.05);
+      border-color: var(--inverse-text);
+    }
+
+    /* Mechanism: Actions beside headings */
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 24px;
+      margin-bottom: 48px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--hairline);
+    }
+
+    .section-header .title-wrap {
+      max-width: 720px;
+    }
+
+    .section-eyebrow {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-weight: 600;
+      color: var(--accent);
+      margin-bottom: 10px;
+    }
+
+    .section-title {
+      font-size: 2.25rem;
+      line-height: 1.18;
+      font-weight: 500;
+    }
+
+    /* Common Section Paddings */
+    .section-band {
+      padding: 96px 0 64px;
+      border-bottom: 1px solid var(--hairline);
+      background-color: var(--ground);
+    }
+
+    /* 1. Site Header */
+    .site-header {
+      border-bottom: 1px solid var(--hairline);
+      background-color: rgba(15, 16, 18, 0.92);
+      backdrop-filter: blur(14px);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .header-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 72px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-family: var(--font-display);
+      font-weight: 600;
+      font-size: 1.05rem;
+      color: var(--primary-text);
+      letter-spacing: -0.01em;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      background-color: var(--accent);
+      border-radius: 50%;
+      box-shadow: 0 0 8px var(--accent);
+    }
+
+    .nav-menu {
+      display: flex;
+      align-items: center;
+      gap: 32px;
+      list-style: none;
+    }
+
+    .nav-item a {
+      color: var(--secondary-text);
+      font-size: 0.92rem;
+      font-weight: 500;
+      transition: color 0.15s ease;
+    }
+    .nav-item a:hover { color: var(--primary-text); }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .mobile-menu-btn {
+      display: none;
+      background: none;
+      border: 1px solid var(--hairline);
+      color: var(--primary-text);
+      padding: 8px 12px;
+      border-radius: var(--radius-control);
+      cursor: pointer;
+    }
+
+    /* 2. Hero Section */
+    .hero-section {
+      padding: 96px 0 64px;
+      border-bottom: 1px solid var(--hairline);
+      position: relative;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1.15fr 1fr;
+      gap: 56px;
+      align-items: center;
+    }
+
+    .hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 5px 12px;
+      background: var(--surface);
+      border: 1px solid var(--hairline);
+      border-radius: var(--radius-surface);
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--accent);
+      margin-bottom: 24px;
+    }
+
+    .hero-title {
+      font-size: 62px;
+      line-height: 1.06;
+      font-weight: 500;
+      margin-bottom: 24px;
+      letter-spacing: -0.035em;
+    }
+
+    .hero-lede {
+      font-size: 1.12rem;
+      line-height: 1.6;
+      color: var(--secondary-text);
+      max-width: 530px;
+      margin-bottom: 36px;
+    }
+
+    .hero-actions {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .trust-caption {
+      font-size: 0.82rem;
+      color: var(--muted-text);
+      margin-bottom: 48px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .trust-caption svg { color: var(--accent); }
+
+    .metrics-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      padding-top: 32px;
+      border-top: 1px solid var(--hairline);
+    }
+
+    .metric-item .val {
+      font-family: var(--font-display);
+      font-size: 1.7rem;
+      font-weight: 500;
+      color: var(--primary-text);
+      letter-spacing: -0.02em;
+    }
+
+    .metric-item .lbl {
+      font-size: 0.78rem;
+      color: var(--muted-text);
+      margin-top: 4px;
+    }
+
+    /* Browser Mockup Frame */
+    .browser-frame {
+      background-color: var(--surface);
+      border: 1px solid var(--hairline);
+      border-radius: var(--radius-surface);
+      overflow: hidden;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+    }
+
+    .browser-topbar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 16px;
+      background-color: #121315;
+      border-bottom: 1px solid var(--hairline);
+    }
+
+    .dots { display: flex; gap: 6px; }
+    .dots span {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background-color: #252729;
+    }
+
+    .browser-url {
+      background-color: var(--ground);
+      border: 1px solid var(--hairline);
+      border-radius: 4px;
+      padding: 3px 12px;
+      font-size: 0.75rem;
+      color: var(--muted-text);
+      margin-left: 8px;
+      font-family: monospace;
+    }
+
+    .browser-body {
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .telemetry-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+
+    .telemetry-tile {
+      background: var(--ground);
+      border: 1px solid var(--hairline);
+      border-radius: var(--radius-surface);
+      padding: 16px;
+    }
+
+    .telemetry-tile .lbl {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--muted-text);
+    }
+
+    .telemetry-tile .val {
+      font-family: var(--font-display);
+      font-size: 1.55rem;
+      font-weight: 600;
+      color: var(--primary-text);
+      margin-top: 6px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .telemetry-tile .status {
+      font-size: 0.75rem;
+      color: var(--accent);
+      margin-top: 4px;
+      display: inline-block;
+    }
+
+    .telemetry-tile .status.abnormal { color: #f87171; }
+
+    /* 3. Logo Cloud */
+    .logo-cloud-caption {
+      text-align: center;
+      font-size: 0.85rem;
+      color: var(--muted-text);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 32px;
+    }
+
+    .logo-grid {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 20px;
+      align-items: center;
+    }
+
+    .logo-item {
+      background: var(--surface);
+      border: 1px solid var(--hairline);
+      border-radius: var(--radius-surface);
+      padding: 18px 12px;
+      text-align: center;
+      font-family: var(--font-display);
+      font-size: 0.88rem;
+      font-weight: 500;
+      color: var(--secondary-text);
+      letter-spacing: -0.01em;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 64px;
+    }
+
+    /* 4. Features (3 Alternating Rows) */
+    .feature-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 56px;
+      align-items: center;
+      padding: 48px 0;
+      border-bottom: 1px solid var(--hairline);
+    }
+
+    .feature-row:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+
+    .feature-row.swapped {
+      grid-template-columns: 1fr 1fr;
+    }
+    .feature-row.swapped .feature-media { order: 1; }
+    .feature-row.swapped .feature-info { order: 2; }
+
+    .feature-info .feat-tag {
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--accent);
+      margin-bottom: 12px;
+    }
+
+    .feature-info h3 {
+      font-size: 1.85rem;
+      line-height: 1.25;
+      margin-bottom: 16px;
+    }
+
+    .feature-info p {
+      font-size: 1.05rem;
+      line-height: 1.6;
+      margin-bottom: 24px;
+    }
+
+    .feature-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .feature-list li {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.95rem;
+      color: var(--secondary-text);
+    }
+
+    .feature-list li span.bullet {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+    }
+
+    .feature-media {
+      background: var(--surface);
+      border: 1px solid var(--hairline);
+      border-radius: var(--radius-surface);
+      padding: 32px;
+      min-height: 320px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 16px;
+    }
+
+    /* 5. Process (3 Connected Steps) */
+    .process-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      position: relative;
+    }
+
+    .process-card {
+      background: var(--surface);
+      border: 1px solid var(--hairline);
+      border-radius: var(--radius-surface);
+      padding: 36px 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      position: relative;
+    }
+
+    .process-card .step-num {
+      font-family: var(--font-display);
+      font-size: 1.4rem;
+      font-weight: 600;
+      color: var(--accent);
+      border-bottom: 1px solid var(--hairline);
+      padding-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .process-card .step-num span.label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted-text);
+      font-weight: 500;
+    }
+
+    .process-card h3 {
+      font-size: 1.35rem;
+      line-height: 1.3;
+    }
+
+    .process-card p {
+      font-size: 0.95rem;
+      color: var(--secondary-text);
+      line-height: 1.55;
+    }
+
+    /* 6. Testimonials */
+    .testimonial-hero {
+      background: var(--surface);
+      border: 1px solid var(--hairline);
+      border-radius: var(--radius-surface);
+      padding: 48px;
+      margin-bottom: 24px;
+    }
+
+    .quote-mark {
+      font-family: var(--font-display);
+      font-size: 3rem;
+      line-height: 1;
+      color: var(--accent);
+      margin-bottom: 16px;
+    }
+
+    .quote-hero-text {
+      font-family: var(--font-display);
+      font-size: 1.55rem;
+      line-height: 1.35;
+      font-weight: 500;
+      color: var(--primary-text);
+      margin-bottom: 28px;
+    }
+
+    .author-lockup {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: var(--hairline);
+      border: 1px solid #36393d;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      color: var(--accent);
+    }
+
+    .author-info .name {
+      font-weight: 600;
+      color: var(--primary-text);
+      font-size: 1rem;
+    }
+
+    .author-info .role {
+      font-size: 0.85rem;
+      color: var(--muted-text);
+    }
+
+    .testimonial-subgrid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 24px;
+    }
+
+    .testimonial-card {
+      background: var(--surface);
+      border: 1px solid var(--hairline);
+      border-radius: var(--radius-surface);
+      padding: 32px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 20px;
+    }
+
+    .testimonial-card p {
+      font-size: 1rem;
+      line-height: 1.55;
+      color: var(--secondary-text);
+    }
+
+    /* 7. Pricing / Deployment Tiers */
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      align-items: stretch;
+    }
+
+    .pricing-card {
+      background: var(--surface);
+      border: 1px solid var(--hairline);
+      border-radius: var(--radius-surface);
+      padding: 36px 28px;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    .pricing-card.recommended {
+      border-color: var(--accent);
+      background: #14171c;
+    }
+
+    .rec-badge {
+      position: absolute;
+      top: -12px;
+      right: 24px;
+      background: var(--accent);
+      color: var(--accent-ink);
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 3px 10px;
+      border-radius: 4px;
+    }
+
+    .pricing-tier {
+      font-size: 1.15rem;
+      font-weight: 600;
+      color: var(--primary-text);
+      margin-bottom: 8px;
+    }
+
+    .pricing-desc {
+      font-size: 0.88rem;
+      color: var(--muted-text);
+      margin-bottom: 24px;
+      min-height: 42px;
+    }
+
+    .pricing-figure {
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+      margin-bottom: 24px;
+      padding-bottom: 24px;
+      border-bottom: 1px solid var(--hairline);
+    }
+
+    .pricing-figure .amount {
+      font-family: var(--font-display);
+      font-size: 2.2rem;
+      font-weight: 600;
+      color: var(--primary-text);
+    }
+
+    .pricing-figure .unit {
+      font-size: 0.85rem;
+      color: var(--muted-text);
+    }
+
+    .pricing-features {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 32px;
+      flex-grow: 1;
+    }
+
+    .pricing-features li {
+      font-size: 0.9rem;
+      color: var(--secondary-text);
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+    }
+
+    .pricing-features li svg {
+      color: var(--accent);
+      flex-shrink: 0;
+      margin-top: 3px;
+    }
+
+    .pricing-card .btn {
+      width: 100%;
+    }
+
+    /* 8. FAQ */
+    .faq-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+    }
+
+    details.faq-item {
+      background: var(--surface);
+      border: 1px solid var(--hairline);
+      border-radius: var(--radius-surface);
+      overflow: hidden;
+      transition: border-color 0.15s ease;
+    }
+
+    details.faq-item[open] {
+      border-color: #383b3e;
+    }
+
+    details.faq-item summary {
+      padding: 20px 24px;
+      font-family: var(--font-display);
+      font-size: 1.05rem;
+      font-weight: 500;
+      color: var(--primary-text);
+      cursor: pointer;
+      list-style: none;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      user-select: none;
+    }
+
+    details.faq-item summary::-webkit-details-marker { display: none; }
+
+    details.faq-item summary::after {
+      content: "+";
+      font-size: 1.4rem;
+      color: var(--accent);
+      transition: transform 0.2s ease;
+    }
+
+    details.faq-item[open] summary::after {
+      transform: rotate(45deg);
+    }
+
+    .faq-answer {
+      padding: 0 24px 24px;
+      font-size: 0.95rem;
+      line-height: 1.6;
+      color: var(--secondary-text);
+      border-top: 1px solid rgba(37, 39, 41, 0.5);
+      margin-top: 4px;
+      padding-top: 16px;
+    }
+
+    /* 9. Closing Banner (Inverted Ground) */
+    .closing-band {
+      background-color: var(--inverse-ground);
+      color: var(--inverse-text);
+      padding: 96px 0;
+      border-bottom: 1px solid var(--hairline);
+    }
+
+    .closing-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 36px;
+    }
+
+    .closing-content h2 {
+      color: var(--inverse-text);
+      font-size: 2.75rem;
+      line-height: 1.15;
+      font-weight: 500;
+      margin-bottom: 12px;
+      letter-spacing: -0.03em;
+    }
+
+    .closing-content p {
+      color: var(--inverse-muted);
+      font-size: 1.1rem;
+      max-width: 580px;
+    }
+
+    .closing-actions {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-shrink: 0;
+    }
+
+    /* 10. Footer */
+    .site-footer {
+      background: var(--ground);
+      padding: 80px 0 48px;
+    }
+
+    .footer-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr;
+      gap: 48px;
+      margin-bottom: 64px;
+    }
+
+    .footer-brand .brand { margin-bottom: 16px; }
+
+    .footer-brand p {
+      font-size: 0.9rem;
+      color: var(--muted-text);
+      line-height: 1.6;
+      max-width: 320px;
+    }
+
+    .footer-col h4 {
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--primary-text);
+      margin-bottom: 20px;
+      font-weight: 600;
+    }
+
+    .footer-links {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .footer-links a {
+      color: var(--muted-text);
+      font-size: 0.9rem;
+      transition: color 0.15s ease;
+    }
+    .footer-links a:hover { color: var(--primary-text); }
+
+    .footer-bottom {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 32px;
+      border-top: 1px solid var(--hairline);
+      font-size: 0.82rem;
+      color: var(--muted-text);
+    }
+
+    .footer-legal-links {
+      display: flex;
+      gap: 24px;
+    }
+
+    /* Responsive */
+    @media (max-width: 1024px) {
+      .hero-grid { grid-template-columns: 1fr; gap: 48px; }
+      .feature-row { grid-template-columns: 1fr; gap: 32px; }
+      .feature-row.swapped .feature-media { order: 2; }
+      .feature-row.swapped .feature-info { order: 1; }
+      .pricing-grid { grid-template-columns: 1fr; max-width: 480px; margin: 0 auto; }
+      .footer-grid { grid-template-columns: 1fr 1fr; gap: 36px; }
+      .logo-grid { grid-template-columns: repeat(3, 1fr); }
+      .faq-grid { grid-template-columns: 1fr; }
+      .closing-row { flex-direction: column; align-items: flex-start; }
+    }
+
+    @media (max-width: 768px) {
+      .nav-menu { display: none; }
+      .mobile-menu-btn { display: block; }
+      .hero-title { font-size: 47px; }
+      .section-header { flex-direction: column; align-items: flex-start; gap: 16px; }
+      .metrics-row { grid-template-columns: repeat(2, 1fr); }
+      .process-grid { grid-template-columns: 1fr; }
+      .testimonial-subgrid { grid-template-columns: 1fr; }
+      .footer-grid { grid-template-columns: 1fr; }
+      .footer-bottom { flex-direction: column; gap: 16px; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 1. Site Header -->
+  <header class="site-header">
+    <div class="container header-inner">
+      <a href="/landing.html" class="brand">
+        <span class="status-dot"></span>
+        Barangay Health Monitor
+      </a>
+      <nav aria-label="Main Navigation">
+        <ul class="nav-menu">
+          <li class="nav-item"><a href="#telemetry">Vitals Telemetry</a></li>
+          <li class="nav-item"><a href="#platform">Platform Architecture</a></li>
+          <li class="nav-item"><a href="#surveillance">BHW Surveillance</a></li>
+          <li class="nav-item"><a href="#faq">Privacy &amp; Security</a></li>
+        </ul>
+      </nav>
+      <div class="header-actions">
+        <a href="/citizen/login.html" class="btn btn-sm btn-secondary">Citizen Portal</a>
+        <a href="/bhw/login.html" class="btn btn-sm btn-primary">Health Worker Sign In</a>
+        <button class="mobile-menu-btn" aria-label="Toggle navigation menu" type="button">☰</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- 2. Hero Section -->
+  <section class="hero-section">
+    <div class="container hero-grid">
+      <div class="hero-content">
+        <div class="hero-eyebrow">Smart Primary Health Kiosk</div>
+        <h1 class="hero-title">Intelligent triage for every barangay.</h1>
+        <p class="hero-lede">
+          A high-reliability Raspberry Pi touchscreen kiosk deployed in local health centers. Complete biometric screening in under 60 seconds, synced securely to private citizen records and an anonymous community surveillance board.
+        </p>
+        <div class="hero-actions">
+          <a href="/citizen/register.html" class="btn btn-primary">Register New Citizen</a>
+          <a href="/bhw/dashboard.html" class="btn btn-secondary">Explore Health Desk</a>
+        </div>
+        <div class="trust-caption">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          Republic Act 10173 (Data Privacy Act) verified with offline local SQLite fallback
+        </div>
+        <div class="metrics-row">
+          <div class="metric-item">
+            <div class="val">7 Vitals</div>
+            <div class="lbl">Automated sensors</div>
+          </div>
+          <div class="metric-item">
+            <div class="val">&lt;60s</div>
+            <div class="lbl">Screening time</div>
+          </div>
+          <div class="metric-item">
+            <div class="val">100%</div>
+            <div class="lbl">Offline resilient</div>
+          </div>
+          <div class="metric-item">
+            <div class="val">PHT</div>
+            <div class="lbl">Philippine Time sync</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Framed Browser Mockup -->
+      <div class="browser-frame" role="region" aria-label="Kiosk Telemetry Live Interface Preview">
+        <div class="browser-topbar">
+          <div class="dots"><span></span><span></span><span></span></div>
+          <div class="browser-url">kiosk.barangay.health.gov.ph/telemetry</div>
+        </div>
+        <div class="browser-body">
+          <div class="telemetry-grid">
+            <div class="telemetry-tile">
+              <div class="lbl">Blood Pressure</div>
+              <div class="val">118 / 78</div>
+              <div class="status">Optimal · Normal</div>
+            </div>
+            <div class="telemetry-tile">
+              <div class="lbl">Blood Oxygen (SpO₂)</div>
+              <div class="val">99%</div>
+              <div class="status">Normal Range</div>
+            </div>
+            <div class="telemetry-tile">
+              <div class="lbl">Body Temperature</div>
+              <div class="val">36.7 °C</div>
+              <div class="status">Afebrile</div>
+            </div>
+            <div class="telemetry-tile">
+              <div class="lbl">Pulse Rate</div>
+              <div class="val">72 bpm</div>
+              <div class="status">Resting Rhythm</div>
+            </div>
+            <div class="telemetry-tile">
+              <div class="lbl">Body Mass Index</div>
+              <div class="val">23.8</div>
+              <div class="status">Normal weight</div>
+            </div>
+            <div class="telemetry-tile">
+              <div class="lbl">Weight / Height</div>
+              <div class="val">68.2 kg</div>
+              <div class="status">169.5 cm</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. Logo Cloud (Mechanism: Actions beside headings) -->
+  <section class="section-band" id="partners">
+    <div class="container">
+      <div class="section-header">
+        <div class="title-wrap">
+          <p class="section-eyebrow">Public Health Ecosystem</p>
+          <h2 class="section-title">Built for Philippine local<br>health governance.</h2>
+        </div>
+        <a href="/bhw/reports.html" class="btn btn-sm btn-secondary">View RHU Reports →</a>
+      </div>
+      <p class="logo-cloud-caption">Integrated with Philippine public health standards &amp; local government units</p>
+      <div class="logo-grid">
+        <div class="logo-item">Department of Health</div>
+        <div class="logo-item">PhilHealth</div>
+        <div class="logo-item">Camiguin Health Office</div>
+        <div class="logo-item">Rural Health Unit (RHU)</div>
+        <div class="logo-item">Barangay Council</div>
+        <div class="logo-item">PMA Accredited</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. Features (3 Alternating Rows; Mechanism: Actions beside headings) -->
+  <section class="section-band" id="telemetry">
+    <div class="container">
+      <div class="section-header">
+        <div class="title-wrap">
+          <p class="section-eyebrow">System Capabilities</p>
+          <h2 class="section-title">Automated screening from<br>kiosk hardware to cloud.</h2>
+        </div>
+        <a href="/citizen/dashboard.html" class="btn btn-sm btn-secondary">Open Citizen Desk →</a>
+      </div>
+
+      <!-- Feature Row 1 -->
+      <div class="feature-row">
+        <div class="feature-info">
+          <div class="feat-tag">Biometric Telemetry</div>
+          <h3>Seven critical clinical vitals measured in one rapid touch.</h3>
+          <p>
+            Citizens take their seat at the Raspberry Pi kiosk. Digital blood pressure cuff, medical-grade infrared temperature sensor, SpO₂ pulse oximeter, and digital ultrasonic height and load-cell weight sensors collect full readings automatically.
+          </p>
+          <ul class="feature-list">
+            <li><span class="bullet"></span> Immediate clinical threshold classification (Normal, Elevated, Crisis)</li>
+            <li><span class="bullet"></span> Audio-visual feedback guided in local dialects</li>
+            <li><span class="bullet"></span> Instant offline storage in local SQLite database</li>
+          </ul>
+        </div>
+        <div class="feature-media">
+          <div class="telemetry-tile">
+            <div class="lbl">Clinical Triage Alert Trigger</div>
+            <div class="val" style="color: #f87171;">Fever ≥ 37.9 °C</div>
+            <div class="status abnormal">Automated BHW Community Surveillance Flag</div>
+          </div>
+          <div class="telemetry-tile">
+            <div class="lbl">Hypertensive Screening</div>
+            <div class="val">Stage 1 &amp; Stage 2</div>
+            <div class="status">Color-coded feedback for early intervention</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Feature Row 2 (Swapped) -->
+      <div class="feature-row swapped">
+        <div class="feature-info">
+          <div class="feat-tag">Citizen Sovereignty</div>
+          <h3>Private Health Passport with irreversible consent logs.</h3>
+          <p>
+            Every citizen owns their data. Under the Philippine Data Privacy Act (RA 10173), Barangay Health Workers cannot view identifiable logs without active, explicit consent granted directly by the citizen.
+          </p>
+          <ul class="feature-list">
+            <li><span class="bullet"></span> Instant grant or revoke of BHW medical record access</li>
+            <li><span class="bullet"></span> Immutable append-only audit trail for every BHW file inspection</li>
+            <li><span class="bullet"></span> One-click printable official Barangay Health Passport card</li>
+          </ul>
+        </div>
+        <div class="feature-media">
+          <div class="telemetry-tile">
+            <div class="lbl">Consent Status</div>
+            <div class="val" style="color: var(--accent);">Active &amp; Consented</div>
+            <div class="status">BHW Access Permitted · Revocable at any time</div>
+          </div>
+          <div class="telemetry-tile">
+            <div class="lbl">Immutable Audit Log</div>
+            <div class="val" style="font-size: 1.1rem;">Worker BHW-04 accessed record</div>
+            <div class="status">Timestamped PHT · IP &amp; User Agent Logged</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Feature Row 3 -->
+      <div class="feature-row" id="surveillance">
+        <div class="feature-info">
+          <div class="feat-tag">Community Health Desk</div>
+          <h3>Live epidemiological board with zero name exposure.</h3>
+          <p>
+            The BHW Operations Board aggregates community statistics in real-time. Track emerging fever clusters, hypertension prevalence, and triage referrals across 7, 30, and 90-day timeframes without ever exposing individual citizen identities.
+          </p>
+          <ul class="feature-list">
+            <li><span class="bullet"></span> Real-time fever trendline surveillance for outbreak detection</li>
+            <li><span class="bullet"></span> One-click Rural Health Unit (RHU) clinical referral packaging</li>
+            <li><span class="bullet"></span> Exportable CSV/PDF summary reports for municipal health offices</li>
+          </ul>
+        </div>
+        <div class="feature-media">
+          <div class="telemetry-tile">
+            <div class="lbl">Active Surveillance Period</div>
+            <div class="val">Last 30 Days</div>
+            <div class="status">418 Community Screenings · 12 RHU Referrals</div>
+          </div>
+          <div class="telemetry-tile">
+            <div class="lbl">Outbreak Alert Level</div>
+            <div class="val" style="color: #34d399;">Normal Baseline</div>
+            <div class="status">Fever rate 2.4% · Within statistical control limit</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5. Process (3 Connected Steps; Mechanism: Actions beside headings) -->
+  <section class="section-band" id="platform">
+    <div class="container">
+      <div class="section-header">
+        <div class="title-wrap">
+          <p class="section-eyebrow">Operating Architecture</p>
+          <h2 class="section-title">From kiosk interaction to<br>municipal health network.</h2>
+        </div>
+        <a href="/citizen/history.html" class="btn btn-sm btn-secondary">Review Audit Trail →</a>
+      </div>
+      <div class="process-grid">
+        <div class="process-card">
+          <div class="step-num">
+            01
+            <span class="label">Screening</span>
+          </div>
+          <h3>Citizen walk-in or guest triage</h3>
+          <p>
+            The resident arrives at the barangay hall. They scan their citizen QR or authenticate via biometric/username on the touchscreen kiosk. Guest mode is supported for transient individuals.
+          </p>
+        </div>
+        <div class="process-card">
+          <div class="step-num">
+            02
+            <span class="label">Offline Edge</span>
+          </div>
+          <h3>Local capture &amp; edge computation</h3>
+          <p>
+            The Raspberry Pi controller samples sensors, computes BMI and vital classifications, stores the record locally in SQLite, and displays immediate clinical guidance even without internet.
+          </p>
+        </div>
+        <div class="process-card">
+          <div class="step-num">
+            03
+            <span class="label">Encrypted Sync</span>
+          </div>
+          <h3>REST API synchronization</h3>
+          <p>
+            When network connectivity is established, the kiosk sends an HMAC-authenticated HTTP POST to the Flask central server, instantly updating personal records and anonymous community totals.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6. Testimonials (Mechanism: Actions beside headings) -->
+  <section class="section-band">
+    <div class="container">
+      <div class="section-header">
+        <div class="title-wrap">
+          <p class="section-eyebrow">Field Verified</p>
+          <h2 class="section-title">Proven in frontline barangay<br>health centers.</h2>
+        </div>
+        <a href="/bhw/dashboard.html" class="btn btn-sm btn-secondary">Open Live Health Desk →</a>
+      </div>
+
+      <div class="testimonial-hero">
+        <div class="quote-mark">“</div>
+        <p class="quote-hero-text">
+          Before the kiosk, documenting blood pressure and temperature across three hundred citizens per week was manual, error-prone, and slow. Now residents check themselves in seconds, and our health station detects hypertensive spikes before they become emergencies.
+        </p>
+        <div class="author-lockup">
+          <div class="avatar">DR</div>
+          <div class="author-info">
+            <div class="name">Dr. Maria Elena Santos</div>
+            <div class="role">Municipal Health Officer, Camiguin Rural Health Unit</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="testimonial-subgrid">
+        <div class="testimonial-card">
+          <p>
+            “The consent model is genuine privacy. Seniors in our barangay trust the kiosk because they know their private numbers are locked until they choose to share them with me.”
+          </p>
+          <div class="author-lockup">
+            <div class="avatar">RA</div>
+            <div class="author-info">
+              <div class="name">Rosalinda Aquino</div>
+              <div class="role">Barangay Health Worker (BHW) Lead</div>
+            </div>
+          </div>
+        </div>
+        <div class="testimonial-card">
+          <p>
+            “Power and connectivity drop out frequently during typhoons. Because the kiosk stores everything locally in SQLite first, zero patient readings have ever been lost.”
+          </p>
+          <div class="author-lockup">
+            <div class="avatar">CJ</div>
+            <div class="author-info">
+              <div class="name">Capt. Juanito Carandang</div>
+              <div class="role">Barangay Chairman &amp; Council Lead</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7. Pricing / Deployment Tiers (Mechanism: Actions beside headings) -->
+  <section class="section-band" id="deployment">
+    <div class="container">
+      <div class="section-header">
+        <div class="title-wrap">
+          <p class="section-eyebrow">Deployment Packages</p>
+          <h2 class="section-title">Scalable hardware tiers for<br>local government units.</h2>
+        </div>
+        <a href="#faq" class="btn btn-sm btn-secondary">Read Implementation FAQ →</a>
+      </div>
+
+      <div class="pricing-grid">
+        <!-- Tier 1 -->
+        <div class="pricing-card">
+          <div class="pricing-tier">Barangay Station</div>
+          <div class="pricing-desc">Stand-alone kiosk for small remote sitios with intermittent connectivity.</div>
+          <div class="pricing-figure">
+            <span class="amount">₱0</span>
+            <span class="unit">/ Open-Source Core</span>
+          </div>
+          <ul class="pricing-features">
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Raspberry Pi 4 edge software</li>
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> 7-Vital biometric sensor support</li>
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Local SQLite database storage</li>
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Citizen Health Passport cards</li>
+          </ul>
+          <a href="/citizen/register.html" class="btn btn-secondary">Deploy Community Kiosk</a>
+        </div>
+
+        <!-- Tier 2 (Recommended) -->
+        <div class="pricing-card recommended">
+          <span class="rec-badge">Recommended</span>
+          <div class="pricing-tier">Health Center Hub</div>
+          <div class="pricing-desc">Complete barangay package with live BHW Surveillance Board and RHU referral pipeline.</div>
+          <div class="pricing-figure">
+            <span class="amount">LGU Grant</span>
+            <span class="unit">/ Per Barangay Center</span>
+          </div>
+          <ul class="pricing-features">
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Everything in Barangay Station</li>
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Central Flask cloud server deployment</li>
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> BHW Real-Time Epidemiological Desk</li>
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Granular RA 10173 Consent Gate</li>
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Direct RHU Clinical Referral Generator</li>
+          </ul>
+          <a href="/bhw/dashboard.html" class="btn btn-primary">Launch Barangay Desk</a>
+        </div>
+
+        <!-- Tier 3 -->
+        <div class="pricing-card">
+          <div class="pricing-tier">Municipal Network</div>
+          <div class="pricing-desc">Inter-barangay federation for municipal health offices and provincial health clusters.</div>
+          <div class="pricing-figure">
+            <span class="amount">LGU Network</span>
+            <span class="unit">/ Multi-Barangay Cluster</span>
+          </div>
+          <ul class="pricing-features">
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Unlimited connected kiosks</li>
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Municipal-wide outbreak radar</li>
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> PostgreSQL high-concurrency backend</li>
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> PhilHealth &amp; DOH e-Claims export</li>
+          </ul>
+          <a href="/bhw/reports.html" class="btn btn-secondary">Contact Municipal Lead</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 8. FAQ (Mechanism: Actions beside headings) -->
+  <section class="section-band" id="faq">
+    <div class="container">
+      <div class="section-header">
+        <div class="title-wrap">
+          <p class="section-eyebrow">Got Questions?</p>
+          <h2 class="section-title">Answers to common clinical<br>&amp; technical inquiries.</h2>
+        </div>
+        <a href="/citizen/consent.html" class="btn btn-sm btn-secondary">Review Consent Terms →</a>
+      </div>
+
+      <div class="faq-grid">
+        <details class="faq-item">
+          <summary>How does the kiosk handle power or internet outages?</summary>
+          <div class="faq-answer">
+            The kiosk runs an offline-first architecture powered by SQLite on the Raspberry Pi. When power drops, a UPS provides safe shutdown. When internet disconnects, all readings continue to be saved locally with timestamped telemetry. Once connection resumes, readings sync automatically to the central web platform.
+          </div>
+        </details>
+
+        <details class="faq-item">
+          <summary>Can Barangay Health Workers view my medical records without my permission?</summary>
+          <div class="faq-answer">
+            No. In strict compliance with Republic Act 10173 (Data Privacy Act of 2012), individual medical records are accessible to health workers only when the citizen explicitly grants consent. Citizens can grant or revoke consent at any time from their personal portal.
+          </div>
+        </details>
+
+        <details class="faq-item">
+          <summary>What physiological parameters does the kiosk measure?</summary>
+          <div class="faq-answer">
+            The automated station measures systolic and diastolic blood pressure, SpO₂ blood oxygen saturation, body temperature, pulse rate, weight, and height. It automatically derives Body Mass Index (BMI) and provides instant clinical stage classifications.
+          </div>
+        </details>
+
+        <details class="faq-item">
+          <summary>Can transient visitors or non-residents use the kiosk?</summary>
+          <div class="faq-answer">
+            Yes. The kiosk includes a dedicated Guest Mode. Visitors receive their immediate on-screen vital screening and a printed or QR-based summary, while their anonymized metrics contribute to community epidemiological statistics.
+          </div>
+        </details>
+
+        <details class="faq-item">
+          <summary>How is the BHW community board kept anonymous?</summary>
+          <div class="faq-answer">
+            The BHW Dashboard displays only aggregated statistical counters (e.g. fever rates, hypertension distribution) across the barangay. Individual names, usernames, and record cards are strictly isolated and never rendered on the community operations board.
+          </div>
+        </details>
+
+        <details class="faq-item">
+          <summary>How are clinical referrals to the Rural Health Unit handled?</summary>
+          <div class="faq-answer">
+            When a citizen's vitals demonstrate critical flags (such as Stage 2 Hypertension or severe SpO₂ drops), health workers with authorized consent can generate a formalized, tamper-evident RHU referral package complete with historical trend charts.
+          </div>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <!-- 9. Closing Banner (Inverted Ground) -->
+  <section class="closing-band">
+    <div class="container">
+      <div class="closing-row">
+        <div class="closing-content">
+          <h2>Deploy intelligent triage in your barangay today.</h2>
+          <p>Modernize primary healthcare delivery, empower barangay health workers, and safeguard citizen wellness with clinical-grade edge technology.</p>
+        </div>
+        <div class="closing-actions">
+          <a href="/citizen/register.html" class="btn btn-inverse">Create Citizen Account</a>
+          <a href="/bhw/login.html" class="btn btn-inverse-secondary">Health Worker Access</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 10. Footer -->
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <a href="/landing.html" class="brand">
+            <span class="status-dot"></span>
+            Barangay Health Monitor
+          </a>
+          <p>
+            An offline-first, clinical triage telemetry platform engineered for Philippine barangay health centers and rural municipal networks.
+          </p>
+        </div>
+
+        <div class="footer-col">
+          <h4>Portals</h4>
+          <ul class="footer-links">
+            <li><a href="/citizen/login.html">Citizen Portal</a></li>
+            <li><a href="/citizen/register.html">Citizen Registration</a></li>
+            <li><a href="/citizen/dashboard.html">My Health Passport</a></li>
+            <li><a href="/citizen/consent.html">Consent Management</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h4>Health Desk</h4>
+          <ul class="footer-links">
+            <li><a href="/bhw/login.html">BHW Operations Sign In</a></li>
+            <li><a href="/bhw/dashboard.html">Barangay Health Board</a></li>
+            <li><a href="/bhw/search.html">Find Citizens</a></li>
+            <li><a href="/bhw/reports.html">Epidemiological Reports</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h4>Governance</h4>
+          <ul class="footer-links">
+            <li><a href="/bhw/audit-trail.html">Access Audit Trail</a></li>
+            <li><a href="#faq">Data Privacy Act (RA 10173)</a></li>
+            <li><a href="#telemetry">Kiosk Sensor Calibration</a></li>
+            <li><a href="#deployment">Municipal Health Network</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <div>
+          &copy; 2026 Republic of the Philippines · Barangay Health Monitoring System. All rights reserved.
+        </div>
+        <div class="footer-legal-links">
+          <span>Philippine Standard Time (PHT)</span>
+          <span>DPA Compliant</span>
+          <span>Offline Edge Ready</span>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Mobile menu toggle
+    var menuBtn = document.querySelector(".mobile-menu-btn");
+    var navMenu = document.querySelector(".nav-menu");
+    if (menuBtn && navMenu) {
+      menuBtn.addEventListener("click", function () {
+        var isOpen = navMenu.style.display === "flex";
+        navMenu.style.display = isOpen ? "none" : "flex";
+        if (!isOpen) {
+          navMenu.style.flexDirection = "column";
+          navMenu.style.position = "absolute";
+          navMenu.style.top = "72px";
+          navMenu.style.left = "0";
+          navMenu.style.right = "0";
+          navMenu.style.background = "#0f1012";
+          navMenu.style.padding = "24px";
+          navMenu.style.borderBottom = "1px solid #252729";
+        }
+      });
+    }
+  </script>
+</body>
+</html>
