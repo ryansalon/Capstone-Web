@@ -41,6 +41,14 @@ from sqlalchemy.orm import aliased, declarative_base, sessionmaker
 load_dotenv()
 
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///platform.db")
+# Render (and Heroku) hand out the legacy "postgres://" scheme, which
+# SQLAlchemy 2.x rejects. Normalize it to "postgresql://".
+if DATABASE_URL.startswith("postgres://"):
+    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
+# Pin the driver we ship in requirements.txt: SQLAlchemy >= 2.1 defaults a
+# plain "postgresql://" URL to psycopg (v3), but we install psycopg2-binary.
+if DATABASE_URL.startswith("postgresql://"):
+    DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+psycopg2://", 1)
 JWT_SECRET = os.getenv("JWT_SECRET", "change-me-jwt-secret")
 API_KEY = os.getenv("API_KEY", "dev-kiosk-key")
 
