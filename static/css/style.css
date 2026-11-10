@@ -72,6 +72,10 @@
   box-sizing: border-box;
 }
 
+[hidden] {
+  display: none !important;
+}
+
 html {
   -webkit-text-size-adjust: 100%;
 }
@@ -2565,6 +2569,29 @@ a.status-chip:hover {
 
   body.printing-passport * {
     visibility: hidden;
+  }
+
+  body.printing-passport .modal-backdrop {
+    position: static !important;
+    background: transparent !important;
+    padding: 0 !important;
+    display: block !important;
+  }
+
+  body.printing-passport .modal-card {
+    position: static !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    max-width: 100% !important;
+    max-height: none !important;
+    overflow: visible !important;
+    display: block !important;
+  }
+
+  body.printing-passport .modal-body {
+    padding: 0 !important;
+    overflow: visible !important;
+    display: block !important;
   }
 
   body.printing-passport .passport-card,
