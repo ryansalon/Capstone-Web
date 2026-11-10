@@ -1278,7 +1278,11 @@ def register_routes(app: Flask):
 
     @app.route("/")
     def index():
-        return send_from_directory(STATIC_DIR, "index.html")
+        resp = send_from_directory(STATIC_DIR, "index.html")
+        resp.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+        resp.headers["Pragma"] = "no-cache"
+        resp.headers["Expires"] = "0"
+        return resp
 
     @app.route("/<path:filename>")
     def serve_static(filename):
@@ -1289,7 +1293,11 @@ def register_routes(app: Flask):
             return jsonify({"error": "not found"}), 404
         full_path = os.path.join(STATIC_DIR, normalized)
         if os.path.isfile(full_path):
-            return send_from_directory(STATIC_DIR, normalized)
+            resp = send_from_directory(STATIC_DIR, normalized)
+            resp.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+            resp.headers["Pragma"] = "no-cache"
+            resp.headers["Expires"] = "0"
+            return resp
         return jsonify({"error": "not found"}), 404
 
     return app
