@@ -22,11 +22,11 @@
         <form id="loginForm" novalidate>
           <div class="field">
             <label for="username">Username</label>
-            <input id="username" name="username" type="text" autocomplete="username" required>
+            <input id="username" name="username" type="text" autocomplete="username" required aria-required="true" aria-describedby="loginError">
           </div>
           <div class="field">
             <label for="password">Password</label>
-            <input id="password" name="password" type="password" autocomplete="current-password" required>
+            <input id="password" name="password" type="password" autocomplete="current-password" required aria-required="true" aria-describedby="loginError">
           </div>
           <button id="loginSubmit" class="btn btn-primary" type="submit">Sign in</button>
         </form>

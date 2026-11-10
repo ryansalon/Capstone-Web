@@ -148,12 +148,22 @@
       var node = document.getElementById(id);
       var existing = document.getElementById(id + "-error");
       if (existing) existing.remove();
-      if (!node || !message) return;
+      if (!node) return;
+      if (!message) {
+        node.removeAttribute("aria-invalid");
+        return;
+      }
+      node.setAttribute("aria-invalid", "true");
+      node.setAttribute("aria-describedby", id + "-error");
       var err = U.el("p", { id: id + "-error", class: "form-error", role: "alert" }, message);
       node.parentNode.insertBefore(err, node.nextSibling);
     }
 
     function clearFieldError(id) {
+      var node = document.getElementById(id);
+      if (node) {
+        node.removeAttribute("aria-invalid");
+      }
       var existing = document.getElementById(id + "-error");
       if (existing) existing.remove();
     }
@@ -300,6 +310,19 @@
     foot.appendChild(U.el("span", { style: "font-weight:700; color:#0b3d30;" }, "✓ VERIFIED BY BARANGAY HEALTH KIOSK"));
     passport.appendChild(foot);
 
+    var sigBlock = U.el("div", { class: "official-signature-block print-only" });
+    var sigFlex = U.el("div", { style: "display:flex; justify-content:space-between; margin-top:2.2rem;" });
+    var sig1 = U.el("div");
+    sig1.appendChild(U.el("div", { style: "border-bottom:1.5px solid #000; width:220px; height:1.4rem;" }));
+    sig1.appendChild(U.el("div", { style: "font-size:0.75rem; margin-top:0.3rem; font-weight:600;" }, "Attending Health Worker (Signature)"));
+    sigFlex.appendChild(sig1);
+    var sig2 = U.el("div");
+    sig2.appendChild(U.el("div", { style: "border-bottom:1.5px solid #000; width:160px; height:1.4rem;" }));
+    sig2.appendChild(U.el("div", { style: "font-size:0.75rem; margin-top:0.3rem; font-weight:600;" }, "Date of Verification"));
+    sigFlex.appendChild(sig2);
+    sigBlock.appendChild(sigFlex);
+    passport.appendChild(sigBlock);
+
     body.appendChild(passport);
     card.appendChild(body);
 
@@ -334,11 +357,12 @@
     dismissBtn.onclick = closeDialog;
   }
 
-function addCard(container, label, value, sub, tone, gauge, delta, spark, pendingSparks) {
+function addCard(container, label, value, sub, tone, gauge, delta, spark, pendingSparks, refRange) {
     var card = U.el("div", { class: "card" + (tone ? " " + tone : "") });
     card.appendChild(U.el("div", { class: "label" }, label));
     card.appendChild(U.el("div", { class: "value" }, value));
     if (sub) card.appendChild(U.el("div", { class: "sub" }, sub));
+    if (refRange) card.appendChild(U.el("span", { class: "ref-range" }, refRange));
     if (delta) card.appendChild(delta);
     if (gauge) card.appendChild(gauge);
     if (spark) {
@@ -773,7 +797,8 @@ function addCard(container, label, value, sub, tone, gauge, delta, spark, pendin
       bpGauge,
       bpDelta,
       spark(logs, "systolic_bp", "#1565c0"),
-      pendingSparks
+      pendingSparks,
+      "Target: <120/80 mmHg"
     );
 
     var spo2Cat = spo2Category(log.spo2);
@@ -788,7 +813,8 @@ function addCard(container, label, value, sub, tone, gauge, delta, spark, pendin
       spo2Gauge,
       spo2Delta,
       spark(logs, "spo2", "#0b3d30"),
-      pendingSparks
+      pendingSparks,
+      "Normal: 95–100%"
     );
 
     var hasFever = !isMissing(log.temperature) && Number(log.temperature) >= 37.9;
@@ -803,7 +829,8 @@ function addCard(container, label, value, sub, tone, gauge, delta, spark, pendin
       tempGauge,
       tempDelta,
       spark(logs, "temperature", "#a5271d"),
-      pendingSparks
+      pendingSparks,
+      "Normal: 36.5–37.5 °C"
     );
 
     addCard(
@@ -815,7 +842,8 @@ function addCard(container, label, value, sub, tone, gauge, delta, spark, pendin
       null,
       pulseDelta,
       spark(logs, "pulse_rate", "#0f6b53"),
-      pendingSparks
+      pendingSparks,
+      "Resting: 60–100 bpm"
     );
 
     var bmiCat = bmiCategory(log.bmi);
@@ -830,7 +858,8 @@ function addCard(container, label, value, sub, tone, gauge, delta, spark, pendin
       bmiGauge,
       bmiDelta,
       spark(logs, "bmi", "#8a5a00"),
-      pendingSparks
+      pendingSparks,
+      "Normal: 18.5–24.9 kg/m²"
     );
 
     addCard(fragSupport, "Weight", U.fmtNum(log.weight, 1, "kg"), null, isMissing(log.weight) ? "missing" : null, null, weightDelta, spark(logs, "weight", "#0f6b53"), pendingSparks);
@@ -1074,7 +1103,7 @@ function addCard(container, label, value, sub, tone, gauge, delta, spark, pendin
     var headRow = U.el("tr");
     ["Time (PHT)", "Weight (kg)", "Height (cm)", "BMI", "Temp (°C)", "Pulse (bpm)", "SpO2 (%)", "Blood pressure"]
       .forEach(function (label, index) {
-        headRow.appendChild(U.el("th", index === 0 ? null : { class: "num" }, label));
+        headRow.appendChild(U.el("th", index === 0 ? { scope: "col" } : { class: "num", scope: "col" }, label));
       });
     thead.appendChild(headRow);
     table.appendChild(thead);
@@ -1083,7 +1112,7 @@ function addCard(container, label, value, sub, tone, gauge, delta, spark, pendin
     var rowsFrag = document.createDocumentFragment();
     pageSlice.forEach(function (log) {
       var row = U.el("tr");
-      row.appendChild(U.el("td", { class: "nowrap", title: U.fmtUTC(log.timestamp) }, U.fmtDT(log.timestamp)));
+      row.appendChild(U.el("th", { class: "nowrap", scope: "row", title: U.fmtUTC(log.timestamp), style: "font-weight:600; text-align:left; background:transparent;" }, U.fmtDT(log.timestamp)));
       [
         U.fmtNum(log.weight, 1),
         U.fmtNum(log.height, 1),
@@ -1419,7 +1448,7 @@ function addCard(container, label, value, sub, tone, gauge, delta, spark, pendin
     var thead = U.el("thead");
     var headRow = U.el("tr");
     ["Time (PHT)", "Action", "IP address"].forEach(function (label) {
-      headRow.appendChild(U.el("th", null, label));
+      headRow.appendChild(U.el("th", { scope: "col" }, label));
     });
     thead.appendChild(headRow);
     table.appendChild(thead);
@@ -1427,7 +1456,7 @@ function addCard(container, label, value, sub, tone, gauge, delta, spark, pendin
     var tbody = U.el("tbody");
     history.forEach(function (entry) {
       var row = U.el("tr");
-      row.appendChild(U.el("td", { class: "nowrap", title: U.fmtUTC(entry.timestamp) }, U.fmtDT(entry.timestamp)));
+      row.appendChild(U.el("th", { class: "nowrap", scope: "row", title: U.fmtUTC(entry.timestamp), style: "font-weight:600; text-align:left; background:transparent;" }, U.fmtDT(entry.timestamp)));
       var actionCell = U.el("td");
       actionCell.appendChild(
         U.el(

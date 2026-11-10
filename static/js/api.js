@@ -243,6 +243,36 @@
       if (target) UI.clear(target);
     },
 
+    tableSkeleton: function (columns, rowCount) {
+      var wrap = UI.el("div", { class: "table-wrap skeleton-table-wrap", "aria-busy": "true", "aria-label": "Loading table data" });
+      var table = UI.el("table");
+      var thead = UI.el("thead");
+      var headRow = UI.el("tr");
+      (columns || ["", "", "", ""]).forEach(function (colName) {
+        var th = UI.el("th", { scope: "col" });
+        var bar = UI.el("div", { class: "skeleton skeleton-label" });
+        if (colName) th.textContent = colName;
+        else th.appendChild(bar);
+        headRow.appendChild(th);
+      });
+      thead.appendChild(headRow);
+      table.appendChild(thead);
+      var tbody = UI.el("tbody");
+      var count = rowCount || 4;
+      for (var r = 0; r < count; r++) {
+        var tr = UI.el("tr");
+        for (var c = 0; c < (columns ? columns.length : 4); c++) {
+          var td = UI.el("td");
+          td.appendChild(UI.el("div", { class: "skeleton skeleton-sub", style: "width:" + (55 + ((r + c) % 3) * 15) + "%;" }));
+          tr.appendChild(td);
+        }
+        tbody.appendChild(tr);
+      }
+      table.appendChild(tbody);
+      wrap.appendChild(table);
+      return wrap;
+    },
+
     /* Show a modal backdrop as an accessible dialog:
      * role/aria-modal/aria-labelledby for screen readers, Escape and
      * backdrop-click to close, focus moved in and restored on close, and a

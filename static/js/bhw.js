@@ -107,15 +107,15 @@
     var table = U.el("table");
     var thead = U.el("thead");
     var headRow = U.el("tr");
-    headRow.appendChild(U.el("th", null, "Category"));
-    headRow.appendChild(U.el("th", { class: "num" }, "Count"));
-    headRow.appendChild(U.el("th", { class: "num" }, "Share"));
+    headRow.appendChild(U.el("th", { scope: "col" }, "Category"));
+    headRow.appendChild(U.el("th", { class: "num", scope: "col" }, "Count"));
+    headRow.appendChild(U.el("th", { class: "num", scope: "col" }, "Share"));
     thead.appendChild(headRow);
     table.appendChild(thead);
     var tbody = U.el("tbody");
     keys.forEach(function (key) {
       var row = U.el("tr");
-      row.appendChild(U.el("td", null, key));
+      row.appendChild(U.el("th", { scope: "row", style: "font-weight:600; text-align:left; background:transparent;" }, key));
       row.appendChild(U.el("td", { class: "num" }, String(data[key])));
       var pct = total > 0 ? Math.round((data[key] / total) * 100) : 0;
       row.appendChild(U.el("td", { class: "num" }, pct + "%"));
@@ -658,7 +658,7 @@
     var headRow = U.el("tr");
     ["Name", "Username", "Birthdate", "Last measurement (PHT)", "Consent", "Actions"].forEach(function (label, index) {
       headRow.appendChild(
-        U.el("th", index === 5 ? { style: "text-align:right;" } : null, label)
+        U.el("th", index === 5 ? { style: "text-align:right;", scope: "col" } : { scope: "col" }, label)
       );
     });
     thead.appendChild(headRow);
@@ -671,7 +671,7 @@
       if (citizen.consent) {
         row.style.background = "#fafdfb";
       }
-      row.appendChild(U.el("td", { style: "font-weight:600;" }, citizen.full_name));
+      row.appendChild(U.el("th", { scope: "row", style: "font-weight:600; text-align:left; background:transparent;" }, citizen.full_name));
       row.appendChild(U.el("td", { class: "muted" }, citizen.username));
       row.appendChild(U.el("td", { class: "nowrap" }, citizen.birthdate || "—"));
       row.appendChild(
@@ -704,7 +704,9 @@
     var statusNode = document.getElementById("status");
     var query = fieldValue("searchInput");
     U.loading(statusNode, "Searching citizens…");
-    U.clear(document.getElementById("results"));
+    var results = document.getElementById("results");
+    U.clear(results);
+    results.appendChild(U.tableSkeleton(["Name", "Username", "Birthdate", "Last measurement (PHT)", "Consent", "Actions"], 3));
     try {
       var data = await API.apiFetch(
         "/api/bhw/citizens?search=" + encodeURIComponent(query)
@@ -739,15 +741,16 @@
     var thead = U.el("thead");
     var headRow = U.el("tr");
     ["Time (PHT)", "Weight (kg)", "Height (cm)", "BMI", "Temp (°C)", "Pulse (bpm)", "SpO2 (%)", "Blood pressure"].forEach(function (label, index) {
-      headRow.appendChild(U.el("th", index === 0 ? null : { class: "num" }, label));
+      headRow.appendChild(U.el("th", index === 0 ? { scope: "col" } : { class: "num", scope: "col" }, label));
     });
     thead.appendChild(headRow);
     table.appendChild(thead);
 
     var tbody = U.el("tbody");
+    var rowsFrag = document.createDocumentFragment();
     logs.forEach(function (log) {
       var row = U.el("tr");
-      row.appendChild(U.el("td", { class: "nowrap" }, U.fmtDT(log.timestamp)));
+      row.appendChild(U.el("th", { class: "nowrap", scope: "row", style: "font-weight:600; text-align:left; background:transparent;" }, U.fmtDT(log.timestamp)));
       [
         U.fmtNum(log.weight, 1),
         U.fmtNum(log.height, 1),
@@ -762,8 +765,9 @@
       ].forEach(function (value) {
         row.appendChild(U.el("td", { class: "num" }, value));
       });
-      tbody.appendChild(row);
+      rowsFrag.appendChild(row);
     });
+    tbody.appendChild(rowsFrag);
     table.appendChild(tbody);
     tableWrap.appendChild(table);
     wrap.appendChild(tableWrap);
@@ -1011,21 +1015,23 @@
     var thead = U.el("thead");
     var headRow = U.el("tr");
     ["Time (PHT)", "Health worker", "Citizen", "Action", "IP address"].forEach(function (label) {
-      headRow.appendChild(U.el("th", null, label));
+      headRow.appendChild(U.el("th", { scope: "col" }, label));
     });
     thead.appendChild(headRow);
     table.appendChild(thead);
 
     var tbody = U.el("tbody");
+    var rowsFrag = document.createDocumentFragment();
     rows.forEach(function (entry) {
       var row = U.el("tr");
-      row.appendChild(U.el("td", { class: "nowrap" }, U.fmtDT(entry.time)));
+      row.appendChild(U.el("th", { class: "nowrap", scope: "row", style: "font-weight:600; text-align:left; background:transparent;" }, U.fmtDT(entry.time)));
       row.appendChild(U.el("td", null, entry.bhw_name));
       row.appendChild(U.el("td", null, entry.citizen_name));
       row.appendChild(U.el("td", null, entry.action));
       row.appendChild(U.el("td", null, entry.ip || "—"));
-      tbody.appendChild(row);
+      rowsFrag.appendChild(row);
     });
+    tbody.appendChild(rowsFrag);
     table.appendChild(tbody);
     tableWrap.appendChild(table);
     results.appendChild(tableWrap);
@@ -1042,7 +1048,9 @@
     if (bhw) params.set("bhw", bhw);
 
     U.loading(statusNode, "Loading audit entries…");
-    U.clear(document.getElementById("results"));
+    var results = document.getElementById("results");
+    U.clear(results);
+    results.appendChild(U.tableSkeleton(["Time (PHT)", "Health worker", "Citizen", "Action", "IP address"], 4));
     try {
       var data = await API.apiFetch("/api/bhw/audit-trail?" + params.toString());
       U.clear(statusNode);

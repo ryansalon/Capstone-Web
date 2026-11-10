@@ -22,28 +22,28 @@
         <form id="registerForm" novalidate>
           <div class="field">
             <label for="fullName">Full name</label>
-            <input id="fullName" name="full_name" type="text" autocomplete="name" required>
+            <input id="fullName" name="full_name" type="text" autocomplete="name" required aria-required="true" aria-describedby="registerError">
           </div>
           <div class="field">
             <label for="username">Username</label>
-            <input id="username" name="username" type="text" autocomplete="username" required>
+            <input id="username" name="username" type="text" autocomplete="username" required aria-required="true" aria-describedby="registerError">
           </div>
           <div class="field">
             <label for="password">Password</label>
-            <input id="password" name="password" type="password" autocomplete="new-password" minlength="8" required>
-            <p class="hint">At least 8 characters.</p>
+            <input id="password" name="password" type="password" autocomplete="new-password" minlength="8" required aria-required="true" aria-describedby="registerPasswordHint registerError">
+            <p id="registerPasswordHint" class="hint">At least 8 characters.</p>
           </div>
           <div class="field">
             <label for="confirmPassword">Confirm password</label>
-            <input id="confirmPassword" name="confirm_password" type="password" autocomplete="new-password" required>
+            <input id="confirmPassword" name="confirm_password" type="password" autocomplete="new-password" required aria-required="true" aria-describedby="registerError">
           </div>
           <div class="field">
             <label for="birthdate">Birthdate</label>
-            <input id="birthdate" name="birthdate" type="date" required>
+            <input id="birthdate" name="birthdate" type="date" required aria-required="true" aria-describedby="registerError">
           </div>
           <div class="field">
             <label for="gender">Gender</label>
-            <select id="gender" name="gender" required>
+            <select id="gender" name="gender" required aria-required="true" aria-describedby="registerError">
               <option value="male">Male</option>
               <option value="female">Female</option>
               <option value="other">Other</option>

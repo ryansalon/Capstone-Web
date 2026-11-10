@@ -62,8 +62,8 @@
                 <button class="chip" type="button" data-chip="Referred to RHU doctor for further clinical assessment.">🏥 Refer to RHU Doctor</button>
                 <button class="chip" type="button" data-chip="Advised immediate rest, hydration, and fever monitoring.">🌡️ Fever Guidance</button>
               </div>
-              <textarea id="noteText" name="note" maxlength="1000" placeholder="Follow-up plan, observations, referrals…"></textarea>
-              <p class="hint">Visible only to health workers. Maximum 1000 characters.</p>
+              <textarea id="noteText" name="note" maxlength="1000" placeholder="Follow-up plan, observations, referrals…" aria-describedby="noteHint noteError"></textarea>
+              <p id="noteHint" class="hint">Visible only to health workers. Maximum 1000 characters.</p>
             </div>
             <p id="noteError" class="form-error" role="alert"></p>
             <p id="noteFeedback" class="form-success" role="status"></p>

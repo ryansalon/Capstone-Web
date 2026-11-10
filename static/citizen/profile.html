@@ -43,11 +43,11 @@
             </div>
             <div class="field">
               <label for="fullName">Full name</label>
-              <input id="fullName" name="full_name" type="text" autocomplete="name" required>
+              <input id="fullName" name="full_name" type="text" autocomplete="name" required aria-required="true" aria-describedby="profileError">
             </div>
             <div class="field">
               <label for="birthdate">Birthdate</label>
-              <input id="birthdate" name="birthdate" type="date" required>
+              <input id="birthdate" name="birthdate" type="date" required aria-required="true" aria-describedby="profileError">
             </div>
             <div class="field">
               <label for="gender">Gender</label>
@@ -68,12 +68,12 @@
           <form id="passwordForm" novalidate>
             <div class="field">
               <label for="currentPassword">Current password</label>
-              <input id="currentPassword" name="current_password" type="password" autocomplete="current-password" required>
+              <input id="currentPassword" name="current_password" type="password" autocomplete="current-password" required aria-required="true" aria-describedby="passwordError">
             </div>
             <div class="field">
               <label for="newPassword">New password</label>
-              <input id="newPassword" name="new_password" type="password" autocomplete="new-password" minlength="8" required>
-              <p class="hint">At least 8 characters.</p>
+              <input id="newPassword" name="new_password" type="password" autocomplete="new-password" minlength="8" required aria-required="true" aria-describedby="passwordHint passwordError">
+              <p id="passwordHint" class="hint">At least 8 characters.</p>
             </div>
             <button id="passwordSubmit" class="btn btn-primary" type="submit">Update password</button>
           </form>

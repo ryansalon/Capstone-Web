@@ -39,7 +39,29 @@
   --blue-bg: #eaf3fc;
   --blue-fg: #1558a6;
 
+  /* Semantic functional aliases */
+  --surface-card: #ffffff;
+  --surface-subtle: #f2faf6;
+  --surface-hover: #e8f3ed;
+  --border-subtle: #d5e1dc;
+  --border-default: #b0c4bc;
+  --border-focus: #14876a;
+
+  --status-normal-bg: #e2f3ec;
+  --status-normal-fg: #0a4f3b;
+  --status-normal-border: #9dd0bc;
+
+  --status-attention-bg: #fef6e4;
+  --status-attention-fg: #7a4700;
+  --status-attention-border: #f0cf8e;
+
+  --status-alert-bg: #fdeeed;
+  --status-alert-fg: #8e1f16;
+  --status-alert-border: #f2b8b3;
+
   --radius: 12px;
+  --radius-sm: 8px;
+  --radius-pill: 999px;
   --shadow: 0 1px 3px rgba(11, 38, 29, 0.06), 0 4px 12px rgba(11, 38, 29, 0.04);
   --shadow-md: 0 6px 20px rgba(11, 38, 29, 0.08), 0 2px 5px rgba(11, 38, 29, 0.05);
   --font: "Inter", "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
@@ -611,6 +633,14 @@ h3 {
   box-shadow: 0 0 0 3px rgba(20, 135, 106, 0.18);
 }
 
+.field input[aria-invalid="true"],
+.field select[aria-invalid="true"],
+.field textarea[aria-invalid="true"] {
+  border-color: var(--red-fg);
+  background-color: #fffbfa;
+  box-shadow: 0 0 0 3px rgba(165, 39, 29, 0.16);
+}
+
 .field input[readonly] {
   background: var(--canvas);
   color: var(--ink-soft);
@@ -756,6 +786,45 @@ h3 {
   color: var(--ink-soft);
   margin-top: 0.3rem;
   line-height: 1.45;
+}
+
+.card .ref-range {
+  display: block;
+  font-size: 0.77rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+  margin-top: 0.25rem;
+  letter-spacing: 0.005em;
+}
+
+.card .vital-badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.15rem 0.52rem;
+  border-radius: var(--radius-pill);
+  margin-top: 0.35rem;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.card .vital-badge.ok {
+  background: var(--status-normal-bg);
+  color: var(--status-normal-fg);
+  border: 1px solid var(--status-normal-border);
+}
+
+.card .vital-badge.warn {
+  background: var(--status-attention-bg);
+  color: var(--status-attention-fg);
+  border: 1px solid var(--status-attention-border);
+}
+
+.card .vital-badge.bad {
+  background: var(--status-alert-bg);
+  color: var(--status-alert-fg);
+  border: 1px solid var(--status-alert-border);
 }
 
 /* Semantic tone borders — colour appears when a reading requires attention or action. */
@@ -936,6 +1005,7 @@ h3 {
   border: 1px solid var(--line);
   border-radius: var(--radius);
   box-shadow: var(--shadow);
+  -webkit-overflow-scrolling: touch;
 }
 
 table {
@@ -962,14 +1032,26 @@ th {
   color: var(--green-900);
   white-space: nowrap;
   border-bottom: 1px solid var(--line-strong);
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  box-shadow: 0 1px 0 var(--line-strong);
 }
 
 tbody tr {
   transition: background 0.12s ease;
 }
 
+tbody tr:nth-child(even) {
+  background: rgba(242, 250, 246, 0.45);
+}
+
 tbody tr:hover {
-  background: var(--green-050);
+  background: var(--green-100);
+}
+
+.skeleton-table-wrap {
+  pointer-events: none;
 }
 
 tbody tr:last-child td {
@@ -2072,19 +2154,38 @@ a.status-chip:hover {
   min-height: 2.65rem;
 }
 
-/* Print Stylesheet for Health Passport */
+/* Print utility class */
+.print-only {
+  display: none !important;
+}
+
+/* Print Stylesheet for Health Passport & Official Records */
 @media print {
-  .toast-container {
-    display: none !important;
+  @page {
+    margin: 12mm 15mm;
+    size: auto;
   }
 
+  .print-only {
+    display: block !important;
+  }
+
+  .toast-container,
   .sidebar,
-  .topbar {
+  .topbar,
+  .btn,
+  .skip-link,
+  .modal-footer,
+  .modal-header .btn-ghost,
+  .filters,
+  #autoRefreshToggle,
+  .quick-links {
     display: none !important;
   }
 
   .workspace {
     margin-left: 0 !important;
+    padding: 0 !important;
   }
 
   body.printing-passport * {
@@ -2101,13 +2202,55 @@ a.status-chip:hover {
     left: 0;
     top: 0;
     width: 100%;
-    border: 2px solid #000;
-    box-shadow: none;
+    border: 2px solid #000 !important;
+    box-shadow: none !important;
+    color: #000 !important;
+    background: #fff !important;
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  body.printing-passport .passport-stat {
+    border: 1px solid #444 !important;
+    background: #fff !important;
+  }
+
+  body.printing-passport .passport-stat .val {
+    color: #000 !important;
   }
 
   body.printing-passport .modal-footer,
   body.printing-passport .modal-header {
-    display: none;
+    display: none !important;
+  }
+}
+
+/* Windows High Contrast Mode (WCAG 2.1 AA+) */
+@media (forced-colors: active) {
+  :focus-visible,
+  .btn:focus-visible,
+  .field input:focus,
+  .field select:focus,
+  .field textarea:focus {
+    outline: 3px solid Highlight !important;
+    outline-offset: 2px;
+  }
+
+  .badge,
+  .status-chip,
+  .hero-pill,
+  .btn,
+  .card,
+  .total,
+  .chip,
+  .vital-badge {
+    forced-color-adjust: none;
+    border: 1px solid ButtonText !important;
+  }
+
+  .gauge-pin {
+    border: 2px solid ButtonText !important;
+    background: Highlight !important;
   }
 }
 
