@@ -9,67 +9,73 @@
 </head>
 <body data-page="bhw-citizen-view">
   <a class="skip-link" href="#main">Skip to main content</a>
-  <header class="topbar">
-    <div class="brand"><span class="dot" aria-hidden="true"></span>Barangay Health Monitor</div>
-    <nav class="topnav" aria-label="Health worker navigation">
-      <a href="/bhw/dashboard.html">Dashboard</a>
-      <a href="/bhw/search.html" aria-current="page">Find citizens</a>
-      <a href="/bhw/audit-trail.html">Audit trail</a>
-      <a href="/bhw/reports.html">Reports</a>
-      <span id="whoami" class="whoami"></span>
-      <button id="logoutBtn" class="btn btn-ghost" type="button">Log out</button>
-    </nav>
-  </header>
+  <div class="shell">
+    <aside class="sidebar">
+      <div class="brand"><span class="dot" aria-hidden="true"></span>Barangay Health Monitor</div>
+      <nav class="sidenav" aria-label="Health worker navigation">
+        <a href="/bhw/dashboard.html">Dashboard</a>
+        <a href="/bhw/search.html" aria-current="page">Find citizens</a>
+        <a href="/bhw/audit-trail.html">Audit trail</a>
+        <a href="/bhw/reports.html">Reports</a>
+      </nav>
+      <div class="sidebar-foot">
+        <span id="whoami" class="whoami"></span>
+        <button id="logoutBtn" class="btn btn-ghost" type="button">Log out</button>
+      </div>
+    </aside>
+    <div class="workspace">
 
-  <main id="main" class="page">
-    <p><a href="/bhw/search.html">← Back to search</a></p>
-    <h1 id="pageTitle">Citizen record</h1>
-    <p class="lede">This access is recorded in the audit trail.</p>
+    <main id="main" class="page">
+      <p><a href="/bhw/search.html">← Back to search</a></p>
+      <h1 id="pageTitle">Citizen record</h1>
+      <p class="lede">This access is recorded in the audit trail.</p>
 
-    <div id="status" aria-live="polite"></div>
-    <div id="consentBlocked"></div>
+      <div id="status" aria-live="polite"></div>
+      <div id="consentBlocked"></div>
 
-    <div id="record" hidden>
-      <section class="card-surface" aria-labelledby="profileHeading">
-        <h2 id="profileHeading">Profile</h2>
-        <dl id="profileKv" class="kv"></dl>
-        <p id="consentLine" class="notice" style="margin-top:1rem;"></p>
-        <div class="btn-row">
-          <button id="referBtn" class="btn btn-secondary" type="button">Refer to RHU</button>
-        </div>
-      </section>
-
-      <section class="section" aria-labelledby="readingsHeading">
-        <h2 id="readingsHeading">Readings</h2>
-        <div id="readings"></div>
-      </section>
-
-      <section class="section" aria-labelledby="notesHeading">
-        <h2 id="notesHeading">Private notes</h2>
-        <div id="notesArea"></div>
-        <form id="noteForm" class="card-surface" novalidate>
-          <div class="field">
-            <label for="noteText">Add a note</label>
-            <div class="chip-group" id="noteChips">
-              <span class="chip-label">Quick templates (click to insert):</span>
-              <button class="chip" type="button" data-chip="BP follow-up scheduled for next week.">📅 BP Follow-up</button>
-              <button class="chip" type="button" data-chip="Advised low-sodium diet and lifestyle modification.">🥗 Low-sodium Diet</button>
-              <button class="chip" type="button" data-chip="Vitals within healthy normal limits. Routine check.">✓ Normal Vitals</button>
-              <button class="chip" type="button" data-chip="Referred to RHU doctor for further clinical assessment.">🏥 Refer to RHU Doctor</button>
-              <button class="chip" type="button" data-chip="Advised immediate rest, hydration, and fever monitoring.">🌡️ Fever Guidance</button>
-            </div>
-            <textarea id="noteText" name="note" maxlength="1000" placeholder="Follow-up plan, observations, referrals…"></textarea>
-            <p class="hint">Visible only to health workers. Maximum 1000 characters.</p>
+      <div id="record" hidden>
+        <section class="card-surface" aria-labelledby="profileHeading">
+          <h2 id="profileHeading">Profile</h2>
+          <dl id="profileKv" class="kv"></dl>
+          <p id="consentLine" class="notice" style="margin-top:1rem;"></p>
+          <div class="btn-row">
+            <button id="referBtn" class="btn btn-secondary" type="button">Refer to RHU</button>
           </div>
-          <p id="noteError" class="form-error" role="alert"></p>
-          <p id="noteFeedback" class="form-success" role="status"></p>
-          <button id="noteSubmit" class="btn btn-primary" type="submit">Save note</button>
-        </form>
-      </section>
-    </div>
-  </main>
+        </section>
 
-  <footer class="foot">Notes and record views are audited. RA 10173 applies.</footer>
+        <section class="section" aria-labelledby="readingsHeading">
+          <h2 id="readingsHeading">Readings</h2>
+          <div id="readings"></div>
+        </section>
+
+        <section class="section" aria-labelledby="notesHeading">
+          <h2 id="notesHeading">Private notes</h2>
+          <div id="notesArea"></div>
+          <form id="noteForm" class="card-surface" novalidate>
+            <div class="field">
+              <label for="noteText">Add a note</label>
+              <div class="chip-group" id="noteChips">
+                <span class="chip-label">Quick templates (click to insert):</span>
+                <button class="chip" type="button" data-chip="BP follow-up scheduled for next week.">📅 BP Follow-up</button>
+                <button class="chip" type="button" data-chip="Advised low-sodium diet and lifestyle modification.">🥗 Low-sodium Diet</button>
+                <button class="chip" type="button" data-chip="Vitals within healthy normal limits. Routine check.">✓ Normal Vitals</button>
+                <button class="chip" type="button" data-chip="Referred to RHU doctor for further clinical assessment.">🏥 Refer to RHU Doctor</button>
+                <button class="chip" type="button" data-chip="Advised immediate rest, hydration, and fever monitoring.">🌡️ Fever Guidance</button>
+              </div>
+              <textarea id="noteText" name="note" maxlength="1000" placeholder="Follow-up plan, observations, referrals…"></textarea>
+              <p class="hint">Visible only to health workers. Maximum 1000 characters.</p>
+            </div>
+            <p id="noteError" class="form-error" role="alert"></p>
+            <p id="noteFeedback" class="form-success" role="status"></p>
+            <button id="noteSubmit" class="btn btn-primary" type="submit">Save note</button>
+          </form>
+        </section>
+      </div>
+    </main>
+
+    <footer class="foot">Notes and record views are audited. RA 10173 applies.</footer>
+    </div>
+  </div>
   <script src="/js/api.js"></script>
   <script src="/js/bhw.js"></script>
 </body>

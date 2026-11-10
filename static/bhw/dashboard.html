@@ -9,120 +9,126 @@
 </head>
 <body data-page="bhw-dashboard">
   <a class="skip-link" href="#main">Skip to main content</a>
-  <header class="topbar">
-    <div class="brand"><span class="dot" aria-hidden="true"></span>Barangay Health Monitor</div>
-    <nav class="topnav" aria-label="Health worker navigation">
-      <a href="/bhw/dashboard.html" aria-current="page">Dashboard</a>
-      <a href="/bhw/search.html">Find citizens</a>
-      <a href="/bhw/audit-trail.html">Audit trail</a>
-      <a href="/bhw/reports.html">Reports</a>
-      <span id="whoami" class="whoami"></span>
-      <button id="logoutBtn" class="btn btn-ghost" type="button">Log out</button>
-    </nav>
-  </header>
-
-  <main id="main" class="page portal-staff">
-    <h1>Barangay Health Desk</h1>
-    <p class="lede">Live aggregates for the barangay — individual records and names are never shown on this board.</p>
-
-    <div class="filters filters-live">
-      <div class="field">
-        <label for="period">Period</label>
-        <select id="period">
-          <option value="7">Last 7 days</option>
-          <option value="30" selected>Last 30 days</option>
-          <option value="90">Last 90 days</option>
-          <option value="all">All time</option>
-        </select>
+  <div class="shell">
+    <aside class="sidebar">
+      <div class="brand"><span class="dot" aria-hidden="true"></span>Barangay Health Monitor</div>
+      <nav class="sidenav" aria-label="Health worker navigation">
+        <a href="/bhw/dashboard.html" aria-current="page">Dashboard</a>
+        <a href="/bhw/search.html">Find citizens</a>
+        <a href="/bhw/audit-trail.html">Audit trail</a>
+        <a href="/bhw/reports.html">Reports</a>
+      </nav>
+      <div class="sidebar-foot">
+        <span id="whoami" class="whoami"></span>
+        <button id="logoutBtn" class="btn btn-ghost" type="button">Log out</button>
       </div>
-      <button id="refreshBtn" class="btn btn-secondary" type="button">Refresh</button>
-      <span id="rangeLabel" class="range-label"></span>
-      <div class="filters-live-right">
-        <span id="liveStatus" class="live-badge"><span class="pulse-dot"></span> <span id="liveText">Live (30s)</span></span>
-        <label class="auto-toggle">
-          <input type="checkbox" id="autoRefreshToggle" checked> Auto
-        </label>
-      </div>
-    </div>
+    </aside>
+    <div class="workspace">
 
-    <div id="lastUpdated" class="last-updated"></div>
-    <div id="status" aria-live="polite"></div>
-    <div id="emptyState"></div>
+    <main id="main" class="page portal-staff">
+      <h1>Barangay Health Desk</h1>
+      <p class="lede">Live aggregates for the barangay — individual records and names are never shown on this board.</p>
 
-    <!-- 1. At a glance: period KPIs, registry totals, consent + kiosk context -->
-    <section class="section" aria-labelledby="totalsHeading">
-      <h2 id="totalsHeading">At a glance</h2>
-      <div class="totals-group">
-        <span class="section-caption">In this period</span>
-        <div id="totals" class="totals"></div>
-      </div>
-      <div class="totals-group">
-        <span class="section-caption">Registry (all time)</span>
-        <div id="registryTotals" class="totals"></div>
-      </div>
-      <div class="context-row">
-        <div class="chart-box context-panel">
-          <h3>Consent coverage</h3>
-          <canvas id="consentDonut" role="img" aria-label="Citizens who granted consent versus not"></canvas>
-          <p id="consentDonutText" class="donut-summary">Loading coverage…</p>
+      <div class="filters filters-live">
+        <div class="field">
+          <label for="period">Period</label>
+          <select id="period">
+            <option value="7">Last 7 days</option>
+            <option value="30" selected>Last 30 days</option>
+            <option value="90">Last 90 days</option>
+            <option value="all">All time</option>
+          </select>
         </div>
-        <div class="chart-box context-panel">
-          <h3>Kiosk freshness</h3>
-          <div id="kioskFreshness"><p class="freshness none">Checking the latest reading…</p></div>
+        <button id="refreshBtn" class="btn btn-secondary" type="button">Refresh</button>
+        <span id="rangeLabel" class="range-label"></span>
+        <div class="filters-live-right">
+          <span id="liveStatus" class="live-badge"><span class="pulse-dot"></span> <span id="liveText">Live (30s)</span></span>
+          <label class="auto-toggle">
+            <input type="checkbox" id="autoRefreshToggle" checked> Auto
+          </label>
         </div>
       </div>
-    </section>
 
-    <!-- 2. Community trend: the surveillance signal, promoted to hero -->
-    <section class="section" aria-labelledby="trendHeading">
-      <h2 id="trendHeading">Community trend</h2>
-      <div class="chart-box chart-hero">
-        <h3>Fever trend (temperature ≥ 37.9 °C)</h3>
-        <canvas id="feverChart" height="190" aria-label="Fever cases per day" role="img"></canvas>
-        <div id="feverFallback"></div>
-      </div>
-    </section>
+      <div id="lastUpdated" class="last-updated"></div>
+      <div id="status" aria-live="polite"></div>
+      <div id="emptyState"></div>
 
-    <!-- 3. Distributions: supporting row -->
-    <section class="section" aria-labelledby="distHeading">
-      <h2 id="distHeading">Measurements by category</h2>
-      <div class="grid-3" id="distributions"></div>
-    </section>
-
-    <!-- 4. What's driving alerts + quick links -->
-    <section class="section" aria-labelledby="alertsHeading">
-      <div class="grid-2">
-        <div class="card-surface">
-          <h2 id="alertsHeading">What's driving alerts</h2>
-          <p class="muted" style="font-size:0.85rem; margin:-0.4rem 0 0.7rem;">Derived from this period's category counts — a guide for follow-up, not a per-alert breakdown.</p>
-          <ul id="concerns" class="concern-list"></ul>
-          <p id="concernsEmpty" class="status empty" hidden>No concerns recorded in this period.</p>
-          <a class="card-link" href="/bhw/search.html">Review citizens →</a>
+      <!-- 1. At a glance: period KPIs, registry totals, consent + kiosk context -->
+      <section class="section" aria-labelledby="totalsHeading">
+        <h2 id="totalsHeading">At a glance</h2>
+        <div class="totals-group">
+          <span class="section-caption">In this period</span>
+          <div id="totals" class="totals"></div>
         </div>
-        <div class="card-surface">
-          <h2>Quick actions</h2>
-          <div class="quick-links">
-            <a class="quick-link" href="/bhw/search.html">Find citizens<small>Search the registry and open records</small></a>
-            <a class="quick-link" href="/bhw/reports.html">Reports<small>Summary, alerts and printable output</small></a>
-            <a class="quick-link" href="/bhw/audit-trail.html">Audit trail<small>Who viewed what, and when</small></a>
+        <div class="totals-group">
+          <span class="section-caption">Registry (all time)</span>
+          <div id="registryTotals" class="totals"></div>
+        </div>
+        <div class="context-row">
+          <div class="chart-box context-panel">
+            <h3>Consent coverage</h3>
+            <canvas id="consentDonut" role="img" aria-label="Citizens who granted consent versus not"></canvas>
+            <p id="consentDonutText" class="donut-summary">Loading coverage…</p>
+          </div>
+          <div class="chart-box context-panel">
+            <h3>Kiosk freshness</h3>
+            <div id="kioskFreshness"><p class="freshness none">Checking the latest reading…</p></div>
           </div>
         </div>
-      </div>
-    </section>
+      </section>
 
-    <!-- 5. Privacy guarantee, visible instead of fine print -->
-    <div class="privacy-badge" role="note">
-      <span class="shield" aria-hidden="true">🛡️</span>
-      <div>
-        <strong>Aggregates only</strong>
-        Individual records and names are never shown on this dashboard. Citizens who have not granted consent are still counted in the totals — but never identified.
+      <!-- 2. Community trend: the surveillance signal, promoted to hero -->
+      <section class="section" aria-labelledby="trendHeading">
+        <h2 id="trendHeading">Community trend</h2>
+        <div class="chart-box chart-hero">
+          <h3>Fever trend (temperature ≥ 37.9 °C)</h3>
+          <canvas id="feverChart" height="190" aria-label="Fever cases per day" role="img"></canvas>
+          <div id="feverFallback"></div>
+        </div>
+      </section>
+
+      <!-- 3. Distributions: supporting row -->
+      <section class="section" aria-labelledby="distHeading">
+        <h2 id="distHeading">Measurements by category</h2>
+        <div class="grid-3" id="distributions"></div>
+      </section>
+
+      <!-- 4. What's driving alerts + quick links -->
+      <section class="section" aria-labelledby="alertsHeading">
+        <div class="grid-2">
+          <div class="card-surface">
+            <h2 id="alertsHeading">What's driving alerts</h2>
+            <p class="muted" style="font-size:0.85rem; margin:-0.4rem 0 0.7rem;">Derived from this period's category counts — a guide for follow-up, not a per-alert breakdown.</p>
+            <ul id="concerns" class="concern-list"></ul>
+            <p id="concernsEmpty" class="status empty" hidden>No concerns recorded in this period.</p>
+            <a class="card-link" href="/bhw/search.html">Review citizens →</a>
+          </div>
+          <div class="card-surface">
+            <h2>Quick actions</h2>
+            <div class="quick-links">
+              <a class="quick-link" href="/bhw/search.html">Find citizens<small>Search the registry and open records</small></a>
+              <a class="quick-link" href="/bhw/reports.html">Reports<small>Summary, alerts and printable output</small></a>
+              <a class="quick-link" href="/bhw/audit-trail.html">Audit trail<small>Who viewed what, and when</small></a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 5. Privacy guarantee, visible instead of fine print -->
+      <div class="privacy-badge" role="note">
+        <span class="shield" aria-hidden="true">🛡️</span>
+        <div>
+          <strong>Aggregates only</strong>
+          Individual records and names are never shown on this dashboard. Citizens who have not granted consent are still counted in the totals — but never identified.
+        </div>
       </div>
+    </main>
+
+    <footer class="foot">
+      Aggregates only — readings of citizens without consent are counted but never named.
+    </footer>
     </div>
-  </main>
-
-  <footer class="foot">
-    Aggregates only — readings of citizens without consent are counted but never named.
-  </footer>
+  </div>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <script src="/js/api.js"></script>
   <script src="/js/bhw.js"></script>

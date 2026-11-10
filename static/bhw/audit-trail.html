@@ -9,44 +9,50 @@
 </head>
 <body data-page="bhw-audit">
   <a class="skip-link" href="#main">Skip to main content</a>
-  <header class="topbar">
-    <div class="brand"><span class="dot" aria-hidden="true"></span>Barangay Health Monitor</div>
-    <nav class="topnav" aria-label="Health worker navigation">
-      <a href="/bhw/dashboard.html">Dashboard</a>
-      <a href="/bhw/search.html">Find citizens</a>
-      <a href="/bhw/audit-trail.html" aria-current="page">Audit trail</a>
-      <a href="/bhw/reports.html">Reports</a>
-      <span id="whoami" class="whoami"></span>
-      <button id="logoutBtn" class="btn btn-ghost" type="button">Log out</button>
-    </nav>
-  </header>
-
-  <main id="main" class="page">
-    <h1>Audit trail</h1>
-    <p class="lede">Append-only log of every access to citizen records. Entries cannot be edited or deleted.</p>
-
-    <form id="filterForm" class="filters" role="search">
-      <div class="field">
-        <label for="fromDate">From</label>
-        <input id="fromDate" name="from" type="date">
+  <div class="shell">
+    <aside class="sidebar">
+      <div class="brand"><span class="dot" aria-hidden="true"></span>Barangay Health Monitor</div>
+      <nav class="sidenav" aria-label="Health worker navigation">
+        <a href="/bhw/dashboard.html">Dashboard</a>
+        <a href="/bhw/search.html">Find citizens</a>
+        <a href="/bhw/audit-trail.html" aria-current="page">Audit trail</a>
+        <a href="/bhw/reports.html">Reports</a>
+      </nav>
+      <div class="sidebar-foot">
+        <span id="whoami" class="whoami"></span>
+        <button id="logoutBtn" class="btn btn-ghost" type="button">Log out</button>
       </div>
-      <div class="field">
-        <label for="toDate">To</label>
-        <input id="toDate" name="to" type="date">
-      </div>
-      <div class="field grow">
-        <label for="bhwName">Health worker full name</label>
-        <input id="bhwName" name="bhw" type="text" placeholder="e.g. Maria Santos" autocomplete="off">
-      </div>
-      <button id="filterBtn" class="btn btn-primary" type="submit">Apply filters</button>
-      <button id="clearBtn" class="btn btn-secondary" type="button">Clear</button>
-    </form>
+    </aside>
+    <div class="workspace">
 
-    <div id="status" aria-live="polite"></div>
-    <div id="results"></div>
-  </main>
+    <main id="main" class="page">
+      <h1>Audit trail</h1>
+      <p class="lede">Append-only log of every access to citizen records. Entries cannot be edited or deleted.</p>
 
-  <footer class="foot">Timestamps are shown in Philippine time (PHT); hover a timestamp for the UTC original.</footer>
+      <form id="filterForm" class="filters" role="search">
+        <div class="field">
+          <label for="fromDate">From</label>
+          <input id="fromDate" name="from" type="date">
+        </div>
+        <div class="field">
+          <label for="toDate">To</label>
+          <input id="toDate" name="to" type="date">
+        </div>
+        <div class="field grow">
+          <label for="bhwName">Health worker full name</label>
+          <input id="bhwName" name="bhw" type="text" placeholder="e.g. Maria Santos" autocomplete="off">
+        </div>
+        <button id="filterBtn" class="btn btn-primary" type="submit">Apply filters</button>
+        <button id="clearBtn" class="btn btn-secondary" type="button">Clear</button>
+      </form>
+
+      <div id="status" aria-live="polite"></div>
+      <div id="results"></div>
+    </main>
+
+    <footer class="foot">Timestamps are shown in Philippine time (PHT); hover a timestamp for the UTC original.</footer>
+    </div>
+  </div>
   <script src="/js/api.js"></script>
   <script src="/js/bhw.js"></script>
 </body>
