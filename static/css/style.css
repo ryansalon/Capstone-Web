@@ -1613,13 +1613,23 @@ th.num {
   background: var(--white);
 }
 
-footer.foot {
+footer.foot,
+.foot {
   max-width: 1140px;
   width: 100%;
   margin: 0 auto;
-  padding: 0 1.5rem 2rem;
+  padding: 1rem 1.5rem 2rem;
   font-size: 0.81rem;
   color: var(--ink-soft);
+  text-align: center;
+  line-height: 1.5;
+}
+
+.auth-wrap .foot {
+  text-align: center;
+  margin: 0 auto;
+  width: 100%;
+  padding: 1.25rem 1.5rem 2.25rem;
 }
 
 @media (max-width: 640px) {
