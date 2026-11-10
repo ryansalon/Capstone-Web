@@ -796,3 +796,42 @@ def test_rate_limiter_and_consent_subquery(client):
             assert 1 in consent_map
             assert consent_map[1].consent_granted == 1
 
+
+def test_audit_trail_filtering_by_citizen_and_action(client):
+    bhw_token = login(client, "bhw1", "bhw12345")["token"]
+    grant_consent(client, granted=True)
+
+    # Perform two different audited actions on citizen 1 (Carl Mendoza)
+    client.get("/api/bhw/citizen/1/health-logs", headers=bearer(bhw_token))
+    client.post(
+        "/api/bhw/citizen/1/notes",
+        json={"note": "BP check note"},
+        headers=bearer(bhw_token),
+    )
+
+    # 1. Filter by citizen name
+    resp_citizen = client.get(
+        "/api/bhw/audit-trail?citizen=carl", headers=bearer(bhw_token)
+    )
+    assert resp_citizen.status_code == 200
+    rows = resp_citizen.get_json()["audit"]
+    assert len(rows) >= 2
+    assert all("Carl Mendoza" in r["citizen_name"] for r in rows)
+
+    # 2. Filter by action
+    resp_action = client.get(
+        "/api/bhw/audit-trail?action=add_note", headers=bearer(bhw_token)
+    )
+    assert resp_action.status_code == 200
+    action_rows = resp_action.get_json()["audit"]
+    assert len(action_rows) >= 1
+    assert all(r["action"] == "add_note" for r in action_rows)
+
+    # 3. Filter with non-matching citizen returns empty
+    resp_none = client.get(
+        "/api/bhw/audit-trail?citizen=nonexistent", headers=bearer(bhw_token)
+    )
+    assert resp_none.status_code == 200
+    assert len(resp_none.get_json()["audit"]) == 0
+
+

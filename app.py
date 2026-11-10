@@ -1068,7 +1068,15 @@ def register_routes(app: Flask):
                 )
             return jsonify({"ok": True}), 201
 
-    def audit_rows(session, start=None, end=None, bhw_name=None, limit=500):
+    def audit_rows(
+        session,
+        start=None,
+        end=None,
+        bhw_name=None,
+        citizen_name=None,
+        action_type=None,
+        limit=500,
+    ):
         bhw_alias = aliased(User)
         citizen_alias = aliased(User)
         stmt = (
@@ -1088,6 +1096,16 @@ def register_routes(app: Flask):
             stmt = stmt.where(
                 func.lower(bhw_alias.full_name) == bhw_name.strip().lower()
             )
+        if citizen_name:
+            c_like = f"%{citizen_name.strip().lower()}%"
+            stmt = stmt.where(
+                or_(
+                    func.lower(citizen_alias.full_name).like(c_like),
+                    func.lower(citizen_alias.username).like(c_like),
+                )
+            )
+        if action_type:
+            stmt = stmt.where(AccessAuditTrail.action_type == action_type.strip())
         stmt = stmt.order_by(
             AccessAuditTrail.access_timestamp.desc(), AccessAuditTrail.id.desc()
         ).limit(limit)
@@ -1135,8 +1153,17 @@ def register_routes(app: Flask):
         if error:
             return error
         bhw_name = request.args.get("bhw") or ""
+        citizen_name = request.args.get("citizen") or ""
+        action_type = request.args.get("action") or ""
         with get_db().session() as session:
-            rows = audit_rows(session, start, end, bhw_name)
+            rows = audit_rows(
+                session,
+                start=start,
+                end=end,
+                bhw_name=bhw_name,
+                citizen_name=citizen_name,
+                action_type=action_type,
+            )
             payload = audit_payload(rows)
         return jsonify({"audit": payload})
 
@@ -1147,8 +1174,17 @@ def register_routes(app: Flask):
         if error:
             return error
         bhw_name = request.args.get("bhw") or ""
+        citizen_name = request.args.get("citizen") or ""
+        action_type = request.args.get("action") or ""
         with get_db().session() as session:
-            rows = audit_rows(session, start, end, bhw_name)
+            rows = audit_rows(
+                session,
+                start=start,
+                end=end,
+                bhw_name=bhw_name,
+                citizen_name=citizen_name,
+                action_type=action_type,
+            )
             payload = audit_payload(rows)
         return jsonify({"audit": payload})
 

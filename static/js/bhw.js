@@ -1003,6 +1003,21 @@
 
   /* ---------------- audit trail ---------------- */
 
+  var AUDIT_ACTION_MAP = {
+    view_health_data: { label: "Viewed health records", cls: "badge-ok" },
+    view_notes: { label: "Viewed clinical notes", cls: "badge-admin" },
+    add_note: { label: "Added clinical note", cls: "badge-ok" },
+    refer_to_rhu: { label: "Referred to RHU", cls: "badge-warn" },
+  };
+
+  function renderActionBadge(action) {
+    var meta = AUDIT_ACTION_MAP[action] || {
+      label: (action || "—").replace(/_/g, " "),
+      cls: "badge-no",
+    };
+    return U.el("span", { class: "badge " + meta.cls }, meta.label);
+  }
+
   function renderAudit(rows) {
     var results = document.getElementById("results");
     U.clear(results);
@@ -1014,7 +1029,7 @@
     var table = U.el("table");
     var thead = U.el("thead");
     var headRow = U.el("tr");
-    ["Time (PHT)", "Health worker", "Citizen", "Action", "IP address"].forEach(function (label) {
+    ["Time (PHT)", "Health worker", "Citizen accessed", "Action taken", "IP address"].forEach(function (label) {
       headRow.appendChild(U.el("th", { scope: "col" }, label));
     });
     thead.appendChild(headRow);
@@ -1024,11 +1039,23 @@
     var rowsFrag = document.createDocumentFragment();
     rows.forEach(function (entry) {
       var row = U.el("tr");
-      row.appendChild(U.el("th", { class: "nowrap", scope: "row", style: "font-weight:600; text-align:left; background:transparent;" }, U.fmtDT(entry.time)));
-      row.appendChild(U.el("td", null, entry.bhw_name));
-      row.appendChild(U.el("td", null, entry.citizen_name));
-      row.appendChild(U.el("td", null, entry.action));
-      row.appendChild(U.el("td", null, entry.ip || "—"));
+      row.appendChild(
+        U.el(
+          "th",
+          {
+            class: "nowrap",
+            scope: "row",
+            style: "font-weight:600; text-align:left; background:transparent;",
+          },
+          U.fmtDT(entry.time)
+        )
+      );
+      row.appendChild(U.el("td", { style: "font-weight:500;" }, entry.bhw_name));
+      row.appendChild(U.el("td", { style: "font-weight:600; color:var(--green-900);" }, entry.citizen_name));
+      var actionCell = U.el("td");
+      actionCell.appendChild(renderActionBadge(entry.action));
+      row.appendChild(actionCell);
+      row.appendChild(U.el("td", { style: "color:var(--ink-soft); font-size:0.85rem;" }, entry.ip || "—"));
       rowsFrag.appendChild(row);
     });
     tbody.appendChild(rowsFrag);
@@ -1043,14 +1070,23 @@
     var from = fieldValue("fromDate");
     var to = fieldValue("toDate");
     var bhw = fieldValue("bhwName");
+    var citizen = fieldValue("citizenName");
+    var action = fieldValue("actionType");
     if (from) params.set("from", from);
     if (to) params.set("to", to);
     if (bhw) params.set("bhw", bhw);
+    if (citizen) params.set("citizen", citizen);
+    if (action) params.set("action", action);
 
     U.loading(statusNode, "Loading audit entries…");
     var results = document.getElementById("results");
     U.clear(results);
-    results.appendChild(U.tableSkeleton(["Time (PHT)", "Health worker", "Citizen", "Action", "IP address"], 4));
+    results.appendChild(
+      U.tableSkeleton(
+        ["Time (PHT)", "Health worker", "Citizen accessed", "Action taken", "IP address"],
+        4
+      )
+    );
     try {
       var data = await API.apiFetch("/api/bhw/audit-trail?" + params.toString());
       U.clear(statusNode);
