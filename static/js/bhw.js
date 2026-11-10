@@ -376,9 +376,9 @@
     return (
       new Intl.DateTimeFormat("en-PH", {
         timeZone: "Asia/Manila",
-        hour: "2-digit",
+        hour: "numeric",
         minute: "2-digit",
-        hour12: false,
+        hour12: true,
       }).format(new Date()) + " PHT"
     );
   }

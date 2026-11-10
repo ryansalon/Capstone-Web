@@ -9,16 +9,31 @@
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to main content</a>
-  <main id="main" class="auth-main" tabindex="-1">
-    <div class="auth-card">
-      <h1>Barangay Health Monitor</h1>
-      <p class="lede">Checking your session…</p>
-      <noscript>
-        <p class="form-error">JavaScript is required to use this site.</p>
-      </noscript>
-      <p><a href="/citizen/login.html">Continue to sign in</a></p>
-    </div>
-  </main>
+  <div class="auth-wrap">
+    <main id="main" class="auth-main" tabindex="-1">
+      <div class="auth-container">
+        <header class="auth-header">
+          <div class="auth-emblem" aria-hidden="true">
+            <svg class="auth-emblem-svg" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect width="48" height="48" rx="12" fill="#0f6b53"/>
+              <path d="M24 13v22M13 24h22" stroke="#ffffff" stroke-width="4.5" stroke-linecap="round"/>
+              <circle cx="24" cy="24" r="17" stroke="#7ee0bd" stroke-width="2" stroke-dasharray="3 3"/>
+            </svg>
+          </div>
+          <div class="auth-brand-name">Barangay Health Monitor</div>
+          <div class="auth-brand-sub">Republic of the Philippines · Community Health Kiosk</div>
+        </header>
+        <div class="auth-card">
+          <h1>Checking your session…</h1>
+          <p class="lede">Directing you to your health portal.</p>
+          <noscript>
+            <p class="form-error">JavaScript is required to use this site.</p>
+          </noscript>
+          <p><a href="/citizen/login.html">Continue to sign in</a></p>
+        </div>
+      </div>
+    </main>
+  </div>
   <script src="/js/api.js"></script>
   <script>
     (function () {

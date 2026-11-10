@@ -358,23 +358,16 @@
       if (!value) return "—";
       var date = new Date(String(value).replace(" ", "T") + "Z");
       if (isNaN(date.getTime())) return String(value);
-      // Asia/Manila (PHT = UTC+8) short format, e.g. "Nov 8, 22:30 PHT".
-      var parts = new Intl.DateTimeFormat("en-PH", {
+      // Asia/Manila (PHT = UTC+8) standard 12-hour AM/PM format, e.g. "Nov 8, 10:30 PM PHT".
+      var formatted = new Intl.DateTimeFormat("en-PH", {
         timeZone: "Asia/Manila",
         month: "short",
         day: "numeric",
-        hour: "2-digit",
+        hour: "numeric",
         minute: "2-digit",
-        hour12: false,
-      }).formatToParts(date);
-      var month = "", day = "", hour = "", minute = "";
-      parts.forEach(function (part) {
-        if (part.type === "month") month = part.value;
-        if (part.type === "day") day = part.value;
-        if (part.type === "hour") hour = part.value;
-        if (part.type === "minute") minute = part.value;
-      });
-      return month + " " + day + ", " + hour + ":" + minute + " PHT";
+        hour12: true,
+      }).format(date);
+      return formatted + " PHT";
     },
 
     /* UTC form of a timestamp for title tooltips / footer notes. */

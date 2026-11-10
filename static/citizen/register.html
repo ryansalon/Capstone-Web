@@ -10,48 +10,60 @@
 <body data-page="citizen-register">
   <a class="skip-link" href="#main">Skip to main content</a>
   <div class="auth-wrap">
-    <header class="topbar">
-      <div class="brand"><span class="dot" aria-hidden="true"></span>Barangay Health Monitor</div>
-    </header>
     <main id="main" class="auth-main" tabindex="-1">
-      <div class="auth-card">
-        <h1>Create a citizen account</h1>
-        <p class="lede">Register once here to see the readings the kiosk sends to the health center.</p>
-        <p id="registerError" class="form-error" role="alert"></p>
-        <p id="registerSuccess" class="form-success" role="status"></p>
-        <form id="registerForm" novalidate>
-          <div class="field">
-            <label for="fullName">Full name</label>
-            <input id="fullName" name="full_name" type="text" autocomplete="name" required aria-required="true" aria-describedby="registerError">
+      <div class="auth-container register">
+        <header class="auth-header">
+          <div class="auth-emblem" aria-hidden="true">
+            <svg class="auth-emblem-svg" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect width="48" height="48" rx="12" fill="#0f6b53"/>
+              <path d="M24 13v22M13 24h22" stroke="#ffffff" stroke-width="4.5" stroke-linecap="round"/>
+              <circle cx="24" cy="24" r="17" stroke="#7ee0bd" stroke-width="2" stroke-dasharray="3 3"/>
+            </svg>
           </div>
-          <div class="field">
-            <label for="username">Username</label>
-            <input id="username" name="username" type="text" autocomplete="username" required aria-required="true" aria-describedby="registerError">
-          </div>
-          <div class="field">
-            <label for="password">Password</label>
-            <input id="password" name="password" type="password" autocomplete="new-password" minlength="8" required aria-required="true" aria-describedby="registerPasswordHint registerError">
-            <p id="registerPasswordHint" class="hint">At least 8 characters.</p>
-          </div>
-          <div class="field">
-            <label for="confirmPassword">Confirm password</label>
-            <input id="confirmPassword" name="confirm_password" type="password" autocomplete="new-password" required aria-required="true" aria-describedby="registerError">
-          </div>
-          <div class="field">
-            <label for="birthdate">Birthdate</label>
-            <input id="birthdate" name="birthdate" type="date" required aria-required="true" aria-describedby="registerError">
-          </div>
-          <div class="field">
-            <label for="gender">Gender</label>
-            <select id="gender" name="gender" required aria-required="true" aria-describedby="registerError">
-              <option value="male">Male</option>
-              <option value="female">Female</option>
-              <option value="other">Other</option>
-            </select>
-          </div>
-          <button id="registerSubmit" class="btn btn-primary" type="submit">Create account</button>
-        </form>
-        <p class="alt-link">Already registered? <a href="/citizen/login.html">Sign in</a></p>
+          <div class="auth-brand-name">Barangay Health Monitor</div>
+          <div class="auth-brand-sub">Republic of the Philippines · Community Health Kiosk</div>
+          <span class="auth-portal-badge citizen">Citizen Portal</span>
+        </header>
+
+        <div class="auth-card">
+          <h1>Create a citizen account</h1>
+          <p class="lede">Register once here to see the readings the kiosk sends to the health center.</p>
+          <p id="registerError" class="form-error" role="alert"></p>
+          <p id="registerSuccess" class="form-success" role="status"></p>
+          <form id="registerForm" novalidate>
+            <div class="field">
+              <label for="fullName">Full name</label>
+              <input id="fullName" name="full_name" type="text" autocomplete="name" required aria-required="true" aria-describedby="registerError">
+            </div>
+            <div class="field">
+              <label for="username">Username</label>
+              <input id="username" name="username" type="text" autocomplete="username" required aria-required="true" aria-describedby="registerError">
+            </div>
+            <div class="field">
+              <label for="password">Password</label>
+              <input id="password" name="password" type="password" autocomplete="new-password" minlength="8" required aria-required="true" aria-describedby="registerPasswordHint registerError">
+              <p id="registerPasswordHint" class="hint">At least 8 characters.</p>
+            </div>
+            <div class="field">
+              <label for="confirmPassword">Confirm password</label>
+              <input id="confirmPassword" name="confirm_password" type="password" autocomplete="new-password" required aria-required="true" aria-describedby="registerError">
+            </div>
+            <div class="field">
+              <label for="birthdate">Birthdate</label>
+              <input id="birthdate" name="birthdate" type="date" required aria-required="true" aria-describedby="registerError">
+            </div>
+            <div class="field">
+              <label for="gender">Gender</label>
+              <select id="gender" name="gender" required aria-required="true" aria-describedby="registerError">
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+            <button id="registerSubmit" class="btn btn-primary" type="submit">Create account</button>
+          </form>
+          <p class="alt-link">Already registered? <a href="/citizen/login.html">Sign in</a></p>
+        </div>
       </div>
     </main>
     <footer class="foot">Data is stored under the Philippine Data Privacy Act (RA 10173).</footer>

@@ -10,27 +10,39 @@
 <body data-page="bhw-login">
   <a class="skip-link" href="#main">Skip to main content</a>
   <div class="auth-wrap">
-    <header class="topbar">
-      <div class="brand"><span class="dot" aria-hidden="true"></span>Barangay Health Monitor</div>
-    </header>
     <main id="main" class="auth-main" tabindex="-1">
-      <div class="auth-card">
-        <h1>Health worker sign in</h1>
-        <p class="lede">For Barangay Health Workers and administrators. Citizen accounts cannot open this portal.</p>
-        <p id="sessionExpired" class="form-success" role="status" style="display:none;">Your session expired — please sign in again.</p>
-        <p id="loginError" class="form-error" role="alert"></p>
-        <form id="loginForm" novalidate>
-          <div class="field">
-            <label for="username">Username</label>
-            <input id="username" name="username" type="text" autocomplete="username" required aria-required="true" aria-describedby="loginError">
+      <div class="auth-container">
+        <header class="auth-header">
+          <div class="auth-emblem" aria-hidden="true">
+            <svg class="auth-emblem-svg" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect width="48" height="48" rx="12" fill="#0f6b53"/>
+              <path d="M24 13v22M13 24h22" stroke="#ffffff" stroke-width="4.5" stroke-linecap="round"/>
+              <circle cx="24" cy="24" r="17" stroke="#7ee0bd" stroke-width="2" stroke-dasharray="3 3"/>
+            </svg>
           </div>
-          <div class="field">
-            <label for="password">Password</label>
-            <input id="password" name="password" type="password" autocomplete="current-password" required aria-required="true" aria-describedby="loginError">
-          </div>
-          <button id="loginSubmit" class="btn btn-primary" type="submit">Sign in</button>
-        </form>
-        <p class="auth-note">Citizens sign in through the <a href="/citizen/login.html">citizen portal</a>.</p>
+          <div class="auth-brand-name">Barangay Health Monitor</div>
+          <div class="auth-brand-sub">Republic of the Philippines · Community Health Kiosk</div>
+          <span class="auth-portal-badge bhw">Health Worker Portal</span>
+        </header>
+
+        <div class="auth-card">
+          <h1>Health worker sign in</h1>
+          <p class="lede">For Barangay Health Workers and administrators. Citizen accounts cannot open this portal.</p>
+          <p id="sessionExpired" class="form-success" role="status" style="display:none;">Your session expired — please sign in again.</p>
+          <p id="loginError" class="form-error" role="alert"></p>
+          <form id="loginForm" novalidate>
+            <div class="field">
+              <label for="username">Username</label>
+              <input id="username" name="username" type="text" autocomplete="username" required aria-required="true" aria-describedby="loginError">
+            </div>
+            <div class="field">
+              <label for="password">Password</label>
+              <input id="password" name="password" type="password" autocomplete="current-password" required aria-required="true" aria-describedby="loginError">
+            </div>
+            <button id="loginSubmit" class="btn btn-primary" type="submit">Sign in</button>
+          </form>
+          <p class="auth-note">Citizens sign in through the <a href="/citizen/login.html">citizen portal</a>.</p>
+        </div>
       </div>
     </main>
     <footer class="foot">All record access is written to an append-only audit trail.</footer>

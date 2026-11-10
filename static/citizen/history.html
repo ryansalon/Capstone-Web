@@ -26,8 +26,17 @@
     <div class="workspace">
 
     <main id="main" class="page" tabindex="-1">
-      <h1>My measurement history</h1>
-      <p class="lede">Every reading saved for your account, newest first. Charts show the trend over time (oldest to newest).</p>
+      <div class="page-head">
+        <div class="page-head-title">
+          <span class="page-eyebrow">Records &amp; Trends</span>
+          <h1>My Measurement History</h1>
+          <p class="lede">Every reading saved for your account, newest first. Charts show the trend over time (oldest to newest).</p>
+        </div>
+        <div class="page-actions">
+          <button id="passportBtnHistory" class="btn btn-primary" type="button"><span class="btn-icon" aria-hidden="true">🪪</span> Print health passport</button>
+          <a href="/citizen/dashboard.html" class="btn btn-secondary"><span class="btn-icon" aria-hidden="true">⬅</span> Dashboard</a>
+        </div>
+      </div>
 
       <div id="status" aria-live="polite"></div>
 
@@ -58,7 +67,6 @@
       <section class="section">
         <div class="history-table-header">
           <h2>All readings</h2>
-          <button id="passportBtnHistory" class="btn btn-secondary" type="button"><span class="btn-icon" aria-hidden="true">🪪</span> Print health passport</button>
         </div>
         <div id="tableControls" class="table-controls"></div>
         <div id="tableWrap"></div>
