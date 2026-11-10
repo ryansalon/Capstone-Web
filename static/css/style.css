@@ -1166,7 +1166,7 @@ th.num {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background: radial-gradient(circle at 50% 12%, #e0f2ec 0%, #edf5f2 45%, var(--canvas) 85%);
+  background: var(--canvas);
 }
 
 .auth-main {
@@ -1199,53 +1199,46 @@ th.num {
 }
 
 .auth-emblem {
-  width: 54px;
-  height: 54px;
-  margin-bottom: 0.75rem;
+  width: 44px;
+  height: 44px;
+  margin-bottom: 0.65rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  filter: drop-shadow(0 4px 12px rgba(15, 107, 83, 0.28));
-  transition: transform 0.2s ease;
-}
-
-.auth-emblem:hover {
-  transform: translateY(-2px) scale(1.03);
 }
 
 .auth-emblem-svg {
-  width: 54px;
-  height: 54px;
+  width: 44px;
+  height: 44px;
   display: block;
 }
 
 .auth-brand-name {
   font-family: var(--font-display);
-  font-size: 1.65rem;
+  font-size: 1.55rem;
   font-weight: 700;
   color: var(--ink);
-  letter-spacing: -0.025em;
+  letter-spacing: -0.02em;
   line-height: 1.2;
 }
 
 .auth-brand-sub {
-  font-size: 0.86rem;
+  font-size: 0.85rem;
   color: var(--ink-soft);
-  margin-top: 0.35rem;
+  margin-top: 0.25rem;
   letter-spacing: 0.01em;
 }
 
 .auth-portal-badge {
   display: inline-flex;
   align-items: center;
-  gap: 0.35rem;
-  padding: 0.28rem 0.85rem;
-  font-size: 0.74rem;
-  font-weight: 700;
+  padding: 0.22rem 0.75rem;
+  font-size: 0.72rem;
+  font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
-  border-radius: var(--radius-pill);
-  margin-top: 0.75rem;
+  letter-spacing: 0.06em;
+  border-radius: var(--radius-sm);
+  margin-top: 0.65rem;
 }
 
 .auth-portal-badge.citizen {
@@ -1264,22 +1257,22 @@ th.num {
   width: 100%;
   background: var(--white);
   border: 1px solid var(--line);
-  border-radius: 16px;
-  box-shadow: 0 10px 30px rgba(11, 38, 29, 0.07), 0 2px 6px rgba(11, 38, 29, 0.04);
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(11, 38, 29, 0.06);
   padding: 2.25rem 2.25rem;
   position: relative;
   overflow: hidden;
 }
 
-/* Accent edge ties the card to the brand mark. */
+/* Institutional top edge */
 .auth-card::before {
   content: "";
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
-  height: 4px;
-  background: linear-gradient(90deg, var(--green-700) 0%, var(--green-600) 60%, var(--mint) 100%);
+  height: 3px;
+  background: var(--green-700);
 }
 
 .auth-card h1 {

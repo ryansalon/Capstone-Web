@@ -307,7 +307,7 @@
 
     var foot = U.el("div", { class: "passport-footer" });
     foot.appendChild(U.el("span", null, "Recorded: " + (log ? U.fmtDT(log.timestamp) : "—")));
-    foot.appendChild(U.el("span", { style: "font-weight:700; color:#0b3d30;" }, "✓ VERIFIED BY BARANGAY HEALTH KIOSK"));
+    foot.appendChild(U.el("span", { style: "font-weight:700; color:#0b3d30;" }, "OFFICIAL RECORD · BARANGAY HEALTH KIOSK"));
     passport.appendChild(foot);
 
     var sigBlock = U.el("div", { class: "official-signature-block print-only" });
@@ -327,7 +327,7 @@
     card.appendChild(body);
 
     var mFoot = U.el("div", { class: "modal-footer" });
-    var printBtn = U.el("button", { class: "btn btn-primary", type: "button" }, "🖨️ Print / Save as PDF");
+    var printBtn = U.el("button", { class: "btn btn-primary", type: "button" }, "Print / Save as PDF");
     printBtn.onclick = function () {
       // body.printing-passport scopes the @media print rules to the passport
       // card only; without it Ctrl+P printed a blank page elsewhere too.
@@ -402,7 +402,9 @@ function addCard(container, label, value, sub, tone, gauge, delta, spark, pendin
 
     if (alerts.length > 0) {
       var box = U.el("div", { class: "alert-banner", role: "alert" });
-      box.appendChild(U.el("div", { class: "alert-icon" }, "⚠️"));
+      var alertIcon = U.el("div", { class: "alert-icon", "aria-hidden": "true" });
+      alertIcon.innerHTML = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#a5271d" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>';
+      box.appendChild(alertIcon);
       var content = U.el("div", { class: "alert-content" });
       content.appendChild(U.el("h3", null, "Clinical Attention Required"));
       var ul = U.el("ul", { style: "margin:0.25rem 0 0; padding-left:1.2rem;" });
@@ -534,7 +536,7 @@ function addCard(container, label, value, sub, tone, gauge, delta, spark, pendin
 
     return {
       level: level,
-      label: level === "action" ? "Action required" : level === "attention" ? "Some attention" : "All normal",
+      label: level === "action" ? "Action required" : level === "attention" ? "Monitor" : "Normal",
       tone: level === "action" ? "bad" : level === "attention" ? "warn" : "ok",
       sentence: sentence,
       next: next,
@@ -577,11 +579,11 @@ function addCard(container, label, value, sub, tone, gauge, delta, spark, pendin
     var next = document.getElementById("heroNext");
     if (!pill || !sentence || !next) return;
     pill.className = "hero-pill muted";
-    pill.textContent = "Not measured yet";
+    pill.textContent = "No readings";
     sentence.textContent =
-      "You haven't taken a kiosk measurement yet — your first visit starts your health story.";
+      "No vital sign measurements are recorded yet for your account.";
     next.textContent =
-      "Visit the barangay health center kiosk; your reading will appear here automatically.";
+      "Visit the barangay health kiosk to take your measurements. Your readings will appear here.";
   }
 
   /* Hero on a failed first load, so it never sits on "Checking…". */

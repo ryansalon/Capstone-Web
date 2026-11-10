@@ -1156,7 +1156,7 @@
 
       var footer = U.el("div", { class: "modal-footer" });
       var dismiss = U.el("button", { class: "btn btn-secondary", type: "button" }, "Close");
-      var print = U.el("button", { class: "btn btn-primary", type: "button" }, "🖨️ Print Now");
+      var print = U.el("button", { class: "btn btn-primary", type: "button" }, "Print report");
       print.onclick = function () {
         try {
           if (iframe.contentWindow) {
