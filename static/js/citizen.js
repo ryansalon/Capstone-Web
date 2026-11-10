@@ -338,9 +338,8 @@
       };
       window.addEventListener("afterprint", clearPrintMode);
       window.print();
-      // Fallback for browsers that never fire afterprint (e.g. some
-      // headless/print-to-PDF paths): restore after the print dialog closes.
-      setTimeout(clearPrintMode, 1000);
+      // Generous fallback for browsers that do not fire afterprint immediately
+      setTimeout(clearPrintMode, 30000);
     };
     var dismissBtn = U.el("button", { class: "btn btn-secondary", type: "button" }, "Close");
     mFoot.appendChild(dismissBtn);
@@ -353,8 +352,12 @@
     // Accessible dialog: role/aria-modal/aria-labelledby, Escape and
     // backdrop click close it, focus moves in and is restored on close.
     var closeDialog = U.openDialog(backdrop, closeBtn);
-    closeBtn.onclick = closeDialog;
-    dismissBtn.onclick = closeDialog;
+    var handleClose = function () {
+      document.body.classList.remove("printing-passport");
+      closeDialog();
+    };
+    closeBtn.onclick = handleClose;
+    dismissBtn.onclick = handleClose;
   }
 
 function addCard(container, label, value, sub, tone, gauge, delta, spark, pendingSparks, refRange) {
