@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Barangay Health Monitor</title>
   <link rel="icon" href="data:,">
-  <link rel="stylesheet" href="/css/style.css?v=4">
+  <link rel="stylesheet" href="/css/style.css?v=5">
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to main content</a>
@@ -16,29 +16,39 @@
         <span class="auth-gov-badge">Municipality of Mahinog</span>
       </div>
     </div>
+
     <main id="main" class="auth-main" tabindex="-1">
       <div class="auth-container">
-        <header class="auth-header">
+        <!-- Unified Civic Brand Header -->
+        <header class="auth-brand">
           <div class="auth-logos">
-            <img src="/img/cpsc-logo.png" alt="Camiguin Polytechnic State College Logo" class="auth-partner-logo" width="68" height="68" title="Camiguin Polytechnic State College">
-            <div class="auth-logos-sep" aria-hidden="true"></div>
-            <img src="/img/rhu-logo.png" alt="Rural Health Unit - Mahinog Logo" class="auth-partner-logo" width="68" height="68" title="Rural Health Unit - Mahinog, Camiguin">
+            <img src="/img/cpsc-logo.png" alt="Camiguin Polytechnic State College" class="auth-partner-logo" width="62" height="62" title="Camiguin Polytechnic State College">
+            <img src="/img/rhu-logo.png" alt="Rural Health Unit - Mahinog" class="auth-partner-logo" width="62" height="62" title="Rural Health Unit - Mahinog, Camiguin">
           </div>
-          <div class="auth-institution-lead">Camiguin Polytechnic State College &amp; Rural Health Unit</div>
           <h1 class="auth-brand-name">Barangay Health Monitor</h1>
-          <p class="auth-brand-sub">Community Health Kiosk &amp; Vital Signs Monitoring System</p>
+          <p class="auth-brand-sub">Camiguin Polytechnic State College &amp; Rural Health Unit of Mahinog</p>
         </header>
+
         <div class="auth-card">
-          <h1>Checking your session…</h1>
-          <p class="lede">Directing you to your health portal.</p>
-          <noscript>
-            <p class="form-error">JavaScript is required to use this site.</p>
-          </noscript>
-          <p><a href="/citizen/login.html">Continue to sign in</a></p>
+          <div class="auth-card-body" style="text-align: center; padding: 2.5rem 2rem;">
+            <h2>Checking your session…</h2>
+            <p class="auth-card-lede">Directing you to your health portal.</p>
+            <noscript>
+              <p class="form-error">JavaScript is required to use this portal.</p>
+            </noscript>
+            <div style="margin-top: 1.5rem;">
+              <a href="/citizen/login.html" class="btn btn-secondary">Continue to sign in</a>
+            </div>
+          </div>
         </div>
       </div>
     </main>
+
+    <footer class="auth-page-footer">
+      <p>Data is securely managed under the Philippine Data Privacy Act (RA 10173).</p>
+    </footer>
   </div>
+
   <script src="/js/api.js"></script>
   <script>
     (function () {

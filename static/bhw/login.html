@@ -3,9 +3,9 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>BHW sign in — Barangay Health Monitor</title>
+  <title>Health Worker Sign In — Barangay Health Monitor</title>
   <link rel="icon" href="data:,">
-  <link rel="stylesheet" href="/css/style.css?v=4">
+  <link rel="stylesheet" href="/css/style.css?v=5">
 </head>
 <body data-page="bhw-login">
   <a class="skip-link" href="#main">Skip to main content</a>
@@ -16,42 +16,68 @@
         <span class="auth-gov-badge">Municipality of Mahinog</span>
       </div>
     </div>
+
     <main id="main" class="auth-main" tabindex="-1">
       <div class="auth-container">
-        <header class="auth-header">
+        <!-- Unified Civic Brand Header -->
+        <header class="auth-brand">
           <div class="auth-logos">
-            <img src="/img/cpsc-logo.png" alt="Camiguin Polytechnic State College Logo" class="auth-partner-logo" width="68" height="68" title="Camiguin Polytechnic State College">
-            <div class="auth-logos-sep" aria-hidden="true"></div>
-            <img src="/img/rhu-logo.png" alt="Rural Health Unit - Mahinog Logo" class="auth-partner-logo" width="68" height="68" title="Rural Health Unit - Mahinog, Camiguin">
+            <img src="/img/cpsc-logo.png" alt="Camiguin Polytechnic State College" class="auth-partner-logo" width="62" height="62" title="Camiguin Polytechnic State College">
+            <img src="/img/rhu-logo.png" alt="Rural Health Unit - Mahinog" class="auth-partner-logo" width="62" height="62" title="Rural Health Unit - Mahinog, Camiguin">
           </div>
-          <div class="auth-institution-lead">Camiguin Polytechnic State College &amp; Rural Health Unit</div>
           <h1 class="auth-brand-name">Barangay Health Monitor</h1>
-          <p class="auth-brand-sub">Community Health Kiosk &amp; Vital Signs Monitoring System</p>
-          <span class="auth-portal-badge bhw">Health Worker Portal</span>
+          <p class="auth-brand-sub">Camiguin Polytechnic State College &amp; Rural Health Unit of Mahinog</p>
         </header>
 
         <div class="auth-card">
-          <h1>Staff sign in</h1>
-          <p class="lede">Authorized access for Barangay Health Workers and healthcare staff.</p>
-          <p id="sessionExpired" class="form-success" role="status" style="display:none;">Your session expired — please sign in again.</p>
-          <p id="loginError" class="form-error" role="alert"></p>
-          <form id="loginForm" novalidate>
-            <div class="field">
-              <label for="username">Username</label>
-              <input id="username" name="username" type="text" autocomplete="username" required aria-required="true" aria-describedby="loginError">
+          <!-- Segmented Portal Switcher -->
+          <nav class="auth-role-tabs" aria-label="Portal selection">
+            <a href="/citizen/login.html" class="auth-role-tab">
+              <span class="auth-role-title">Citizen</span>
+              <span class="auth-role-desc">Residents &amp; Patients</span>
+            </a>
+            <a href="/bhw/login.html" class="auth-role-tab active" aria-current="page">
+              <span class="auth-role-title">Health Worker</span>
+              <span class="auth-role-desc">BHW &amp; Clinic Staff</span>
+            </a>
+          </nav>
+
+          <div class="auth-card-body">
+            <h2>Staff Sign In</h2>
+            <p class="auth-card-lede">Authorized health worker access to monitor vitals and manage records.</p>
+
+            <p id="sessionExpired" class="form-success" role="status" style="display:none;">Your session expired — please sign in again.</p>
+            <p id="loginError" class="form-error" role="alert"></p>
+
+            <form id="loginForm" novalidate>
+              <div class="field">
+                <label for="username">Username</label>
+                <input id="username" name="username" type="text" autocomplete="username" placeholder="Staff username" required aria-required="true" aria-describedby="loginError">
+              </div>
+              <div class="field">
+                <label for="password">Password</label>
+                <div class="password-wrap">
+                  <input id="password" name="password" type="password" autocomplete="current-password" placeholder="Staff password" required aria-required="true" aria-describedby="loginError">
+                  <button type="button" class="btn-toggle-pw" aria-label="Show password" tabindex="-1">Show</button>
+                </div>
+              </div>
+              <button id="loginSubmit" class="btn btn-primary btn-auth-submit" type="submit">Sign in</button>
+            </form>
+
+            <div class="auth-footer-links">
+              <span>Are you a resident?</span>
+              <a href="/citizen/login.html">Go to citizen portal</a>
             </div>
-            <div class="field">
-              <label for="password">Password</label>
-              <input id="password" name="password" type="password" autocomplete="current-password" required aria-required="true" aria-describedby="loginError">
-            </div>
-            <button id="loginSubmit" class="btn btn-primary" type="submit">Sign in</button>
-          </form>
-          <p class="auth-note">Citizens sign in through the <a href="/citizen/login.html">citizen portal</a>.</p>
+          </div>
         </div>
       </div>
     </main>
-    <footer class="foot">All record access is written to an append-only audit trail.</footer>
+
+    <footer class="auth-page-footer">
+      <p>All record access is written to an append-only audit trail per RA 10173.</p>
+    </footer>
   </div>
+
   <script src="/js/api.js"></script>
   <script src="/js/bhw.js"></script>
   <script>
@@ -61,6 +87,21 @@
         var node = document.getElementById("sessionExpired");
         if (node) node.style.display = "";
       }
+      document.querySelectorAll(".btn-toggle-pw").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          var input = btn.previousElementSibling;
+          if (!input) return;
+          if (input.type === "password") {
+            input.type = "text";
+            btn.textContent = "Hide";
+            btn.setAttribute("aria-label", "Hide password");
+          } else {
+            input.type = "password";
+            btn.textContent = "Show";
+            btn.setAttribute("aria-label", "Show password");
+          }
+        });
+      });
     })();
   </script>
 </body>

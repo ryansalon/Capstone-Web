@@ -3,9 +3,9 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Create a citizen account — Barangay Health Monitor</title>
+  <title>Create a Citizen Account — Barangay Health Monitor</title>
   <link rel="icon" href="data:,">
-  <link rel="stylesheet" href="/css/style.css?v=4">
+  <link rel="stylesheet" href="/css/style.css?v=5">
 </head>
 <body data-page="citizen-register">
   <a class="skip-link" href="#main">Skip to main content</a>
@@ -16,64 +16,102 @@
         <span class="auth-gov-badge">Municipality of Mahinog</span>
       </div>
     </div>
+
     <main id="main" class="auth-main" tabindex="-1">
       <div class="auth-container register">
-        <header class="auth-header">
+        <!-- Unified Civic Brand Header -->
+        <header class="auth-brand">
           <div class="auth-logos">
-            <img src="/img/cpsc-logo.png" alt="Camiguin Polytechnic State College Logo" class="auth-partner-logo" width="68" height="68" title="Camiguin Polytechnic State College">
-            <div class="auth-logos-sep" aria-hidden="true"></div>
-            <img src="/img/rhu-logo.png" alt="Rural Health Unit - Mahinog Logo" class="auth-partner-logo" width="68" height="68" title="Rural Health Unit - Mahinog, Camiguin">
+            <img src="/img/cpsc-logo.png" alt="Camiguin Polytechnic State College" class="auth-partner-logo" width="62" height="62" title="Camiguin Polytechnic State College">
+            <img src="/img/rhu-logo.png" alt="Rural Health Unit - Mahinog" class="auth-partner-logo" width="62" height="62" title="Rural Health Unit - Mahinog, Camiguin">
           </div>
-          <div class="auth-institution-lead">Camiguin Polytechnic State College &amp; Rural Health Unit</div>
           <h1 class="auth-brand-name">Barangay Health Monitor</h1>
-          <p class="auth-brand-sub">Community Health Kiosk &amp; Vital Signs Monitoring System</p>
-          <span class="auth-portal-badge citizen">Citizen Portal</span>
+          <p class="auth-brand-sub">Camiguin Polytechnic State College &amp; Rural Health Unit of Mahinog</p>
         </header>
 
         <div class="auth-card">
-          <h1>Create an account</h1>
-          <p class="lede">Register to access your vital measurements and download your health passport.</p>
-          <p id="registerError" class="form-error" role="alert"></p>
-          <p id="registerSuccess" class="form-success" role="status"></p>
-          <form id="registerForm" novalidate>
-            <div class="field">
-              <label for="fullName">Full name</label>
-              <input id="fullName" name="full_name" type="text" autocomplete="name" required aria-required="true" aria-describedby="registerError">
+          <div class="auth-card-body">
+            <h2>Create Citizen Account</h2>
+            <p class="auth-card-lede">Register to access your kiosk vital measurements and download your health passport.</p>
+
+            <p id="registerError" class="form-error" role="alert"></p>
+            <p id="registerSuccess" class="form-success" role="status"></p>
+
+            <form id="registerForm" novalidate>
+              <div class="field">
+                <label for="fullName">Full name</label>
+                <input id="fullName" name="full_name" type="text" autocomplete="name" placeholder="e.g. Juan dela Cruz" required aria-required="true" aria-describedby="registerError">
+              </div>
+              <div class="field">
+                <label for="username">Username</label>
+                <input id="username" name="username" type="text" autocomplete="username" placeholder="Choose a username" required aria-required="true" aria-describedby="registerError">
+              </div>
+              <div class="field">
+                <label for="password">Password</label>
+                <div class="password-wrap">
+                  <input id="password" name="password" type="password" autocomplete="new-password" minlength="8" placeholder="At least 8 characters" required aria-required="true" aria-describedby="registerPasswordHint registerError">
+                  <button type="button" class="btn-toggle-pw" aria-label="Show password" tabindex="-1">Show</button>
+                </div>
+                <p id="registerPasswordHint" class="hint">Must be at least 8 characters.</p>
+              </div>
+              <div class="field">
+                <label for="confirmPassword">Confirm password</label>
+                <div class="password-wrap">
+                  <input id="confirmPassword" name="confirm_password" type="password" autocomplete="new-password" placeholder="Re-enter your password" required aria-required="true" aria-describedby="registerError">
+                  <button type="button" class="btn-toggle-pw" aria-label="Show password" tabindex="-1">Show</button>
+                </div>
+              </div>
+              <div class="field-row">
+                <div class="field">
+                  <label for="birthdate">Birthdate</label>
+                  <input id="birthdate" name="birthdate" type="date" required aria-required="true" aria-describedby="registerError">
+                </div>
+                <div class="field">
+                  <label for="gender">Gender</label>
+                  <select id="gender" name="gender" required aria-required="true" aria-describedby="registerError">
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+              </div>
+              <button id="registerSubmit" class="btn btn-primary btn-auth-submit" type="submit">Create account</button>
+            </form>
+
+            <div class="auth-footer-links">
+              <span>Already registered?</span>
+              <a href="/citizen/login.html">Sign in to your account</a>
             </div>
-            <div class="field">
-              <label for="username">Username</label>
-              <input id="username" name="username" type="text" autocomplete="username" required aria-required="true" aria-describedby="registerError">
-            </div>
-            <div class="field">
-              <label for="password">Password</label>
-              <input id="password" name="password" type="password" autocomplete="new-password" minlength="8" required aria-required="true" aria-describedby="registerPasswordHint registerError">
-              <p id="registerPasswordHint" class="hint">At least 8 characters.</p>
-            </div>
-            <div class="field">
-              <label for="confirmPassword">Confirm password</label>
-              <input id="confirmPassword" name="confirm_password" type="password" autocomplete="new-password" required aria-required="true" aria-describedby="registerError">
-            </div>
-            <div class="field">
-              <label for="birthdate">Birthdate</label>
-              <input id="birthdate" name="birthdate" type="date" required aria-required="true" aria-describedby="registerError">
-            </div>
-            <div class="field">
-              <label for="gender">Gender</label>
-              <select id="gender" name="gender" required aria-required="true" aria-describedby="registerError">
-                <option value="male">Male</option>
-                <option value="female">Female</option>
-                <option value="other">Other</option>
-              </select>
-            </div>
-            <button id="registerSubmit" class="btn btn-primary" type="submit">Create account</button>
-          </form>
-          <p class="alt-link">Already registered? <a href="/citizen/login.html">Sign in</a></p>
+          </div>
         </div>
       </div>
     </main>
-    <footer class="foot">Data is stored under the Philippine Data Privacy Act (RA 10173).</footer>
+
+    <footer class="auth-page-footer">
+      <p>Data is securely managed under the Philippine Data Privacy Act (RA 10173).</p>
+    </footer>
   </div>
+
   <script src="/js/api.js"></script>
   <script src="/js/citizen.js"></script>
+  <script>
+    (function () {
+      document.querySelectorAll(".btn-toggle-pw").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          var input = btn.previousElementSibling;
+          if (!input) return;
+          if (input.type === "password") {
+            input.type = "text";
+            btn.textContent = "Hide";
+            btn.setAttribute("aria-label", "Hide password");
+          } else {
+            input.type = "password";
+            btn.textContent = "Show";
+            btn.setAttribute("aria-label", "Show password");
+          }
+        });
+      });
+    })();
+  </script>
 </body>
 </html>
