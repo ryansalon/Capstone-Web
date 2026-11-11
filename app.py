@@ -314,6 +314,69 @@ class Database:
 
     def create_all(self):
         Base.metadata.create_all(self.engine)
+        self._migrate_audit_trail()
+
+    def _migrate_audit_trail(self):
+        """Add status, details, user_agent to access_audit_trail if missing and handle SQLite nullable citizen_id."""
+        try:
+            with self.engine.begin() as conn:
+                if self.engine.name == "sqlite":
+                    cols = {
+                        row[1]: row
+                        for row in conn.exec_driver_sql(
+                            "PRAGMA table_info(access_audit_trail)"
+                        ).fetchall()
+                    }
+                    if not cols:
+                        return
+                    if "status" not in cols:
+                        conn.exec_driver_sql(
+                            "ALTER TABLE access_audit_trail ADD COLUMN status VARCHAR(20) DEFAULT 'success'"
+                        )
+                    if "details" not in cols:
+                        conn.exec_driver_sql(
+                            "ALTER TABLE access_audit_trail ADD COLUMN details VARCHAR(255)"
+                        )
+                    if "user_agent" not in cols:
+                        conn.exec_driver_sql(
+                            "ALTER TABLE access_audit_trail ADD COLUMN user_agent VARCHAR(255)"
+                        )
+                    if "citizen_id" in cols and cols["citizen_id"][3] == 1:
+                        conn.exec_driver_sql(
+                            "CREATE TABLE IF NOT EXISTS access_audit_trail_migrated ("
+                            "id INTEGER PRIMARY KEY, "
+                            "bhw_user_id INTEGER NOT NULL, "
+                            "citizen_id INTEGER, "
+                            "access_timestamp DATETIME, "
+                            "action_type VARCHAR(40) NOT NULL, "
+                            "status VARCHAR(20) DEFAULT 'success', "
+                            "details VARCHAR(255), "
+                            "ip_address VARCHAR(64), "
+                            "user_agent VARCHAR(255))"
+                        )
+                        conn.exec_driver_sql(
+                            "INSERT INTO access_audit_trail_migrated "
+                            "(id, bhw_user_id, citizen_id, access_timestamp, action_type, ip_address) "
+                            "SELECT id, bhw_user_id, citizen_id, access_timestamp, action_type, ip_address "
+                            "FROM access_audit_trail"
+                        )
+                        conn.exec_driver_sql("DROP TABLE access_audit_trail")
+                        conn.exec_driver_sql(
+                            "ALTER TABLE access_audit_trail_migrated RENAME TO access_audit_trail"
+                        )
+                else:
+                    for col_sql in (
+                        "ALTER TABLE access_audit_trail ADD COLUMN IF NOT EXISTS status VARCHAR(20) DEFAULT 'success'",
+                        "ALTER TABLE access_audit_trail ADD COLUMN IF NOT EXISTS details VARCHAR(255)",
+                        "ALTER TABLE access_audit_trail ADD COLUMN IF NOT EXISTS user_agent VARCHAR(255)",
+                        "ALTER TABLE access_audit_trail ALTER COLUMN citizen_id DROP NOT NULL",
+                    ):
+                        try:
+                            conn.exec_driver_sql(col_sql)
+                        except Exception:
+                            pass
+        except Exception as e:
+            print("Migration warning:", e)
 
     @contextmanager
     def session(self):
@@ -392,13 +455,30 @@ def latest_consent_map(session, user_ids=None):
     return {row.user_id: row for row in rows}
 
 
-def write_audit(session, bhw_user_id, citizen_id, action_type):
+def write_audit(
+    session,
+    bhw_user_id: int,
+    citizen_id: int | None,
+    action_type: str,
+    status: str = "success",
+    details: str | None = None,
+):
+    try:
+        remote_ip = request.remote_addr
+        ua = str(request.user_agent.string if request.user_agent else "")[:255]
+    except Exception:
+        remote_ip = "127.0.0.1"
+        ua = None
+
     session.add(
         AccessAuditTrail(
             bhw_user_id=bhw_user_id,
             citizen_id=citizen_id,
             action_type=action_type,
-            ip_address=request.remote_addr,
+            status=status,
+            details=details,
+            ip_address=remote_ip,
+            user_agent=ua,
             access_timestamp=utcnow(),
         )
     )
@@ -847,6 +927,17 @@ def register_routes(app: Flask):
         if user is None or not check_password(user.password_hash, password):
             return jsonify({"error": "invalid credentials"}), 401
 
+        if user.role in ("bhw", "admin"):
+            with get_db().session() as session:
+                write_audit(
+                    session,
+                    user.id,
+                    None,
+                    "staff_login",
+                    status="success",
+                    details=f"Staff session authenticated ({user.role})",
+                )
+
         expires = int(datetime.now(timezone.utc).timestamp()) + JWT_EXPIRATION_HOURS * 3600
         token = jwt.encode(
             {"sub": str(user.id), "role": user.role, "exp": expires},
@@ -1149,9 +1240,24 @@ def register_routes(app: Flask):
                 return jsonify({"error": "citizen not found"}), 404
             consent_row = latest_consent(session, citizen.id)
             if not (consent_row and consent_row.consent_granted == 1):
+                write_audit(
+                    session,
+                    g.user.id,
+                    citizen.id,
+                    "unauthorized_access",
+                    status="blocked",
+                    details="Attempted to view health records without citizen consent",
+                )
                 return jsonify({"error": "citizen has not granted consent"}), 403
 
-            write_audit(session, g.user.id, citizen.id, "view_health_data")
+            write_audit(
+                session,
+                g.user.id,
+                citizen.id,
+                "view_health_data",
+                status="success",
+                details="Viewed vital health history",
+            )
             rows = list(
                 session.execute(
                     select(HealthLog)
@@ -1221,8 +1327,16 @@ def register_routes(app: Flask):
             return None, (jsonify({"error": "citizen not found"}), 404)
         consent_row = latest_consent(session, citizen.id)
         if not (consent_row and consent_row.consent_granted == 1):
+            write_audit(
+                session,
+                g.user.id,
+                citizen.id,
+                "unauthorized_access",
+                status="blocked",
+                details=f"Attempted {action} without citizen consent",
+            )
             return None, (jsonify({"error": "citizen has not granted consent"}), 403)
-        write_audit(session, g.user.id, citizen.id, action)
+        write_audit(session, g.user.id, citizen.id, action, status="success")
         return citizen, None
 
     @app.route("/api/bhw/citizen/<int:citizen_id>/notes", methods=["GET", "POST"])
@@ -1282,6 +1396,7 @@ def register_routes(app: Flask):
         bhw_name=None,
         citizen_name=None,
         action_type=None,
+        status=None,
         limit=500,
     ):
         bhw_alias = aliased(User)
@@ -1293,15 +1408,19 @@ def register_routes(app: Flask):
                 citizen_alias.full_name,
             )
             .join(bhw_alias, AccessAuditTrail.bhw_user_id == bhw_alias.id)
-            .join(citizen_alias, AccessAuditTrail.citizen_id == citizen_alias.id)
+            .outerjoin(citizen_alias, AccessAuditTrail.citizen_id == citizen_alias.id)
         )
         if start is not None:
             stmt = stmt.where(AccessAuditTrail.access_timestamp >= start)
         if end is not None:
             stmt = stmt.where(AccessAuditTrail.access_timestamp < end)
         if bhw_name:
+            b_like = f"%{bhw_name.strip().lower()}%"
             stmt = stmt.where(
-                func.lower(bhw_alias.full_name) == bhw_name.strip().lower()
+                or_(
+                    func.lower(bhw_alias.full_name).like(b_like),
+                    func.lower(bhw_alias.username).like(b_like),
+                )
             )
         if citizen_name:
             c_like = f"%{citizen_name.strip().lower()}%"
@@ -1313,6 +1432,8 @@ def register_routes(app: Flask):
             )
         if action_type:
             stmt = stmt.where(AccessAuditTrail.action_type == action_type.strip())
+        if status:
+            stmt = stmt.where(AccessAuditTrail.status == status.strip().lower())
         stmt = stmt.order_by(
             AccessAuditTrail.access_timestamp.desc(), AccessAuditTrail.id.desc()
         ).limit(limit)
@@ -1321,16 +1442,38 @@ def register_routes(app: Flask):
     def audit_payload(rows):
         return [
             {
+                "id": entry.id,
                 "bhw": entry.bhw_user_id,
                 "citizen": entry.citizen_id,
-                "bhw_name": bhw_full_name,
-                "citizen_name": citizen_full_name,
+                "bhw_name": bhw_full_name or "Staff / System",
+                "citizen_name": citizen_full_name
+                or ("All Citizens / System" if entry.citizen_id is None else "Unknown Citizen"),
                 "action": entry.action_type,
-                "ip": entry.ip_address,
+                "status": entry.status or "success",
+                "details": entry.details or "",
+                "ip": entry.ip_address or "—",
+                "user_agent": entry.user_agent or "—",
                 "time": iso(entry.access_timestamp),
             }
             for entry, bhw_full_name, citizen_full_name in rows
         ]
+
+    def compute_audit_metrics(rows):
+        total = len(rows)
+        views = sum(1 for r in rows if r[0].action_type == "view_health_data")
+        notes = sum(1 for r in rows if r[0].action_type in ("add_note", "view_notes"))
+        referrals = sum(1 for r in rows if r[0].action_type == "refer_to_rhu")
+        blocked = sum(
+            1
+            for r in rows
+            if r[0].status == "blocked" or r[0].action_type == "unauthorized_access"
+        )
+        return {
+            "total": total,
+            "views": views,
+            "interventions": notes + referrals,
+            "blocked": blocked,
+        }
 
     def parse_range_args():
         from_raw = (request.args.get("from") or "").strip()
@@ -1362,6 +1505,7 @@ def register_routes(app: Flask):
         bhw_name = request.args.get("bhw") or ""
         citizen_name = request.args.get("citizen") or ""
         action_type = request.args.get("action") or ""
+        status = request.args.get("status") or ""
         with get_db().session() as session:
             rows = audit_rows(
                 session,
@@ -1370,9 +1514,11 @@ def register_routes(app: Flask):
                 bhw_name=bhw_name,
                 citizen_name=citizen_name,
                 action_type=action_type,
+                status=status,
             )
             payload = audit_payload(rows)
-        return jsonify({"audit": payload})
+            metrics = compute_audit_metrics(rows)
+        return jsonify({"audit": payload, "metrics": metrics})
 
     @app.route("/api/admin/audit", methods=["GET"])
     @require_staff
@@ -1383,6 +1529,7 @@ def register_routes(app: Flask):
         bhw_name = request.args.get("bhw") or ""
         citizen_name = request.args.get("citizen") or ""
         action_type = request.args.get("action") or ""
+        status = request.args.get("status") or ""
         with get_db().session() as session:
             rows = audit_rows(
                 session,
@@ -1391,9 +1538,11 @@ def register_routes(app: Flask):
                 bhw_name=bhw_name,
                 citizen_name=citizen_name,
                 action_type=action_type,
+                status=status,
             )
             payload = audit_payload(rows)
-        return jsonify({"audit": payload})
+            metrics = compute_audit_metrics(rows)
+        return jsonify({"audit": payload, "metrics": metrics})
 
     @app.route("/api/bhw/reports", methods=["GET"])
     @require_staff
@@ -1408,6 +1557,15 @@ def register_routes(app: Flask):
         wants_print = (request.args.get("format") or "").lower() == "print"
 
         with get_db().session() as session:
+            fmt = "print" if wants_print else "csv"
+            write_audit(
+                session,
+                g.user.id,
+                None,
+                "export_report",
+                status="success",
+                details=f"Exported {report_type} report ({label}) as {fmt}",
+            )
             logs = logs_in_period(session, start=start, end=end)
             metrics = compute_metrics(session, logs)
             consent_rows = latest_consent_map(session)
@@ -1448,15 +1606,26 @@ def register_routes(app: Flask):
                     ("total_citizens", len(citizens)),
                 ]
             elif report_type == "audit":
-                header = ("time", "bhw", "citizen_accessed", "action", "ip")
+                header = (
+                    "time",
+                    "bhw",
+                    "citizen_accessed",
+                    "action",
+                    "status",
+                    "details",
+                    "ip",
+                )
                 audit = audit_rows(session, start, end, limit=1000)
                 rows = [
                     (
                         iso(entry.access_timestamp),
-                        bhw_name,
-                        citizen_name,
+                        bhw_name or "Staff / System",
+                        citizen_name
+                        or ("All Citizens / System" if entry.citizen_id is None else "Unknown"),
                         entry.action_type,
-                        entry.ip_address,
+                        entry.status or "success",
+                        entry.details or "—",
+                        entry.ip_address or "—",
                     )
                     for entry, bhw_name, citizen_name in audit
                 ]

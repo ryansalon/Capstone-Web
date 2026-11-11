@@ -3842,3 +3842,123 @@ mark.match {
   border-radius: 3px;
   font-weight: 700;
 }
+
+/* ---------- Audit Trail Overhaul & KPI Dashboard ---------- */
+.audit-kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.audit-kpis .kpi-card {
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 1.15rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.audit-kpis .kpi-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+.audit-kpis .kpi-label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--ink-soft);
+}
+
+.audit-kpis .kpi-value {
+  font-size: 1.85rem;
+  font-weight: 800;
+  color: var(--ink);
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+
+.audit-kpis .kpi-sub {
+  font-size: 0.78rem;
+  color: var(--ink-soft);
+}
+
+.audit-kpis .kpi-card-alert.has-alerts {
+  background: #fef2f2;
+  border-color: #fecaca;
+}
+
+.audit-kpis .kpi-card-alert.has-alerts .kpi-label,
+.audit-kpis .kpi-card-alert.has-alerts .kpi-value {
+  color: #dc2626;
+}
+
+.badge-info {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
+}
+
+/* Clickable Audit Table */
+.audit-table tr.audit-row {
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.audit-table tr.audit-row:hover {
+  background-color: var(--green-50, #f0fdf4);
+}
+
+.audit-table tr.audit-row:focus-visible {
+  outline: 2px solid var(--green-600);
+  outline-offset: -2px;
+}
+
+.audit-table tr.audit-row-blocked {
+  background-color: #fff5f5;
+}
+
+.audit-table tr.audit-row-blocked:hover {
+  background-color: #fee2e2;
+}
+
+/* Audit Detail Inspector List */
+.audit-detail-list {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0;
+}
+
+.audit-detail-item {
+  display: grid;
+  grid-template-columns: 160px 1fr;
+  align-items: baseline;
+  gap: 0.75rem;
+  padding-bottom: 0.6rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.audit-detail-item:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.audit-detail-item dt {
+  font-weight: 600;
+  color: var(--ink-soft);
+  font-size: 0.85rem;
+}
+
+.audit-detail-item dd {
+  margin: 0;
+  color: var(--ink);
+  word-break: break-word;
+}

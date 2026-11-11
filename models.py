@@ -63,10 +63,13 @@ class AccessAuditTrail(Base):
 
     id = Column(Integer, primary_key=True)
     bhw_user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
-    citizen_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    citizen_id = Column(Integer, ForeignKey("users.id"), nullable=True, index=True)
     access_timestamp = Column(DateTime, default=utcnow, index=True)
     action_type = Column(String(40), nullable=False)
+    status = Column(String(20), default="success", nullable=False)
+    details = Column(String(255), nullable=True)
     ip_address = Column(String(64), nullable=True)
+    user_agent = Column(String(255), nullable=True)
 
 
 class BhwNote(Base):

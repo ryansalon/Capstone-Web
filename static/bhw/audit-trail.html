@@ -7,7 +7,7 @@
   <link rel="icon" href="data:,">
   <link rel="preload" as="image" href="/img/cpsc-logo.png">
   <link rel="preload" as="image" href="/img/rhu-logo.png">
-  <link rel="stylesheet" href="/css/style.css?v=12">
+  <link rel="stylesheet" href="/css/style.css?v=13">
 </head>
 <body data-page="bhw-audit">
   <a class="skip-link" href="#main">Skip to main content</a>
@@ -56,10 +56,36 @@
           <p class="lede">Append-only log of every access to citizen records. Entries cannot be edited or deleted.</p>
         </div>
         <div class="page-actions">
+          <button id="exportAuditCsvBtn" class="btn btn-secondary" type="button" title="Export filtered audit entries as CSV">Export CSV</button>
+          <button id="printAuditBtn" class="btn btn-secondary" type="button" title="Print this audit trail log">Print log</button>
           <a href="/bhw/dashboard.html" class="btn btn-secondary">Dashboard</a>
           <a href="/bhw/reports.html" class="btn btn-secondary">Reports</a>
         </div>
       </div>
+
+      <!-- Audit KPI Summary Overview -->
+      <section class="audit-kpis" id="auditKpis" aria-label="Audit summary overview">
+        <div class="kpi-card">
+          <span class="kpi-label">Total Logged Events</span>
+          <span class="kpi-value" id="kpiTotal">—</span>
+          <span class="kpi-sub">Filtered records</span>
+        </div>
+        <div class="kpi-card">
+          <span class="kpi-label">Health Records Viewed</span>
+          <span class="kpi-value" id="kpiViews">—</span>
+          <span class="kpi-sub">Clinical chart queries</span>
+        </div>
+        <div class="kpi-card">
+          <span class="kpi-label">Clinical Interventions</span>
+          <span class="kpi-value" id="kpiInterventions">—</span>
+          <span class="kpi-sub">Notes &amp; referrals</span>
+        </div>
+        <div class="kpi-card kpi-card-alert" id="kpiBlockedCard">
+          <span class="kpi-label">Security Flags</span>
+          <span class="kpi-value" id="kpiBlocked">0</span>
+          <span class="kpi-sub" id="kpiBlockedSub">Blocked unauthorized attempts</span>
+        </div>
+      </section>
 
       <form id="filterForm" class="filters" role="search">
         <div class="field">
@@ -88,6 +114,14 @@
           <input id="citizenName" name="citizen" type="text" placeholder="e.g. Carl Mendoza" autocomplete="off">
         </div>
         <div class="field">
+          <label for="statusFilter">Status</label>
+          <select id="statusFilter" name="status">
+            <option value="">All statuses</option>
+            <option value="success">Authorized / Success</option>
+            <option value="blocked">Blocked / Security Flag</option>
+          </select>
+        </div>
+        <div class="field">
           <label for="actionType">Action taken</label>
           <select id="actionType" name="action">
             <option value="">All actions</option>
@@ -95,6 +129,9 @@
             <option value="view_notes">Viewed clinical notes</option>
             <option value="add_note">Added clinical note</option>
             <option value="refer_to_rhu">Referred to RHU</option>
+            <option value="unauthorized_access">Blocked: No Consent</option>
+            <option value="export_report">Exported Report / Data</option>
+            <option value="staff_login">Staff Session Authenticated</option>
           </select>
         </div>
         <button id="filterBtn" class="btn btn-primary" type="submit">Apply filters</button>
@@ -109,6 +146,6 @@
     </div>
   </div>
   <script src="/js/api.js"></script>
-  <script src="/js/bhw.js?v=12"></script>
+  <script src="/js/bhw.js?v=13"></script>
 </body>
 </html>

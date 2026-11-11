@@ -1130,9 +1130,17 @@
     view_notes: { label: "Viewed clinical notes", cls: "badge-admin" },
     add_note: { label: "Added clinical note", cls: "badge-ok" },
     refer_to_rhu: { label: "Referred to RHU", cls: "badge-warn" },
+    unauthorized_access: { label: "Blocked: No Consent", cls: "badge-danger" },
+    export_report: { label: "Exported Report", cls: "badge-info" },
+    staff_login: { label: "Staff Login", cls: "badge-admin" },
   };
 
-  function renderActionBadge(action) {
+  var currentAuditRows = [];
+
+  function renderActionBadge(action, status) {
+    if (status === "blocked" || action === "unauthorized_access") {
+      return U.el("span", { class: "badge badge-danger" }, "Blocked: No Consent");
+    }
     var meta = AUDIT_ACTION_MAP[action] || {
       label: (action || "—").replace(/_/g, " "),
       cls: "badge-no",
@@ -1140,7 +1148,209 @@
     return U.el("span", { class: "badge " + meta.cls }, meta.label);
   }
 
+  function renderStatusBadge(status) {
+    if (status === "blocked") {
+      return U.el("span", { class: "badge badge-danger" }, "Blocked 🚫");
+    }
+    return U.el("span", { class: "badge badge-ok" }, "Authorized ✓");
+  }
+
+  function renderAuditMetrics(metrics) {
+    if (!metrics) return;
+    var elTotal = document.getElementById("kpiTotal");
+    var elViews = document.getElementById("kpiViews");
+    var elInterventions = document.getElementById("kpiInterventions");
+    var elBlocked = document.getElementById("kpiBlocked");
+    var cardBlocked = document.getElementById("kpiBlockedCard");
+
+    if (elTotal) elTotal.textContent = metrics.total !== undefined ? metrics.total : "—";
+    if (elViews) elViews.textContent = metrics.views !== undefined ? metrics.views : "—";
+    if (elInterventions) elInterventions.textContent = metrics.interventions !== undefined ? metrics.interventions : "—";
+    if (elBlocked) {
+      elBlocked.textContent = metrics.blocked !== undefined ? metrics.blocked : "0";
+      if (cardBlocked) {
+        cardBlocked.classList.toggle("has-alerts", (metrics.blocked || 0) > 0);
+      }
+    }
+  }
+
+  function showAuditDetailsModal(entry) {
+    var backdrop = U.el("div", { class: "modal-backdrop" });
+    var card = U.el("div", {
+      class: "modal-card",
+      style: "max-width: 600px; width: 100%; box-shadow: 0 20px 60px rgba(0,0,0,0.3);",
+    });
+
+    var isBlocked = entry.status === "blocked" || entry.action === "unauthorized_access";
+
+    var header = U.el("div", {
+      class: "modal-header",
+      style: isBlocked ? "background: #7f1d1d;" : "",
+    });
+    var headerTitle = U.el("div");
+    headerTitle.innerHTML =
+      '<h3 style="margin:0; font-size:1.15rem; color:#fff;">Audit Log Inspector #' +
+      (entry.id || "—") +
+      "</h3>" +
+      '<small style="color: rgba(255,255,255,0.85); font-weight: 500;">RA 10173 Compliance Verification</small>';
+    header.appendChild(headerTitle);
+
+    var closeBtn = U.el(
+      "button",
+      { class: "btn btn-ghost", type: "button", "aria-label": "Close" },
+      "✕"
+    );
+    header.appendChild(closeBtn);
+    card.appendChild(header);
+
+    var body = U.el("div", {
+      class: "modal-body",
+      style: "padding: 1.25rem; font-size: 0.92rem; max-height: 70vh; overflow-y: auto;",
+    });
+
+    var statusBadge = isBlocked
+      ? '<span class="badge badge-danger">Blocked / Security Flag</span>'
+      : '<span class="badge badge-ok">Authorized / Verified</span>';
+
+    var dl = U.el("dl", { class: "audit-detail-list" });
+    dl.innerHTML =
+      '<div class="audit-detail-item"><dt>Event Status</dt><dd>' +
+      statusBadge +
+      "</dd></div>" +
+      '<div class="audit-detail-item"><dt>Action Performed</dt><dd><strong>' +
+      (entry.action || "—").replace(/_/g, " ") +
+      "</strong></dd></div>" +
+      '<div class="audit-detail-item"><dt>Health Worker / Actor</dt><dd>' +
+      (entry.bhw_name || "—") +
+      ' <span style="color:var(--ink-soft); font-size:0.8rem;">(ID: ' +
+      (entry.bhw || "—") +
+      ")</span></dd></div>" +
+      '<div class="audit-detail-item"><dt>Citizen Subject</dt><dd>' +
+      (entry.citizen_name || "All Citizens / System") +
+      (entry.citizen
+        ? ' <span style="color:var(--ink-soft); font-size:0.8rem;">(ID: ' +
+          entry.citizen +
+          ")</span>"
+        : "") +
+      "</dd></div>" +
+      '<div class="audit-detail-item"><dt>Timestamp (PHT)</dt><dd>' +
+      U.fmtDT(entry.time) +
+      ' <span style="color:var(--ink-soft); font-size:0.8rem;">(' +
+      U.fmtAge(entry.time) +
+      ")</span></dd></div>" +
+      '<div class="audit-detail-item"><dt>Timestamp (UTC)</dt><dd><code>' +
+      (entry.time || "—") +
+      "Z</code></dd></div>" +
+      '<div class="audit-detail-item"><dt>Event Details</dt><dd>' +
+      (entry.details || "Standard operational record access") +
+      "</dd></div>" +
+      '<div class="audit-detail-item"><dt>Origin IP Address</dt><dd><code>' +
+      (entry.ip || "—") +
+      "</code></dd></div>" +
+      '<div class="audit-detail-item"><dt>Client User Agent</dt><dd><span style="font-size:0.82rem; word-break:break-all; color:var(--ink-soft); font-family:monospace;">' +
+      (entry.user_agent || "Standard Browser Client") +
+      "</span></dd></div>";
+
+    body.appendChild(dl);
+
+    var legalBox = U.el("div", {
+      style:
+        "margin-top:1rem; padding:0.75rem 1rem; border-radius:8px; background:var(--green-50, #f0fdf4); border:1px solid #bbf7d0; font-size:0.82rem; color:#14532d; display:flex; align-items:center; gap:0.5rem;",
+    });
+    legalBox.innerHTML =
+      '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0;"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>' +
+      "<span>Logged in accordance with the <strong>Republic Act No. 10173 (Data Privacy Act of 2012)</strong>. Record is immutable and append-only.</span>";
+    body.appendChild(legalBox);
+    card.appendChild(body);
+
+    var footer = U.el("div", {
+      class: "modal-footer",
+      style: "display:flex; justify-content:space-between; align-items:center;",
+    });
+    if (entry.citizen) {
+      var viewCitizenLink = U.el(
+        "a",
+        {
+          href: "/bhw/citizen-view.html?id=" + entry.citizen,
+          class: "btn btn-secondary",
+          style: "font-size:0.88rem;",
+        },
+        "Open Citizen Record →"
+      );
+      footer.appendChild(viewCitizenLink);
+    } else {
+      footer.appendChild(U.el("span"));
+    }
+
+    var dismissBtn = U.el("button", { class: "btn btn-primary", type: "button" }, "Done");
+    footer.appendChild(dismissBtn);
+    card.appendChild(footer);
+
+    backdrop.appendChild(card);
+    document.body.appendChild(backdrop);
+
+    function close() {
+      if (backdrop.parentNode) backdrop.parentNode.removeChild(backdrop);
+      document.removeEventListener("keydown", onKey);
+    }
+    function onKey(e) {
+      if (e.key === "Escape" || e.key === "Esc") close();
+    }
+
+    closeBtn.onclick = close;
+    dismissBtn.onclick = close;
+    backdrop.onclick = function (e) {
+      if (e.target === backdrop) close();
+    };
+    document.addEventListener("keydown", onKey);
+    dismissBtn.focus();
+  }
+
+  function exportAuditToCsv(rows) {
+    if (!rows || !rows.length) {
+      U.toast("No audit records to export", "info");
+      return;
+    }
+    var headers = [
+      "Log ID",
+      "Timestamp (UTC)",
+      "Timestamp (PHT)",
+      "Health Worker",
+      "Citizen",
+      "Action",
+      "Status",
+      "Details",
+      "IP Address",
+    ];
+    var csvLines = [headers.join(",")];
+    rows.forEach(function (r) {
+      var line = [
+        r.id || "",
+        r.time || "",
+        '"' + (U.fmtDT(r.time) || "").replace(/"/g, '""') + '"',
+        '"' + (r.bhw_name || "").replace(/"/g, '""') + '"',
+        '"' + (r.citizen_name || "").replace(/"/g, '""') + '"',
+        r.action || "",
+        r.status || "success",
+        '"' + (r.details || "").replace(/"/g, '""') + '"',
+        r.ip || "",
+      ];
+      csvLines.push(line.join(","));
+    });
+    var blob = new Blob([csvLines.join("\r\n")], { type: "text/csv;charset=utf-8;" });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url;
+    a.download = "audit-trail-" + new Date().toISOString().slice(0, 10) + ".csv";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    U.toast("Audit trail exported as CSV", "success");
+  }
+
   function renderAudit(rows) {
+    currentAuditRows = rows || [];
     var results = document.getElementById("results");
     U.clear(results);
     if (!rows.length) {
@@ -1148,10 +1358,18 @@
       return;
     }
     var tableWrap = U.el("div", { class: "table-wrap" });
-    var table = U.el("table");
+    var table = U.el("table", { class: "table-clickable audit-table" });
     var thead = U.el("thead");
     var headRow = U.el("tr");
-    ["Time (PHT)", "Health worker", "Citizen accessed", "Action taken", "IP address"].forEach(function (label) {
+    [
+      "Time (PHT)",
+      "Health worker",
+      "Citizen accessed",
+      "Action taken",
+      "Status",
+      "Details",
+      "IP address",
+    ].forEach(function (label) {
       headRow.appendChild(U.el("th", { scope: "col" }, label));
     });
     thead.appendChild(headRow);
@@ -1160,7 +1378,15 @@
     var tbody = U.el("tbody");
     var rowsFrag = document.createDocumentFragment();
     rows.forEach(function (entry) {
-      var row = U.el("tr");
+      var isBlocked = entry.status === "blocked" || entry.action === "unauthorized_access";
+      var row = U.el("tr", {
+        class: "audit-row" + (isBlocked ? " audit-row-blocked" : ""),
+        tabindex: "0",
+        role: "button",
+        "aria-label": "Inspect audit record #" + entry.id,
+      });
+      row.title = "Click to inspect complete audit details & compliance trace";
+
       var tdTime = U.el(
         "td",
         {
@@ -1171,12 +1397,52 @@
       );
       tdTime.setAttribute("data-sort", entry.time || "");
       row.appendChild(tdTime);
+
       row.appendChild(U.el("td", { style: "font-weight:500;" }, entry.bhw_name));
-      row.appendChild(U.el("td", { style: "font-weight:600; color:var(--green-900);" }, entry.citizen_name));
+
+      var citizenColor = entry.citizen ? "var(--green-900)" : "var(--ink-soft)";
+      row.appendChild(
+        U.el("td", { style: "font-weight:600; color:" + citizenColor + ";" }, entry.citizen_name)
+      );
+
       var actionCell = U.el("td");
-      actionCell.appendChild(renderActionBadge(entry.action));
+      actionCell.appendChild(renderActionBadge(entry.action, entry.status));
       row.appendChild(actionCell);
-      row.appendChild(U.el("td", { style: "color:var(--ink-soft); font-size:0.85rem;" }, entry.ip || "—"));
+
+      var statusCell = U.el("td");
+      statusCell.appendChild(renderStatusBadge(entry.status));
+      row.appendChild(statusCell);
+
+      var detailsText = entry.details || "—";
+      var tdDetails = U.el(
+        "td",
+        {
+          style:
+            "max-width:220px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:0.86rem; color:var(--ink-soft);",
+          title: detailsText,
+        },
+        detailsText
+      );
+      row.appendChild(tdDetails);
+
+      row.appendChild(
+        U.el(
+          "td",
+          { style: "color:var(--ink-soft); font-size:0.85rem; font-family:monospace;" },
+          entry.ip || "—"
+        )
+      );
+
+      row.addEventListener("click", function () {
+        showAuditDetailsModal(entry);
+      });
+      row.addEventListener("keydown", function (e) {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          showAuditDetailsModal(entry);
+        }
+      });
+
       rowsFrag.appendChild(row);
     });
     tbody.appendChild(rowsFrag);
@@ -1194,19 +1460,36 @@
     var bhw = fieldValue("bhwName");
     var citizen = fieldValue("citizenName");
     var action = fieldValue("actionType");
-    U.remember("bhw_audit_filters", { from: from, to: to, bhw: bhw, citizen: citizen, action: action });
+    var status = fieldValue("statusFilter");
+    U.remember("bhw_audit_filters", {
+      from: from,
+      to: to,
+      bhw: bhw,
+      citizen: citizen,
+      action: action,
+      status: status,
+    });
     if (from) params.set("from", from);
     if (to) params.set("to", to);
     if (bhw) params.set("bhw", bhw);
     if (citizen) params.set("citizen", citizen);
     if (action) params.set("action", action);
+    if (status) params.set("status", status);
 
     U.loading(statusNode, "Loading audit entries…");
     var results = document.getElementById("results");
     U.clear(results);
     results.appendChild(
       U.tableSkeleton(
-        ["Time (PHT)", "Health worker", "Citizen accessed", "Action taken", "IP address"],
+        [
+          "Time (PHT)",
+          "Health worker",
+          "Citizen accessed",
+          "Action taken",
+          "Status",
+          "Details",
+          "IP address",
+        ],
         4
       )
     );
@@ -1214,6 +1497,7 @@
       var data = await API.apiFetch("/api/bhw/audit-trail?" + params.toString());
       U.clear(statusNode);
       renderAudit(data.audit || []);
+      renderAuditMetrics(data.metrics);
     } catch (error) {
       U.clear(document.getElementById("results"));
       U.error(statusNode, error.message, loadAudit);
@@ -1230,6 +1514,9 @@
       if (remembered.bhw) document.getElementById("bhwName").value = remembered.bhw;
       if (remembered.citizen) document.getElementById("citizenName").value = remembered.citizen;
       if (remembered.action) document.getElementById("actionType").value = remembered.action;
+      if (remembered.status && document.getElementById("statusFilter")) {
+        document.getElementById("statusFilter").value = remembered.status;
+      }
     }
     bindDatePresets(form, "fromDate", "toDate", loadAudit);
     form.addEventListener("submit", function (event) {
@@ -1239,10 +1526,34 @@
     document.getElementById("clearBtn").addEventListener("click", function () {
       form.reset();
       U.remember("bhw_audit_filters", null);
-      form.querySelectorAll(".date-preset-btn").forEach(function (b) { b.classList.remove("active"); });
+      form.querySelectorAll(".date-preset-btn").forEach(function (b) {
+        b.classList.remove("active");
+      });
       loadAudit();
     });
+
+    var exportCsvBtn = document.getElementById("exportAuditCsvBtn");
+    if (exportCsvBtn) {
+      exportCsvBtn.addEventListener("click", function () {
+        exportAuditToCsv(currentAuditRows);
+      });
+    }
+
+    var printBtn = document.getElementById("printAuditBtn");
+    if (printBtn) {
+      printBtn.addEventListener("click", function () {
+        window.print();
+      });
+    }
+
     loadAudit();
+
+    // Live sync for audit trail
+    API.initRealtimeSync({
+      onReading: function () {
+        loadAudit();
+      },
+    });
   }
 
   /* ---------------- reports ---------------- */

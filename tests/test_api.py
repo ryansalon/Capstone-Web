@@ -838,6 +838,52 @@ def test_audit_trail_filtering_by_citizen_and_action(client):
     assert resp_none.status_code == 200
     assert len(resp_none.get_json()["audit"]) == 0
 
+    # 4. Filter by BHW substring (e.g. 'maria')
+    resp_bhw = client.get(
+        "/api/bhw/audit-trail?bhw=maria", headers=bearer(bhw_token)
+    )
+    assert resp_bhw.status_code == 200
+    bhw_rows = resp_bhw.get_json()["audit"]
+    assert len(bhw_rows) >= 2
+    assert all("Maria Santos" in r["bhw_name"] for r in bhw_rows)
+
+    # 5. Metrics returned in payload
+    metrics = resp_citizen.get_json()["metrics"]
+    assert "total" in metrics
+    assert "views" in metrics
+    assert "interventions" in metrics
+    assert "blocked" in metrics
+
+
+def test_unauthorized_access_and_report_export_audit_trail(client):
+    bhw_token = login(client, "bhw1", "bhw12345")["token"]
+    # 1. Deny consent and attempt to view health logs
+    grant_consent(client, granted=False)
+    blocked = client.get("/api/bhw/citizen/1/health-logs", headers=bearer(bhw_token))
+    assert blocked.status_code == 403
+
+    # Check that the blocked attempt is audited
+    audit_resp = client.get("/api/bhw/audit-trail?status=blocked", headers=bearer(bhw_token))
+    assert audit_resp.status_code == 200
+    data = audit_resp.get_json()
+    blocked_rows = data["audit"]
+    assert len(blocked_rows) >= 1
+    assert blocked_rows[0]["status"] == "blocked"
+    assert blocked_rows[0]["action"] == "unauthorized_access"
+    assert "consent" in blocked_rows[0]["details"].lower()
+    assert data["metrics"]["blocked"] >= 1
+
+    # 2. Export report and verify audit
+    rep_resp = client.get("/api/bhw/reports?type=summary&format=csv", headers=bearer(bhw_token))
+    assert rep_resp.status_code == 200
+
+    export_audit = client.get("/api/bhw/audit-trail?action=export_report", headers=bearer(bhw_token)).get_json()["audit"]
+    assert len(export_audit) >= 1
+    assert export_audit[0]["action"] == "export_report"
+    assert export_audit[0]["status"] == "success"
+    assert export_audit[0]["citizen"] is None
+    assert "summary" in export_audit[0]["details"]
+
 
 def test_realtime_stream_and_watermark(client):
     # Missing token returns 401
