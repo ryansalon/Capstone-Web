@@ -7,7 +7,7 @@
   <link rel="icon" href="data:,">
   <link rel="preload" as="image" href="/img/cpsc-logo.png">
   <link rel="preload" as="image" href="/img/rhu-logo.png">
-  <link rel="stylesheet" href="/css/style.css?v=7">
+  <link rel="stylesheet" href="/css/style.css?v=8">
 </head>
 <body data-page="citizen-dashboard">
   <a class="skip-link" href="#main">Skip to main content</a>
@@ -49,36 +49,47 @@
     <div class="workspace">
 
     <main id="main" class="page portal-citizen" tabindex="-1">
-      <div class="page-head">
-        <div class="page-head-title">
-          <span class="page-eyebrow">Citizen Station</span>
-          <h1>My Health Dashboard</h1>
-          <p class="lede">Overview of your latest vital signs recorded at the barangay health kiosk.</p>
+      <!-- Integrated Patient Hero Banner -->
+      <section class="hero hero-patient-banner" id="heroPanel" aria-labelledby="heroGreeting">
+        <div class="hero-header-top">
+          <div class="hero-patient-info">
+            <span class="hero-eyebrow">Barangay Health Kiosk · Patient Station</span>
+            <h1 class="hero-greeting" id="heroGreeting">Welcome</h1>
+          </div>
+          <div class="hero-actions">
+            <button id="citizenRefreshBtn" class="btn btn-secondary" type="button" title="Check for fresh kiosk readings">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+              <span>Refresh</span>
+            </button>
+            <a class="btn btn-secondary" href="/citizen/history.html">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+              <span>History</span>
+            </a>
+            <button id="passportBtn" class="btn btn-primary" type="button">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+              <span>Print Health Passport</span>
+            </button>
+          </div>
         </div>
-        <div class="page-actions">
-          <button id="citizenRefreshBtn" class="btn btn-secondary" type="button">Refresh</button>
-          <a class="btn btn-secondary" href="/citizen/history.html">View history</a>
-          <button id="passportBtn" class="btn btn-primary" type="button">Print health passport</button>
-        </div>
-      </div>
 
-      <!-- Hero status panel: greeting, plain-language status, next step. -->
-      <section class="hero" id="heroPanel" aria-labelledby="heroGreeting">
-        <div class="hero-body">
-          <p class="hero-eyebrow">My health</p>
-          <h1 class="hero-greeting" id="heroGreeting">Welcome</h1>
-          <p class="hero-sentence" id="heroSentence">Checking your latest reading…</p>
-          <p class="hero-next" id="heroNext"></p>
+        <div class="hero-status-row">
+          <div class="hero-status-content">
+            <span class="hero-pill" id="heroPill">Checking…</span>
+            <p class="hero-sentence" id="heroSentence">Checking your latest reading…</p>
+            <p class="hero-next" id="heroNext"></p>
+          </div>
         </div>
-        <span class="hero-pill" id="heroPill">Checking…</span>
+
+        <div class="hero-meta-bar">
+          <div id="latestMeta" class="latest-checkin-meta"></div>
+          <div class="hero-meta-right">
+            <a id="consentChip" class="status-chip" href="/citizen/consent.html" title="Consent status — open the Consent page to change it.">Consent status</a>
+          </div>
+        </div>
       </section>
 
       <div id="status" aria-live="polite"></div>
       <div id="alertBanner" aria-live="assertive"></div>
-      <div class="meta-row">
-        <div id="latestMeta" class="muted"></div>
-        <a id="consentChip" class="status-chip" href="/citizen/consent.html" title="Consent status — open the Consent page to change it.">Consent status</a>
-      </div>
       <p class="trust-line" id="consentExplain"></p>
 
       <section class="section" id="headlineSection" aria-labelledby="headlineHeading">

@@ -309,13 +309,60 @@ a:hover {
 
 .sidebar-foot .whoami {
   color: var(--white);
-  font-weight: 600;
+  font-weight: 500;
   font-size: 0.9rem;
   min-width: 0;
   max-width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  width: 100%;
+  padding: 0.2rem 0;
+}
+
+.user-avatar {
+  flex: 0 0 34px;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(126, 224, 189, 0.25) 0%, rgba(31, 143, 107, 0.45) 100%);
+  border: 1px solid rgba(126, 224, 189, 0.45);
+  color: #eafff7;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.user-info-text {
+  min-width: 0;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  overflow: hidden;
+}
+
+.user-display-name {
+  color: var(--white);
+  font-weight: 600;
+  font-size: 0.88rem;
+  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  line-height: 1.25;
+}
+
+.user-role-badge {
+  color: var(--shell-text);
+  font-size: 0.73rem;
+  letter-spacing: 0.02em;
+  line-height: 1.2;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .sidebar-foot .btn-ghost {
@@ -904,34 +951,59 @@ h3 {
   letter-spacing: 0.005em;
 }
 
+.card-top-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.35rem;
+}
+
+.card-top-row .label {
+  margin-bottom: 0;
+}
+
 .card .vital-badge {
   display: inline-flex;
   align-items: center;
   font-size: 0.72rem;
   font-weight: 700;
-  padding: 0.15rem 0.52rem;
+  padding: 0.18rem 0.55rem;
   border-radius: var(--radius-pill);
-  margin-top: 0.35rem;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.025em;
   text-transform: uppercase;
+  line-height: 1.2;
 }
 
-.card .vital-badge.ok {
+.card-top-row .vital-badge {
+  margin-top: 0;
+}
+
+.card .vital-badge.ok,
+.card .vital-badge.badge-good {
   background: var(--status-normal-bg);
   color: var(--status-normal-fg);
   border: 1px solid var(--status-normal-border);
 }
 
-.card .vital-badge.warn {
+.card .vital-badge.warn,
+.card .vital-badge.badge-warn {
   background: var(--status-attention-bg);
   color: var(--status-attention-fg);
   border: 1px solid var(--status-attention-border);
 }
 
-.card .vital-badge.bad {
+.card .vital-badge.bad,
+.card .vital-badge.badge-danger {
   background: var(--status-alert-bg);
   color: var(--status-alert-fg);
   border: 1px solid var(--status-alert-border);
+}
+
+.card .vital-badge.badge-neutral {
+  background: #f0f4f2;
+  color: var(--ink-soft);
+  border: 1px solid #dae5e0;
 }
 
 /* Semantic tone borders — colour appears when a reading requires attention or action. */
@@ -1108,6 +1180,8 @@ h3 {
 
 .table-wrap {
   overflow-x: auto;
+  max-height: 72vh;
+  overflow-y: auto;
   background: var(--white);
   border: 1px solid var(--line);
   border-radius: var(--radius);
@@ -1673,6 +1747,86 @@ th.num {
   height: 2.65rem;
   min-height: 2.65rem;
   align-self: flex-end;
+}
+
+.filters .field.date-presets-field {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.date-presets {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  height: 2.65rem;
+}
+
+.date-preset-btn {
+  background: var(--green-050);
+  border: 1px solid var(--line);
+  color: var(--green-900);
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 0.45rem 0.65rem;
+  border-radius: 6px;
+  cursor: pointer;
+  line-height: 1.2;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.date-preset-btn:hover {
+  background: var(--green-100);
+  border-color: var(--green-300);
+  color: var(--green-950);
+}
+
+.date-preset-btn.active {
+  background: var(--green-700);
+  border-color: var(--green-700);
+  color: var(--white);
+}
+
+/* Search empty state */
+.empty-search-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 3rem 1.5rem;
+  background: var(--white);
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--radius);
+  margin-top: 1rem;
+}
+
+.empty-search-state .empty-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: var(--green-050);
+  color: var(--green-700);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+
+.empty-search-state .empty-title {
+  margin: 0 0 0.4rem;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--green-950);
+}
+
+.empty-search-state .empty-desc {
+  margin: 0 0 1.25rem;
+  color: var(--ink-soft);
+  font-size: 0.9rem;
+  max-width: 44ch;
 }
 
 .print-view {
@@ -2694,6 +2848,166 @@ a.status-chip:hover {
   overflow: hidden;
 }
 
+.portal-citizen .hero.hero-patient-banner {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 1.15rem;
+  padding: 1.6rem 1.85rem;
+}
+
+.portal-citizen .hero-header-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+  padding-bottom: 1.1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.portal-citizen .hero-patient-info {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.portal-citizen .hero-patient-info .hero-greeting {
+  margin: 0;
+  font-size: 1.85rem;
+  line-height: 1.2;
+}
+
+.portal-citizen .hero-patient-info .hero-eyebrow {
+  margin: 0 0 0.35rem;
+  color: var(--mint);
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.portal-citizen .hero-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+}
+
+.portal-citizen .hero-actions .btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 2.35rem;
+  padding: 0.45rem 0.95rem;
+  font-size: 0.86rem;
+  font-weight: 600;
+  border-radius: 8px;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.portal-citizen .hero-actions .btn-secondary {
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+}
+
+.portal-citizen .hero-actions .btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.22);
+  border-color: rgba(255, 255, 255, 0.45);
+  color: #ffffff;
+}
+
+.portal-citizen .hero-actions .btn-primary {
+  background: var(--mint);
+  color: var(--green-950);
+  border: 1px solid #9ef0cb;
+  font-weight: 700;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.portal-citizen .hero-actions .btn-primary:hover {
+  background: #aef5d3;
+  color: var(--green-950);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.portal-citizen .hero-status-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1.25rem;
+}
+
+.portal-citizen .hero-status-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  align-items: flex-start;
+}
+
+.portal-citizen .hero-status-content .hero-pill {
+  align-self: flex-start;
+}
+
+.portal-citizen .hero-status-content .hero-sentence {
+  font-size: 1.08rem;
+  margin: 0;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.95);
+  max-width: 65ch;
+}
+
+.portal-citizen .hero-status-content .hero-next {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--shell-text);
+  max-width: 65ch;
+}
+
+.portal-citizen .hero-meta-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-top: 0.95rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  font-size: 0.86rem;
+  color: rgba(255, 255, 255, 0.85);
+  flex-wrap: wrap;
+}
+
+.portal-citizen .latest-checkin-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.86rem;
+}
+
+.portal-citizen .hero-meta-right {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.portal-citizen .hero-meta-right #consentChip {
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: #ffffff;
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 0.28rem 0.8rem;
+  border-radius: 999px;
+  text-decoration: none;
+  transition: all 0.15s ease;
+}
+
+.portal-citizen .hero-meta-right #consentChip:hover {
+  background: rgba(255, 255, 255, 0.25);
+  border-color: rgba(255, 255, 255, 0.45);
+}
+
 .portal-citizen .hero::after {
   content: "";
   position: absolute;
@@ -2789,6 +3103,24 @@ a.status-chip:hover {
   .portal-citizen .hero {
     flex-direction: column;
     padding: 1.25rem 1.2rem;
+  }
+
+  .portal-citizen .hero.hero-patient-banner {
+    padding: 1.25rem 1.15rem;
+  }
+
+  .portal-citizen .hero-header-top {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .portal-citizen .hero-actions {
+    width: 100%;
+  }
+
+  .portal-citizen .hero-actions .btn {
+    flex: 1 1 auto;
+    justify-content: center;
   }
 
   .portal-citizen .hero-pill {

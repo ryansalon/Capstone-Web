@@ -455,8 +455,23 @@
   document.addEventListener("DOMContentLoaded", function () {
     var whoami = document.getElementById("whoami");
     if (whoami) {
-      var name = getName();
-      if (name) whoami.textContent = name;
+      var name = getName() || "User";
+      var role = getRole();
+      var initials = name
+        .split(" ")
+        .filter(Boolean)
+        .slice(0, 2)
+        .map(function (w) { return w[0].toUpperCase(); })
+        .join("") || "U";
+      var roleLabel = role === "bhw" ? "Health Worker" : role === "admin" ? "Staff Admin" : "Citizen";
+
+      UI.clear(whoami);
+      var avatar = UI.el("span", { class: "user-avatar" }, initials);
+      var textWrap = UI.el("div", { class: "user-info-text" });
+      textWrap.appendChild(UI.el("span", { class: "user-display-name" }, name));
+      textWrap.appendChild(UI.el("span", { class: "user-role-badge" }, roleLabel));
+      whoami.appendChild(avatar);
+      whoami.appendChild(textWrap);
     }
     var logoutBtn = document.getElementById("logoutBtn");
     if (logoutBtn) {

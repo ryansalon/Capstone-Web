@@ -40,6 +40,50 @@
     return node ? node.value.trim() : "";
   }
 
+  function formatDateISO(d) {
+    var year = d.getFullYear();
+    var month = String(d.getMonth() + 1).padStart(2, "0");
+    var day = String(d.getDate()).padStart(2, "0");
+    return year + "-" + month + "-" + day;
+  }
+
+  function bindDatePresets(formOrContainer, fromId, toId, onApply) {
+    if (!formOrContainer) return;
+    var fromInput = document.getElementById(fromId);
+    var toInput = document.getElementById(toId);
+    if (!fromInput || !toInput) return;
+    var presetBtns = formOrContainer.querySelectorAll(".date-preset-btn");
+    presetBtns.forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var range = btn.getAttribute("data-range");
+        var now = new Date();
+        var todayStr = formatDateISO(now);
+        if (range === "today") {
+          fromInput.value = todayStr;
+          toInput.value = todayStr;
+        } else if (range === "7d") {
+          var d7 = new Date();
+          d7.setDate(now.getDate() - 7);
+          fromInput.value = formatDateISO(d7);
+          toInput.value = todayStr;
+        } else if (range === "30d") {
+          var d30 = new Date();
+          d30.setDate(now.getDate() - 30);
+          fromInput.value = formatDateISO(d30);
+          toInput.value = todayStr;
+        } else if (range === "all") {
+          fromInput.value = "";
+          toInput.value = "";
+        }
+        presetBtns.forEach(function (b) { b.classList.remove("active"); });
+        btn.classList.add("active");
+        if (typeof onApply === "function") {
+          onApply();
+        }
+      });
+    });
+  }
+
   function setEmptyRow(wrap, message) {
     U.empty(wrap, message);
   }
@@ -650,7 +694,23 @@
     var results = document.getElementById("results");
     U.clear(results);
     if (!citizens.length) {
-      setEmptyRow(results, "No citizens match this search.");
+      var query = fieldValue("searchInput");
+      var emptyBox = U.el("div", { class: "empty-search-state" });
+      var icon = U.el("div", { class: "empty-icon" });
+      icon.innerHTML = '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="8" y1="11" x2="14" y2="11"/></svg>';
+      emptyBox.appendChild(icon);
+      emptyBox.appendChild(U.el("h3", { class: "empty-title" }, query ? "No citizens matching \u201C" + query + "\u201D" : "No citizens found"));
+      emptyBox.appendChild(U.el("p", { class: "empty-desc" }, query ? "Check the name spelling or try searching by username." : "No registered citizens are currently available in the database."));
+      if (query) {
+        var clearBtn = U.el("button", { class: "btn btn-secondary", type: "button" }, "Show all citizens");
+        clearBtn.addEventListener("click", function () {
+          var input = document.getElementById("searchInput");
+          if (input) input.value = "";
+          searchCitizens();
+        });
+        emptyBox.appendChild(clearBtn);
+      }
+      results.appendChild(emptyBox);
       return;
     }
     var tableWrap = U.el("div", { class: "table-wrap" });
@@ -1115,12 +1175,15 @@
 
   function initAudit() {
     if (!API.requireRole("bhw")) return;
-    document.getElementById("filterForm").addEventListener("submit", function (event) {
+    var form = document.getElementById("filterForm");
+    bindDatePresets(form, "fromDate", "toDate", loadAudit);
+    form.addEventListener("submit", function (event) {
       event.preventDefault();
       loadAudit();
     });
     document.getElementById("clearBtn").addEventListener("click", function () {
-      document.getElementById("filterForm").reset();
+      form.reset();
+      form.querySelectorAll(".date-preset-btn").forEach(function (b) { b.classList.remove("active"); });
       loadAudit();
     });
     loadAudit();
@@ -1151,6 +1214,8 @@
 
   function initReports() {
     if (!API.requireRole("bhw")) return;
+    var form = document.getElementById("reportForm");
+    bindDatePresets(form, "fromDate", "toDate", null);
     var statusNode = document.getElementById("status");
 
     document.getElementById("csvBtn").addEventListener("click", async function () {

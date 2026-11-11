@@ -7,7 +7,7 @@
   <link rel="icon" href="data:,">
   <link rel="preload" as="image" href="/img/cpsc-logo.png">
   <link rel="preload" as="image" href="/img/rhu-logo.png">
-  <link rel="stylesheet" href="/css/style.css?v=7">
+  <link rel="stylesheet" href="/css/style.css?v=8">
 </head>
 <body data-page="bhw-audit">
   <a class="skip-link" href="#main">Skip to main content</a>
@@ -69,6 +69,15 @@
         <div class="field">
           <label for="toDate">To</label>
           <input id="toDate" name="to" type="date">
+        </div>
+        <div class="field date-presets-field">
+          <span class="label">Presets</span>
+          <div class="date-presets" role="group" aria-label="Date range presets">
+            <button type="button" class="date-preset-btn" data-range="today">Today</button>
+            <button type="button" class="date-preset-btn" data-range="7d">Last 7d</button>
+            <button type="button" class="date-preset-btn" data-range="30d">Last 30d</button>
+            <button type="button" class="date-preset-btn" data-range="all">All time</button>
+          </div>
         </div>
         <div class="field">
           <label for="bhwName">Health worker</label>

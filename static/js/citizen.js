@@ -265,8 +265,13 @@
     var passport = U.el("div", { class: "passport-card" });
 
     var pHead = U.el("div", { class: "passport-header" });
-    pHead.appendChild(U.el("h2", null, "Barangay Health Monitoring"));
-    pHead.appendChild(U.el("p", null, "Official Citizen Health Record Card · Republic of the Philippines"));
+    var pLogos = U.el("div", { class: "passport-logos", style: "display:flex; align-items:center; justify-content:center; gap:1.25rem; margin-bottom:0.6rem;" });
+    pLogos.appendChild(U.el("img", { src: "/img/cpsc-logo.png", alt: "CPSC", width: "48", height: "48", style: "object-fit:contain;" }));
+    pLogos.appendChild(U.el("img", { src: "/img/rhu-logo.png", alt: "RHU Mahinog", width: "48", height: "48", style: "object-fit:contain;" }));
+    pHead.appendChild(pLogos);
+    pHead.appendChild(U.el("div", { style: "font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:#0b3d30;" }, "Republic of the Philippines · Province of Camiguin"));
+    pHead.appendChild(U.el("h2", { style: "margin:0.25rem 0; font-size:1.35rem;" }, "Citizen Health Passport"));
+    pHead.appendChild(U.el("p", { style: "margin:0; font-size:0.82rem; color:#4a655a;" }, "Municipality of Mahinog · Camiguin Polytechnic State College & Rural Health Unit"));
     passport.appendChild(pHead);
 
     var infoDl = U.el("dl", { class: "kv", style: "margin-bottom:1rem;" });
@@ -363,9 +368,14 @@
     dismissBtn.onclick = handleClose;
   }
 
-function addCard(container, label, value, sub, tone, gauge, delta, spark, pendingSparks, refRange) {
+function addCard(container, label, value, sub, tone, gauge, delta, spark, pendingSparks, refRange, badge) {
     var card = U.el("div", { class: "card" + (tone ? " " + tone : "") });
-    card.appendChild(U.el("div", { class: "label" }, label));
+    var topRow = U.el("div", { class: "card-top-row" });
+    topRow.appendChild(U.el("div", { class: "label" }, label));
+    if (badge) {
+      topRow.appendChild(U.el("span", { class: "vital-badge badge-" + (badge.tone || "neutral") }, badge.text));
+    }
+    card.appendChild(topRow);
     card.appendChild(U.el("div", { class: "value" }, value));
     if (sub) card.appendChild(U.el("div", { class: "sub" }, sub));
     if (refRange) card.appendChild(U.el("span", { class: "ref-range" }, refRange));
@@ -790,6 +800,13 @@ function addCard(container, label, value, sub, tone, gauge, delta, spark, pendin
     var bpCat = bpCategory(log.systolic_bp, log.diastolic_bp);
     var bpGauge = !isMissing(log.systolic_bp)
       ? createGauge("track-bp", ((log.systolic_bp - 90) / (190 - 90)) * 100, "90 Normal", "190 Crisis") : null;
+    var bpBadge = isMissing(log.systolic_bp) || isMissing(log.diastolic_bp)
+      ? null
+      : bpCat === "Normal"
+        ? { text: "Normal", tone: "good" }
+        : bpCat === "Elevated"
+          ? { text: "Elevated", tone: "warn" }
+          : { text: bpCat, tone: "danger" };
     addCard(
       fragHeadline,
       "Blood pressure",
@@ -806,12 +823,20 @@ function addCard(container, label, value, sub, tone, gauge, delta, spark, pendin
       bpDelta,
       spark(logs, "systolic_bp", "#1565c0"),
       pendingSparks,
-      "Target: <120/80 mmHg"
+      "Target: <120/80 mmHg",
+      bpBadge
     );
 
     var spo2Cat = spo2Category(log.spo2);
     var spo2Gauge = !isMissing(log.spo2)
       ? createGauge("track-spo2", ((log.spo2 - 80) / (100 - 80)) * 100, "80% Crit", "100% OK") : null;
+    var spo2Badge = isMissing(log.spo2)
+      ? null
+      : spo2Cat === "Normal"
+        ? { text: "Optimal", tone: "good" }
+        : spo2Cat === "Low"
+          ? { text: "Low SpO2", tone: "warn" }
+          : { text: "Critical", tone: "danger" };
     addCard(
       fragHeadline,
       "SpO2",
@@ -822,12 +847,18 @@ function addCard(container, label, value, sub, tone, gauge, delta, spark, pendin
       spo2Delta,
       spark(logs, "spo2", "#0b3d30"),
       pendingSparks,
-      "Normal: 95–100%"
+      "Normal: 95–100%",
+      spo2Badge
     );
 
     var hasFever = !isMissing(log.temperature) && Number(log.temperature) >= 37.9;
     var tempGauge = !isMissing(log.temperature)
       ? createGauge("track-temp", ((log.temperature - 35) / (40 - 35)) * 100, "35°C", "40°C Fever") : null;
+    var tempBadge = isMissing(log.temperature)
+      ? null
+      : hasFever
+        ? { text: "Fever", tone: "danger" }
+        : { text: "Normal", tone: "good" };
     addCard(
       fragHeadline,
       "Temperature",
@@ -838,9 +869,15 @@ function addCard(container, label, value, sub, tone, gauge, delta, spark, pendin
       tempDelta,
       spark(logs, "temperature", "#a5271d"),
       pendingSparks,
-      "Normal: 36.5–37.5 °C"
+      "Normal: 36.5–37.5 °C",
+      tempBadge
     );
 
+    var pulseBadge = isMissing(log.pulse_rate)
+      ? null
+      : (log.pulse_rate >= 60 && log.pulse_rate <= 100)
+        ? { text: "Normal", tone: "good" }
+        : { text: log.pulse_rate < 60 ? "Low pulse" : "Elevated", tone: "warn" };
     addCard(
       fragSupport,
       "Pulse rate",
@@ -851,12 +888,18 @@ function addCard(container, label, value, sub, tone, gauge, delta, spark, pendin
       pulseDelta,
       spark(logs, "pulse_rate", "#0f6b53"),
       pendingSparks,
-      "Resting: 60–100 bpm"
+      "Resting: 60–100 bpm",
+      pulseBadge
     );
 
     var bmiCat = bmiCategory(log.bmi);
     var bmiGauge = !isMissing(log.bmi)
       ? createGauge("track-bmi", ((log.bmi - 15) / (35 - 15)) * 100, "15 Under", "35+ Obese") : null;
+    var bmiBadge = isMissing(log.bmi)
+      ? null
+      : bmiCat === "Normal"
+        ? { text: "Normal", tone: "good" }
+        : { text: bmiCat, tone: "warn" };
     addCard(
       fragSupport,
       "BMI",
@@ -867,7 +910,8 @@ function addCard(container, label, value, sub, tone, gauge, delta, spark, pendin
       bmiDelta,
       spark(logs, "bmi", "#8a5a00"),
       pendingSparks,
-      "Normal: 18.5–24.9 kg/m²"
+      "Normal: 18.5–24.9 kg/m²",
+      bmiBadge
     );
 
     addCard(fragSupport, "Weight", U.fmtNum(log.weight, 1, "kg"), null, isMissing(log.weight) ? "missing" : null, null, weightDelta, spark(logs, "weight", "#0f6b53"), pendingSparks);
