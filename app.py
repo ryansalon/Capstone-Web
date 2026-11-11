@@ -420,7 +420,14 @@ def print_response(report_type: str, period: str, header, rows) -> Response:
   button {{ margin-top: 1.25rem; padding: .55rem 1.1rem; font-size: .95rem;
             border: 0; border-radius: .45rem; background: #0f6b53; color: #fff;
             cursor: pointer; }}
-  @media print {{ button {{ display: none; }} body {{ margin: 0; }} }}
+  @media print {{
+    @page {{ margin: 10mm 12mm; size: auto; }}
+    button {{ display: none !important; }}
+    body {{ margin: 0 !important; }}
+    table {{ width: 100% !important; max-width: 100% !important; }}
+    tr {{ break-inside: avoid; page-break-inside: avoid; }}
+    thead {{ display: table-header-group; }}
+  }}
 </style>
 </head>
 <body>

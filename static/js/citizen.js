@@ -252,6 +252,7 @@
   }
 
   function showHealthPassportModal(profile, log) {
+    document.body.classList.add("printing-passport");
     var backdrop = U.el("div", { class: "modal-backdrop" });
     var card = U.el("div", { class: "modal-card health-passport-modal" });
 

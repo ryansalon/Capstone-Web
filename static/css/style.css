@@ -2744,24 +2744,31 @@ a.status-chip:hover {
 /* Print Stylesheet for Health Passport & Official Records */
 @media print {
   @page {
-    margin: 12mm 15mm;
-    size: auto;
+    margin: 10mm 12mm;
+    size: portrait;
   }
 
   .print-only {
     display: block !important;
   }
 
+  /* General print cleaning for standard pages */
   .toast-container,
   .sidebar,
   .topbar,
   .btn,
   .skip-link,
-  .modal-footer,
-  .modal-header .btn-ghost,
   .filters,
   #autoRefreshToggle,
-  .quick-links {
+  .quick-links,
+  .vital-hints,
+  .page-actions,
+  .hero-actions,
+  .nav-toggle,
+  .nav-backdrop,
+  .table-controls,
+  .pagination,
+  .cell-legend {
     display: none !important;
   }
 
@@ -2770,63 +2777,169 @@ a.status-chip:hover {
     padding: 0 !important;
   }
 
-  body.printing-passport * {
-    visibility: hidden;
+  .card, .section, .total, .chart-box, tr {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  /* When printing the passport, completely eliminate the dashboard page flow */
+  body.printing-passport,
+  html:has(body.printing-passport) {
+    height: auto !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+    background: #ffffff !important;
+  }
+
+  body.printing-passport .shell,
+  body.printing-passport .foot {
+    display: none !important;
   }
 
   body.printing-passport .modal-backdrop {
     position: static !important;
+    display: block !important;
     background: transparent !important;
     padding: 0 !important;
-    display: block !important;
+    margin: 0 !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow: visible !important;
   }
 
   body.printing-passport .modal-card {
     position: static !important;
+    display: block !important;
     background: transparent !important;
     box-shadow: none !important;
+    border: none !important;
     max-width: 100% !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow: visible !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  body.printing-passport .modal-header,
+  body.printing-passport .modal-footer {
+    display: none !important;
+  }
+
+  body.printing-passport .modal-body {
+    padding: 0 !important;
+    margin: 0 !important;
+    height: auto !important;
     max-height: none !important;
     overflow: visible !important;
     display: block !important;
   }
 
-  body.printing-passport .modal-body {
-    padding: 0 !important;
-    overflow: visible !important;
-    display: block !important;
-  }
-
-  body.printing-passport .passport-card,
-  body.printing-passport .passport-card * {
-    visibility: visible;
-  }
-
   body.printing-passport .passport-card {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 100%;
-    border: 2px solid #000 !important;
+    position: relative !important;
+    left: auto !important;
+    top: auto !important;
+    width: 100% !important;
+    max-width: 680px !important;
+    margin: 0 auto !important;
+    padding: 1.15rem 1.35rem !important;
+    border: 2px solid var(--green-800) !important;
+    border-radius: 8px !important;
     box-shadow: none !important;
-    color: #000 !important;
-    background: #fff !important;
-    page-break-inside: avoid;
-    break-inside: avoid;
+    color: #0b261d !important;
+    background: #ffffff !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    page-break-before: avoid !important;
+    break-before: avoid !important;
+    page-break-after: avoid !important;
+    break-after: avoid !important;
+    box-sizing: border-box !important;
+  }
+
+  body.printing-passport .passport-header {
+    border-bottom: 2px solid var(--green-800) !important;
+    padding-bottom: 0.45rem !important;
+    margin-bottom: 0.6rem !important;
+  }
+
+  body.printing-passport .passport-logos {
+    margin-bottom: 0.35rem !important;
+  }
+
+  body.printing-passport .passport-logos img {
+    width: 38px !important;
+    height: 38px !important;
+  }
+
+  body.printing-passport .passport-card .kv {
+    display: grid !important;
+    grid-template-columns: repeat(4, 1fr) !important;
+    gap: 0.35rem 0.75rem !important;
+    margin-bottom: 0.6rem !important;
+    padding-bottom: 0.45rem !important;
+    border-bottom: 1px solid var(--line-strong) !important;
+  }
+
+  body.printing-passport .passport-card .kv dt {
+    font-size: 0.65rem !important;
+    letter-spacing: 0.04em !important;
+  }
+
+  body.printing-passport .passport-card .kv dd {
+    font-size: 0.82rem !important;
+    margin-top: 0.1rem !important;
+  }
+
+  body.printing-passport .passport-grid {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 0.4rem 0.6rem !important;
+    margin-bottom: 0.6rem !important;
   }
 
   body.printing-passport .passport-stat {
-    border: 1px solid #444 !important;
-    background: #fff !important;
+    padding: 0.4rem 0.55rem !important;
+    border: 1px solid #7ea898 !important;
+    background: #f7faf8 !important;
+    border-radius: 6px !important;
+  }
+
+  body.printing-passport .passport-stat .lbl {
+    font-size: 0.65rem !important;
+    color: #1e4537 !important;
+    margin-bottom: 0.1rem !important;
   }
 
   body.printing-passport .passport-stat .val {
-    color: #000 !important;
+    font-size: 1.05rem !important;
+    color: #0b3d30 !important;
+    line-height: 1.2 !important;
   }
 
-  body.printing-passport .modal-footer,
-  body.printing-passport .modal-header {
-    display: none !important;
+  body.printing-passport .passport-stat .sub {
+    font-size: 0.65rem !important;
+    color: #4b6b62 !important;
+  }
+
+  body.printing-passport .passport-footer {
+    border-top: 1px dashed var(--line-strong) !important;
+    padding-top: 0.45rem !important;
+    margin-top: 0.45rem !important;
+    font-size: 0.7rem !important;
+  }
+
+  body.printing-passport .official-signature-block {
+    display: block !important;
+    margin-top: 0.85rem !important;
+  }
+
+  body.printing-passport .official-signature-block > div {
+    margin-top: 1.15rem !important;
   }
 }
 
