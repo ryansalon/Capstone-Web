@@ -133,6 +133,9 @@
     var card = U.el("div", { class: "total" + (options.tone ? " " + options.tone : "") });
     card.appendChild(U.el("div", { class: "label" }, label));
     card.appendChild(U.el("div", { class: "value" }, String(value)));
+    if (options.subtext) {
+      card.appendChild(U.el("div", { class: "subtext" }, options.subtext));
+    }
     if (options.link) {
       card.appendChild(U.el("a", { class: "total-link", href: options.link.href }, options.link.text));
     }
@@ -159,7 +162,7 @@
     var tbody = U.el("tbody");
     keys.forEach(function (key) {
       var row = U.el("tr");
-      row.appendChild(U.el("th", { scope: "row", style: "font-weight:600; text-align:left; background:transparent;" }, key));
+      row.appendChild(U.el("td", { class: "cell-name", style: "font-weight:600; text-align:left;" }, key));
       row.appendChild(U.el("td", { class: "num" }, String(data[key])));
       var pct = total > 0 ? Math.round((data[key] / total) * 100) : 0;
       row.appendChild(U.el("td", { class: "num" }, pct + "%"));
@@ -566,21 +569,22 @@
 
       // Period-scoped totals.
       U.clear(totalsNode);
-      totalsNode.appendChild(totalCard("Measurements", totals.measurements || 0));
-      totalsNode.appendChild(totalCard("Active kiosk citizens", totals.active_citizens || 0));
-      totalsNode.appendChild(totalCard("Guest measurements", totals.guest_measurements || 0));
+      totalsNode.appendChild(totalCard("Measurements", totals.measurements || 0, { subtext: "Recorded in period" }));
+      totalsNode.appendChild(totalCard("Active kiosk citizens", totals.active_citizens || 0, { subtext: "Individual visits" }));
+      totalsNode.appendChild(totalCard("Guest measurements", totals.guest_measurements || 0, { subtext: "Anonymous check-ins" }));
       totalsNode.appendChild(
         totalCard("Alerts", alerts, {
           tone: alerts > 0 ? "alert" : null,
+          subtext: alerts > 0 ? "Require clinical review" : "No active alerts",
           link: { href: "/bhw/search.html", text: "Review citizens →" },
         })
       );
-      totalsNode.appendChild(totalCard("Consent grants (period)", totals.consent_grants || 0));
+      totalsNode.appendChild(totalCard("Consent grants (period)", totals.consent_grants || 0, { subtext: "New authorizations" }));
 
       // Registry totals are all-time and never change with the period filter,
       // so they live in their own labelled group.
       U.clear(registryNode);
-      registryNode.appendChild(totalCard("Registered users", totals.users || 0));
+      registryNode.appendChild(totalCard("Registered users", totals.users || 0, { subtext: "All-time community registry" }));
 
       // An empty period gets an explanation instead of only bare zeros.
       var emptyNode = document.getElementById("emptyState");
@@ -746,9 +750,9 @@
       if (citizen.consent) {
         row.style.background = "#fafdfb";
       }
-      var thName = U.el("th", { scope: "row", style: "font-weight:600; text-align:left; background:transparent;" });
-      U.highlight(thName, citizen.full_name, query);
-      row.appendChild(thName);
+      var tdName = U.el("td", { class: "cell-name", style: "font-weight:600; text-align:left;" });
+      U.highlight(tdName, citizen.full_name, query);
+      row.appendChild(tdName);
 
       var tdUser = U.el("td", { class: "muted" });
       U.highlight(tdUser, citizen.username, query);
@@ -858,9 +862,9 @@
     var rowsFrag = document.createDocumentFragment();
     logs.forEach(function (log) {
       var row = U.el("tr");
-      var thTime = U.el("th", { class: "nowrap", scope: "row", style: "font-weight:600; text-align:left; background:transparent;" }, U.fmtDT(log.timestamp));
-      thTime.setAttribute("data-sort", log.timestamp || "");
-      row.appendChild(thTime);
+      var tdTime = U.el("td", { class: "cell-time nowrap", style: "font-weight:600; text-align:left;" }, U.fmtDT(log.timestamp));
+      tdTime.setAttribute("data-sort", log.timestamp || "");
+      row.appendChild(tdTime);
       [
         [U.fmtNum(log.weight, 1), log.weight],
         [U.fmtNum(log.height, 1), log.height],
@@ -1157,17 +1161,16 @@
     var rowsFrag = document.createDocumentFragment();
     rows.forEach(function (entry) {
       var row = U.el("tr");
-      var thTime = U.el(
-        "th",
+      var tdTime = U.el(
+        "td",
         {
-          class: "nowrap",
-          scope: "row",
-          style: "font-weight:600; text-align:left; background:transparent;",
+          class: "cell-time nowrap",
+          style: "font-weight:600; text-align:left;",
         },
         U.fmtDT(entry.time)
       );
-      thTime.setAttribute("data-sort", entry.time || "");
-      row.appendChild(thTime);
+      tdTime.setAttribute("data-sort", entry.time || "");
+      row.appendChild(tdTime);
       row.appendChild(U.el("td", { style: "font-weight:500;" }, entry.bhw_name));
       row.appendChild(U.el("td", { style: "font-weight:600; color:var(--green-900);" }, entry.citizen_name));
       var actionCell = U.el("td");

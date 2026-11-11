@@ -369,7 +369,7 @@
     dismissBtn.onclick = handleClose;
   }
 
-function addCard(container, label, value, sub, tone, gauge, delta, spark, pendingSparks, refRange, badge) {
+  function addCard(container, label, value, sub, tone, gauge, delta, spark, pendingSparks, refRange, badge, unit) {
     var card = U.el("div", { class: "card" + (tone ? " " + tone : "") });
     var topRow = U.el("div", { class: "card-top-row" });
     topRow.appendChild(U.el("div", { class: "label" }, label));
@@ -377,10 +377,33 @@ function addCard(container, label, value, sub, tone, gauge, delta, spark, pendin
       topRow.appendChild(U.el("span", { class: "vital-badge badge-" + (badge.tone || "neutral") }, badge.text));
     }
     card.appendChild(topRow);
-    card.appendChild(U.el("div", { class: "value" }, value));
+
+    var valRow = U.el("div", { class: "value-row" });
+    var valStr = String(value === null || value === undefined ? "—" : value);
+    var valUnit = unit || "";
+
+    if (!valUnit && typeof valStr === "string") {
+      var match = valStr.match(/^([0-9./—-]+)\s*([a-zA-Z°%]+.*)$/);
+      if (match) {
+        valStr = match[1];
+        valUnit = match[2];
+      }
+    }
+
+    valRow.appendChild(U.el("span", { class: "value" }, valStr));
+    if (valUnit) {
+      valRow.appendChild(U.el("span", { class: "unit" }, valUnit));
+    }
+    card.appendChild(valRow);
+
+    if (refRange || delta) {
+      var metaRow = U.el("div", { class: "card-meta" });
+      if (refRange) metaRow.appendChild(U.el("span", { class: "ref-range" }, refRange));
+      if (delta) metaRow.appendChild(delta);
+      card.appendChild(metaRow);
+    }
+
     if (sub) card.appendChild(U.el("div", { class: "sub" }, sub));
-    if (refRange) card.appendChild(U.el("span", { class: "ref-range" }, refRange));
-    if (delta) card.appendChild(delta);
     if (gauge) card.appendChild(gauge);
     if (spark) {
       if (pendingSparks) {
@@ -391,7 +414,7 @@ function addCard(container, label, value, sub, tone, gauge, delta, spark, pendin
     }
     container.appendChild(card);
     return card;
-}
+  }
 
   function renderAlertBanner(log) {
     var banner = document.getElementById("alertBanner");
@@ -445,19 +468,22 @@ function addCard(container, label, value, sub, tone, gauge, delta, spark, pendin
     card.appendChild(wrap);
     var ascendingVals = values.slice().reverse();
     var ctx = canvas.getContext("2d");
+    var strokeColor = color || "#0f6b53";
     sparkCharts.push(new window.Chart(ctx, {
       type: "line",
       data: {
         labels: ascendingVals.map(function () { return ""; }),
         datasets: [{
           data: ascendingVals,
-          borderColor: color,
-          backgroundColor: "transparent",
-          fill: false,
+          borderColor: strokeColor,
+          backgroundColor: strokeColor === "#a5271d" || strokeColor === "#c0392b"
+            ? "rgba(165, 39, 29, 0.08)"
+            : "rgba(15, 107, 83, 0.07)",
+          fill: true,
           spanGaps: true,
-          tension: 0.25,
+          tension: 0.35,
           pointRadius: 0,
-          borderWidth: 2,
+          borderWidth: 1.75,
         }],
       },
       options: {
@@ -466,7 +492,7 @@ function addCard(container, label, value, sub, tone, gauge, delta, spark, pendin
         animation: false,
         plugins: { legend: { display: false }, tooltip: { enabled: false } },
         scales: { x: { display: false }, y: { display: false } },
-        layout: { padding: 0 },
+        layout: { padding: { top: 2, bottom: 2, left: 1, right: 1 } },
       },
     }));
   }
@@ -821,7 +847,7 @@ function addCard(container, label, value, sub, tone, gauge, delta, spark, pendin
     // anthropometrics (BMI / weight / height) last.
     var bpCat = bpCategory(log.systolic_bp, log.diastolic_bp);
     var bpGauge = !isMissing(log.systolic_bp)
-      ? createGauge("track-bp", ((log.systolic_bp - 90) / (190 - 90)) * 100, "90 Normal", "190 Crisis") : null;
+      ? createGauge("track-bp", ((log.systolic_bp - 90) / (190 - 90)) * 100, "90 Normal", "180+ High") : null;
     var bpBadge = isMissing(log.systolic_bp) || isMissing(log.diastolic_bp)
       ? null
       : bpCat === "Normal"
@@ -835,7 +861,7 @@ function addCard(container, label, value, sub, tone, gauge, delta, spark, pendin
       isMissing(log.systolic_bp) || isMissing(log.diastolic_bp)
         ? "—"
         : log.systolic_bp + "/" + log.diastolic_bp,
-      bpCat ? "mmHg · " + bpCat : "Not measured",
+      null,
       isMissing(log.systolic_bp) || isMissing(log.diastolic_bp)
         ? "missing"
         : bpCat === "Normal"
@@ -843,39 +869,41 @@ function addCard(container, label, value, sub, tone, gauge, delta, spark, pendin
           : "abnormal",
       bpGauge,
       bpDelta,
-      spark(logs, "systolic_bp", "#1565c0"),
+      spark(logs, "systolic_bp", "#0f6b53"),
       pendingSparks,
       "Target: <120/80 mmHg",
-      bpBadge
+      bpBadge,
+      "mmHg"
     );
 
     var spo2Cat = spo2Category(log.spo2);
     var spo2Gauge = !isMissing(log.spo2)
-      ? createGauge("track-spo2", ((log.spo2 - 80) / (100 - 80)) * 100, "80% Crit", "100% OK") : null;
+      ? createGauge("track-spo2", ((log.spo2 - 80) / (100 - 80)) * 100, "85% Low", "95%+ Normal") : null;
     var spo2Badge = isMissing(log.spo2)
       ? null
       : spo2Cat === "Normal"
-        ? { text: "Optimal", tone: "good" }
+        ? { text: "Normal", tone: "good" }
         : spo2Cat === "Low"
           ? { text: "Low SpO2", tone: "warn" }
           : { text: "Critical", tone: "danger" };
     addCard(
       fragHeadline,
-      "SpO2",
-      U.fmtNum(log.spo2, 0, "%"),
-      spo2Cat ? "Category: " + spo2Cat : "Not measured",
+      "SpO2 (Oxygen)",
+      U.fmtNum(log.spo2, 0),
+      null,
       isMissing(log.spo2) ? "missing" : spo2Cat === "Normal" ? null : "abnormal",
       spo2Gauge,
       spo2Delta,
-      spark(logs, "spo2", "#0b3d30"),
+      spark(logs, "spo2", "#0f6b53"),
       pendingSparks,
       "Normal: 95–100%",
-      spo2Badge
+      spo2Badge,
+      "%"
     );
 
     var hasFever = !isMissing(log.temperature) && Number(log.temperature) >= 37.9;
     var tempGauge = !isMissing(log.temperature)
-      ? createGauge("track-temp", ((log.temperature - 35) / (40 - 35)) * 100, "35°C", "40°C Fever") : null;
+      ? createGauge("track-temp", ((log.temperature - 35) / (40 - 35)) * 100, "36.0°C", "38.0°C+ Fever") : null;
     var tempBadge = isMissing(log.temperature)
       ? null
       : hasFever
@@ -883,16 +911,17 @@ function addCard(container, label, value, sub, tone, gauge, delta, spark, pendin
         : { text: "Normal", tone: "good" };
     addCard(
       fragHeadline,
-      "Temperature",
-      U.fmtNum(log.temperature, 1, "°C"),
-      isMissing(log.temperature) ? "Not measured" : hasFever ? "Elevated — fever range" : "Within normal range",
+      "Body temperature",
+      U.fmtNum(log.temperature, 1),
+      null,
       isMissing(log.temperature) ? "missing" : hasFever ? "abnormal" : null,
       tempGauge,
       tempDelta,
-      spark(logs, "temperature", "#a5271d"),
+      spark(logs, "temperature", hasFever ? "#c0392b" : "#0f6b53"),
       pendingSparks,
       "Normal: 36.5–37.5 °C",
-      tempBadge
+      tempBadge,
+      "°C"
     );
 
     var pulseBadge = isMissing(log.pulse_rate)
@@ -903,7 +932,7 @@ function addCard(container, label, value, sub, tone, gauge, delta, spark, pendin
     addCard(
       fragSupport,
       "Pulse rate",
-      U.fmtNum(log.pulse_rate, 0, "bpm"),
+      U.fmtNum(log.pulse_rate, 0),
       null,
       isMissing(log.pulse_rate) ? "missing" : null,
       null,
@@ -911,12 +940,13 @@ function addCard(container, label, value, sub, tone, gauge, delta, spark, pendin
       spark(logs, "pulse_rate", "#0f6b53"),
       pendingSparks,
       "Resting: 60–100 bpm",
-      pulseBadge
+      pulseBadge,
+      "bpm"
     );
 
     var bmiCat = bmiCategory(log.bmi);
     var bmiGauge = !isMissing(log.bmi)
-      ? createGauge("track-bmi", ((log.bmi - 15) / (35 - 15)) * 100, "15 Under", "35+ Obese") : null;
+      ? createGauge("track-bmi", ((log.bmi - 15) / (35 - 15)) * 100, "18.5 Min", "30.0+ Obese") : null;
     var bmiBadge = isMissing(log.bmi)
       ? null
       : bmiCat === "Normal"
@@ -924,20 +954,48 @@ function addCard(container, label, value, sub, tone, gauge, delta, spark, pendin
         : { text: bmiCat, tone: "warn" };
     addCard(
       fragSupport,
-      "BMI",
+      "Body mass index",
       isMissing(log.bmi) ? "—" : U.fmtNum(log.bmi, 1),
-      bmiCat ? "Category: " + bmiCat : "Not measured",
+      null,
       isMissing(log.bmi) ? "missing" : bmiCat === "Normal" ? null : "abnormal",
       bmiGauge,
       bmiDelta,
-      spark(logs, "bmi", "#8a5a00"),
+      spark(logs, "bmi", "#0f6b53"),
       pendingSparks,
-      "Normal: 18.5–24.9 kg/m²",
-      bmiBadge
+      "Normal: 18.5–24.9",
+      bmiBadge,
+      "BMI"
     );
 
-    addCard(fragSupport, "Weight", U.fmtNum(log.weight, 1, "kg"), null, isMissing(log.weight) ? "missing" : null, null, weightDelta, spark(logs, "weight", "#0f6b53"), pendingSparks);
-    addCard(fragSupport, "Height", U.fmtNum(log.height, 1, "cm"), null, isMissing(log.height) ? "missing" : null);
+    addCard(
+      fragSupport,
+      "Weight",
+      U.fmtNum(log.weight, 1),
+      null,
+      isMissing(log.weight) ? "missing" : null,
+      null,
+      weightDelta,
+      spark(logs, "weight", "#0f6b53"),
+      pendingSparks,
+      "Recorded at kiosk",
+      null,
+      "kg"
+    );
+
+    addCard(
+      fragSupport,
+      "Height",
+      U.fmtNum(log.height, 1),
+      null,
+      isMissing(log.height) ? "missing" : null,
+      null,
+      null,
+      null,
+      null,
+      "Standing stature",
+      null,
+      "cm"
+    );
 
     // Batch append to DOM in a single reflow/repaint pass
     cards.appendChild(fragHeadline);
@@ -1281,7 +1339,7 @@ function addCard(container, label, value, sub, tone, gauge, delta, spark, pendin
     var rowsFrag = document.createDocumentFragment();
     pageSlice.forEach(function (log) {
       var row = U.el("tr");
-      row.appendChild(U.el("th", { class: "nowrap", scope: "row", title: U.fmtUTC(log.timestamp), style: "font-weight:600; text-align:left; background:transparent;" }, U.fmtDT(log.timestamp)));
+      row.appendChild(U.el("td", { class: "cell-time nowrap", title: U.fmtUTC(log.timestamp), style: "font-weight:600; text-align:left;" }, U.fmtDT(log.timestamp)));
       [
         [U.fmtNum(log.weight, 1), ""],
         [U.fmtNum(log.height, 1), ""],
@@ -1667,7 +1725,7 @@ function addCard(container, label, value, sub, tone, gauge, delta, spark, pendin
     var tbody = U.el("tbody");
     history.forEach(function (entry) {
       var row = U.el("tr");
-      row.appendChild(U.el("th", { class: "nowrap", scope: "row", title: U.fmtUTC(entry.timestamp), style: "font-weight:600; text-align:left; background:transparent;" }, U.fmtDT(entry.timestamp)));
+      row.appendChild(U.el("td", { class: "cell-time nowrap", title: U.fmtUTC(entry.timestamp), style: "font-weight:600; text-align:left;" }, U.fmtDT(entry.timestamp)));
       var actionCell = U.el("td");
       actionCell.appendChild(
         U.el(
