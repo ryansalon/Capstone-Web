@@ -1779,8 +1779,8 @@ th.num {
 
 .date-preset-btn:hover {
   background: var(--green-100);
-  border-color: var(--green-300);
-  color: var(--green-950);
+  border-color: var(--green-600);
+  color: var(--green-900);
 }
 
 .date-preset-btn.active {
@@ -1819,7 +1819,7 @@ th.num {
   margin: 0 0 0.4rem;
   font-size: 1.15rem;
   font-weight: 700;
-  color: var(--green-950);
+  color: var(--green-900);
 }
 
 .empty-search-state .empty-desc {
@@ -2920,7 +2920,7 @@ a.status-chip:hover {
 
 .portal-citizen .hero-actions .btn-primary {
   background: var(--mint);
-  color: var(--green-950);
+  color: var(--green-900);
   border: 1px solid #9ef0cb;
   font-weight: 700;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
@@ -2928,7 +2928,7 @@ a.status-chip:hover {
 
 .portal-citizen .hero-actions .btn-primary:hover {
   background: #aef5d3;
-  color: var(--green-950);
+  color: var(--green-900);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
