@@ -201,8 +201,8 @@ a:hover {
 }
 
 .brand-logo {
-  width: 36px;
-  height: 36px;
+  width: 38px;
+  height: 38px;
   object-fit: contain;
   display: block;
   background: transparent !important;
@@ -211,11 +211,6 @@ a:hover {
   padding: 0 !important;
   box-shadow: none !important;
   filter: none !important;
-  image-rendering: -webkit-optimize-contrast;
-  image-rendering: crisp-edges;
-  contain: layout paint;
-  transform: translateZ(0);
-  backface-visibility: hidden;
 }
 
 .brand-text {
@@ -1284,14 +1279,14 @@ th.num {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 1.25rem;
-  margin-bottom: 0.25rem;
+  gap: 1.5rem;
+  margin-bottom: 0.5rem;
   background: transparent !important;
 }
 
 .auth-partner-logo {
-  width: 62px;
-  height: 62px;
+  width: 76px;
+  height: 76px;
   object-fit: contain;
   display: block;
   background: transparent !important;
@@ -1300,11 +1295,6 @@ th.num {
   padding: 0 !important;
   box-shadow: none !important;
   filter: none !important;
-  image-rendering: -webkit-optimize-contrast;
-  image-rendering: crisp-edges;
-  contain: layout paint;
-  transform: translateZ(0);
-  backface-visibility: hidden;
 }
 
 .auth-brand-name {
