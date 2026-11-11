@@ -7,7 +7,7 @@
   <link rel="icon" href="data:,">
   <link rel="preload" as="image" href="/img/cpsc-logo.png">
   <link rel="preload" as="image" href="/img/rhu-logo.png">
-  <link rel="stylesheet" href="/css/style.css?v=8">
+  <link rel="stylesheet" href="/css/style.css?v=9">
 </head>
 <body data-page="citizen-consent">
   <a class="skip-link" href="#main">Skip to main content</a>
@@ -55,8 +55,8 @@
           <h1>Consent to share my records</h1>
           <p class="lede">
             Barangay Health Workers can open your individual readings and notes <strong>only while your consent is
-            granted</strong>. Without consent the kiosk still saves your readings for your own account, but health
-            workers only see anonymous community totals — never your name or your records.
+            granted</strong>. Without consent the kiosk still saves your readings for your own account, and health
+            workers can only see your basic registry entry and anonymous community totals.
           </p>
         </div>
         <div class="page-actions">
@@ -75,6 +75,39 @@
           <button id="revokeBtn" class="btn btn-danger" type="button">Revoke consent</button>
         </div>
         <p class="hint muted">Every grant or revoke is recorded in the consent history below and cannot be deleted.</p>
+      </section>
+
+      <section class="section" aria-labelledby="compareHeading">
+        <h2 id="compareHeading">What health workers can see</h2>
+        <div class="consent-compare">
+          <div class="consent-col" id="consentColOn">
+            <div class="consent-col-head">
+              <span class="consent-col-title">With consent</span>
+              <span class="consent-current-tag">Your current setting</span>
+            </div>
+            <ul class="consent-list">
+              <li class="yes">Your name, birthdate and number of kiosk visits</li>
+              <li class="yes">Every reading: BP, SpO2, temperature, pulse, weight, BMI</li>
+              <li class="yes">Private notes written about your health</li>
+              <li class="yes">Referring you to the Rural Health Unit</li>
+              <li class="yes">Your name on alert reports</li>
+            </ul>
+          </div>
+          <div class="consent-col" id="consentColOff">
+            <div class="consent-col-head">
+              <span class="consent-col-title">Without consent</span>
+              <span class="consent-current-tag">Your current setting</span>
+            </div>
+            <ul class="consent-list">
+              <li class="yes">Your name, birthdate and number of kiosk visits</li>
+              <li class="no">Your individual readings</li>
+              <li class="no">Private notes</li>
+              <li class="no">Referrals to the Rural Health Unit</li>
+              <li class="no">Your name on alert reports (shown as "Withheld")</li>
+            </ul>
+          </div>
+        </div>
+        <p class="hint muted">Either way, your readings are counted in anonymous community totals, and every time a health worker opens your record it is logged.</p>
       </section>
 
       <section class="section">

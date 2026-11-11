@@ -7,7 +7,7 @@
   <link rel="icon" href="data:,">
   <link rel="preload" as="image" href="/img/cpsc-logo.png">
   <link rel="preload" as="image" href="/img/rhu-logo.png">
-  <link rel="stylesheet" href="/css/style.css?v=8">
+  <link rel="stylesheet" href="/css/style.css?v=9">
 </head>
 <body data-page="citizen-dashboard">
   <a class="skip-link" href="#main">Skip to main content</a>
@@ -123,14 +123,14 @@
         <div class="grid-2">
           <div class="chart-box">
             <h3>Blood pressure — last 10 readings</h3>
-            <canvas id="bpMiniChart" role="img" aria-label="Systolic and diastolic blood pressure trend for your last readings"></canvas>
-            <div id="bpMiniSummary" class="sr-only" aria-live="polite"></div>
+            <canvas id="bpMiniChart" role="img" aria-label="Systolic and diastolic blood pressure trend for your last readings" aria-describedby="bpMiniSummary"></canvas>
+            <p id="bpMiniSummary" class="chart-summary"></p>
             <div id="bpMiniNote" class="muted"></div>
           </div>
           <div class="chart-box">
             <h3>Weight &amp; BMI — last 10 readings</h3>
-            <canvas id="weightMiniChart" role="img" aria-label="Weight and BMI trend for your last readings"></canvas>
-            <div id="weightMiniSummary" class="sr-only" aria-live="polite"></div>
+            <canvas id="weightMiniChart" role="img" aria-label="Weight and BMI trend for your last readings" aria-describedby="weightMiniSummary"></canvas>
+            <p id="weightMiniSummary" class="chart-summary"></p>
             <div id="weightMiniNote" class="muted"></div>
           </div>
         </div>

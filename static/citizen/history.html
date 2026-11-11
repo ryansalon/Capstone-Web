@@ -7,7 +7,7 @@
   <link rel="icon" href="data:,">
   <link rel="preload" as="image" href="/img/cpsc-logo.png">
   <link rel="preload" as="image" href="/img/rhu-logo.png">
-  <link rel="stylesheet" href="/css/style.css?v=8">
+  <link rel="stylesheet" href="/css/style.css?v=9">
 </head>
 <body data-page="citizen-history">
   <a class="skip-link" href="#main">Skip to main content</a>
@@ -66,23 +66,28 @@
       <section class="grid-2 section" id="chartsSection">
         <div class="chart-box">
           <h2>Temperature (°C)</h2>
-          <canvas id="temperatureChart" height="180" aria-label="Body temperature over time chart" role="img"></canvas>
+          <canvas id="temperatureChart" aria-describedby="temperatureSummary" height="180" aria-label="Body temperature over time chart" role="img"></canvas>
+          <p id="temperatureSummary" class="chart-summary"></p>
         </div>
         <div class="chart-box">
           <h2>Weight (kg)</h2>
-          <canvas id="weightChart" height="180" aria-label="Weight over time chart" role="img"></canvas>
+          <canvas id="weightChart" aria-describedby="weightSummary" height="180" aria-label="Weight over time chart" role="img"></canvas>
+          <p id="weightSummary" class="chart-summary"></p>
         </div>
         <div class="chart-box">
           <h2>BMI</h2>
-          <canvas id="bmiChart" height="180" aria-label="BMI over time chart" role="img"></canvas>
+          <canvas id="bmiChart" aria-describedby="bmiSummary" height="180" aria-label="BMI over time chart" role="img"></canvas>
+          <p id="bmiSummary" class="chart-summary"></p>
         </div>
         <div class="chart-box">
           <h2>Blood pressure (mmHg)</h2>
-          <canvas id="bpChart" height="180" aria-label="Systolic and diastolic blood pressure chart" role="img"></canvas>
+          <canvas id="bpChart" aria-describedby="bpSummary" height="180" aria-label="Systolic and diastolic blood pressure chart" role="img"></canvas>
+          <p id="bpSummary" class="chart-summary"></p>
         </div>
         <div class="chart-box">
           <h2>SpO2 (%)</h2>
-          <canvas id="spo2Chart" height="180" aria-label="Blood oxygen over time chart" role="img"></canvas>
+          <canvas id="spo2Chart" aria-describedby="spo2Summary" height="180" aria-label="Blood oxygen over time chart" role="img"></canvas>
+          <p id="spo2Summary" class="chart-summary"></p>
         </div>
       </section>
       <div id="chartNote"></div>
@@ -92,6 +97,10 @@
           <h2>All readings</h2>
         </div>
         <div id="tableControls" class="table-controls"></div>
+        <p class="cell-legend" aria-hidden="true">
+          <span class="cell-legend-item"><span class="swatch cell-warn"></span>Outside normal range</span>
+          <span class="cell-legend-item"><span class="swatch cell-bad"></span>Needs attention</span>
+        </p>
         <div id="tableWrap"></div>
         <div id="paginationWrap"></div>
       </section>

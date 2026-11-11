@@ -616,7 +616,13 @@
 
   function initDashboard() {
     if (!API.requireRole("bhw")) return;
-    document.getElementById("period").addEventListener("change", function () {
+    var periodSelect = document.getElementById("period");
+    var rememberedPeriod = U.remember("bhw_period");
+    if (rememberedPeriod && periodSelect) {
+      periodSelect.value = rememberedPeriod;
+    }
+    periodSelect.addEventListener("change", function () {
+      U.remember("bhw_period", periodSelect.value);
       loadDashboard({ animate: true });
     });
     document.getElementById("refreshBtn").addEventListener("click", async function () {
@@ -690,18 +696,18 @@
     );
   }
 
-  function renderCitizens(citizens) {
+  function renderCitizens(citizens, query) {
     var results = document.getElementById("results");
     U.clear(results);
     if (!citizens.length) {
-      var query = fieldValue("searchInput");
+      var q = query || fieldValue("searchInput");
       var emptyBox = U.el("div", { class: "empty-search-state" });
       var icon = U.el("div", { class: "empty-icon" });
       icon.innerHTML = '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="8" y1="11" x2="14" y2="11"/></svg>';
       emptyBox.appendChild(icon);
-      emptyBox.appendChild(U.el("h3", { class: "empty-title" }, query ? "No citizens matching \u201C" + query + "\u201D" : "No citizens found"));
-      emptyBox.appendChild(U.el("p", { class: "empty-desc" }, query ? "Check the name spelling or try searching by username." : "No registered citizens are currently available in the database."));
-      if (query) {
+      emptyBox.appendChild(U.el("h3", { class: "empty-title" }, q ? "No citizens matching \u201C" + q + "\u201D" : "No citizens found"));
+      emptyBox.appendChild(U.el("p", { class: "empty-desc" }, q ? "Check the name spelling or try searching by username." : "No registered citizens are currently available in the database."));
+      if (q) {
         var clearBtn = U.el("button", { class: "btn btn-secondary", type: "button" }, "Show all citizens");
         clearBtn.addEventListener("click", function () {
           var input = document.getElementById("searchInput");
@@ -732,11 +738,21 @@
       if (citizen.consent) {
         row.style.background = "#fafdfb";
       }
-      row.appendChild(U.el("th", { scope: "row", style: "font-weight:600; text-align:left; background:transparent;" }, citizen.full_name));
-      row.appendChild(U.el("td", { class: "muted" }, citizen.username));
-      row.appendChild(U.el("td", { class: "nowrap" }, citizen.birthdate || "—"));
+      var thName = U.el("th", { scope: "row", style: "font-weight:600; text-align:left; background:transparent;" });
+      U.highlight(thName, citizen.full_name, query);
+      row.appendChild(thName);
+
+      var tdUser = U.el("td", { class: "muted" });
+      U.highlight(tdUser, citizen.username, query);
+      row.appendChild(tdUser);
+
+      var tdBirth = U.el("td", { class: "nowrap" }, citizen.birthdate || "—");
+      tdBirth.setAttribute("data-sort", citizen.birthdate || "");
+      row.appendChild(tdBirth);
+
       var visitsCell = U.el("td", { class: "nowrap" });
       var vCount = citizen.visit_count || 0;
+      visitsCell.setAttribute("data-sort", String(vCount));
       if (vCount > 0) {
         var vBadge = U.el(
           "span",
@@ -748,10 +764,13 @@
         visitsCell.appendChild(U.el("span", { class: "muted" }, "0 visits"));
       }
       row.appendChild(visitsCell);
-      row.appendChild(
-        U.el("td", { class: "nowrap" }, citizen.last_measurement ? U.fmtDT(citizen.last_measurement) : "No readings")
-      );
+
+      var measCell = U.el("td", { class: "nowrap" }, citizen.last_measurement ? U.fmtDT(citizen.last_measurement) : "No readings");
+      measCell.setAttribute("data-sort", citizen.last_measurement || "");
+      row.appendChild(measCell);
+
       var consentCell = U.el("td");
+      consentCell.setAttribute("data-sort", citizen.consent ? "1" : "0");
       consentCell.appendChild(consentBadge(Boolean(citizen.consent)));
       row.appendChild(consentCell);
 
@@ -770,6 +789,7 @@
     });
     tbody.appendChild(rowsFrag);
     table.appendChild(tbody);
+    U.makeSortable(table, { skip: [6] });
     tableWrap.appendChild(table);
     results.appendChild(tableWrap);
   }
@@ -777,6 +797,7 @@
   async function searchCitizens() {
     var statusNode = document.getElementById("status");
     var query = fieldValue("searchInput");
+    U.remember("bhw_search", query);
     U.loading(statusNode, "Searching citizens…");
     var results = document.getElementById("results");
     U.clear(results);
@@ -786,7 +807,7 @@
         "/api/bhw/citizens?search=" + encodeURIComponent(query)
       );
       U.clear(statusNode);
-      renderCitizens(data.citizens || []);
+      renderCitizens(data.citizens || [], query);
     } catch (error) {
       U.clear(document.getElementById("results"));
       U.error(statusNode, error.message, searchCitizens);
@@ -795,6 +816,11 @@
 
   function initSearch() {
     if (!API.requireRole("bhw")) return;
+    var input = document.getElementById("searchInput");
+    var remembered = U.remember("bhw_search");
+    if (remembered && input) {
+      input.value = remembered;
+    }
     document.getElementById("searchForm").addEventListener("submit", function (event) {
       event.preventDefault();
       searchCitizens();
@@ -824,25 +850,33 @@
     var rowsFrag = document.createDocumentFragment();
     logs.forEach(function (log) {
       var row = U.el("tr");
-      row.appendChild(U.el("th", { class: "nowrap", scope: "row", style: "font-weight:600; text-align:left; background:transparent;" }, U.fmtDT(log.timestamp)));
+      var thTime = U.el("th", { class: "nowrap", scope: "row", style: "font-weight:600; text-align:left; background:transparent;" }, U.fmtDT(log.timestamp));
+      thTime.setAttribute("data-sort", log.timestamp || "");
+      row.appendChild(thTime);
       [
-        U.fmtNum(log.weight, 1),
-        U.fmtNum(log.height, 1),
-        U.fmtNum(log.bmi, 1),
-        U.fmtNum(log.temperature, 1),
-        U.fmtNum(log.pulse_rate, 0),
-        U.fmtNum(log.spo2, 0),
-        log.systolic_bp === null || log.systolic_bp === undefined ||
-        log.diastolic_bp === null || log.diastolic_bp === undefined
-          ? "—"
-          : log.systolic_bp + "/" + log.diastolic_bp,
-      ].forEach(function (value) {
-        row.appendChild(U.el("td", { class: "num" }, value));
+        [U.fmtNum(log.weight, 1), log.weight],
+        [U.fmtNum(log.height, 1), log.height],
+        [U.fmtNum(log.bmi, 1), log.bmi],
+        [U.fmtNum(log.temperature, 1), log.temperature],
+        [U.fmtNum(log.pulse_rate, 0), log.pulse_rate],
+        [U.fmtNum(log.spo2, 0), log.spo2],
+        [
+          log.systolic_bp === null || log.systolic_bp === undefined ||
+          log.diastolic_bp === null || log.diastolic_bp === undefined
+            ? "—"
+            : log.systolic_bp + "/" + log.diastolic_bp,
+          log.systolic_bp || ""
+        ],
+      ].forEach(function (pair) {
+        var td = U.el("td", { class: "num" }, pair[0]);
+        if (pair[1] !== null && pair[1] !== undefined) td.setAttribute("data-sort", String(pair[1]));
+        row.appendChild(td);
       });
       rowsFrag.appendChild(row);
     });
     tbody.appendChild(rowsFrag);
     table.appendChild(tbody);
+    U.makeSortable(table);
     tableWrap.appendChild(table);
     wrap.appendChild(tableWrap);
     return wrap;
@@ -1115,17 +1149,17 @@
     var rowsFrag = document.createDocumentFragment();
     rows.forEach(function (entry) {
       var row = U.el("tr");
-      row.appendChild(
-        U.el(
-          "th",
-          {
-            class: "nowrap",
-            scope: "row",
-            style: "font-weight:600; text-align:left; background:transparent;",
-          },
-          U.fmtDT(entry.time)
-        )
+      var thTime = U.el(
+        "th",
+        {
+          class: "nowrap",
+          scope: "row",
+          style: "font-weight:600; text-align:left; background:transparent;",
+        },
+        U.fmtDT(entry.time)
       );
+      thTime.setAttribute("data-sort", entry.time || "");
+      row.appendChild(thTime);
       row.appendChild(U.el("td", { style: "font-weight:500;" }, entry.bhw_name));
       row.appendChild(U.el("td", { style: "font-weight:600; color:var(--green-900);" }, entry.citizen_name));
       var actionCell = U.el("td");
@@ -1136,6 +1170,7 @@
     });
     tbody.appendChild(rowsFrag);
     table.appendChild(tbody);
+    U.makeSortable(table);
     tableWrap.appendChild(table);
     results.appendChild(tableWrap);
   }
@@ -1148,6 +1183,7 @@
     var bhw = fieldValue("bhwName");
     var citizen = fieldValue("citizenName");
     var action = fieldValue("actionType");
+    U.remember("bhw_audit_filters", { from: from, to: to, bhw: bhw, citizen: citizen, action: action });
     if (from) params.set("from", from);
     if (to) params.set("to", to);
     if (bhw) params.set("bhw", bhw);
@@ -1176,6 +1212,14 @@
   function initAudit() {
     if (!API.requireRole("bhw")) return;
     var form = document.getElementById("filterForm");
+    var remembered = U.remember("bhw_audit_filters");
+    if (remembered) {
+      if (remembered.from) document.getElementById("fromDate").value = remembered.from;
+      if (remembered.to) document.getElementById("toDate").value = remembered.to;
+      if (remembered.bhw) document.getElementById("bhwName").value = remembered.bhw;
+      if (remembered.citizen) document.getElementById("citizenName").value = remembered.citizen;
+      if (remembered.action) document.getElementById("actionType").value = remembered.action;
+    }
     bindDatePresets(form, "fromDate", "toDate", loadAudit);
     form.addEventListener("submit", function (event) {
       event.preventDefault();
@@ -1183,6 +1227,7 @@
     });
     document.getElementById("clearBtn").addEventListener("click", function () {
       form.reset();
+      U.remember("bhw_audit_filters", null);
       form.querySelectorAll(".date-preset-btn").forEach(function (b) { b.classList.remove("active"); });
       loadAudit();
     });

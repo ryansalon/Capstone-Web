@@ -626,6 +626,29 @@ function addCard(container, label, value, sub, tone, gauge, delta, spark, pendin
     return values.filter(function (v) { return v !== null; }).length >= 2;
   }
 
+  /* Plain-language trend line for a chart, e.g.
+   * "Systolic went from 128 to 135 mmHg over 5 readings (up 7)." */
+  function trendSentence(values, label, unit, decimals) {
+    var pts = values.filter(function (v) { return v !== null; }).map(Number);
+    if (pts.length < 2) return "";
+    var d = decimals || 0;
+    var first = pts[0];
+    var last = pts[pts.length - 1];
+    var diff = last - first;
+    var u = unit ? " " + unit : "";
+    var change = Math.abs(diff) < Math.pow(10, -d) / 2
+      ? "no change"
+      : (diff > 0 ? "up " : "down ") + Math.abs(diff).toFixed(d);
+    return label + " went from " + first.toFixed(d) + " to " + last.toFixed(d) + u +
+      " over " + pts.length + " readings (" + change + ").";
+  }
+
+  function setChartSummary(id, parts) {
+    var node = document.getElementById(id);
+    if (!node) return;
+    node.textContent = parts.filter(Boolean).join(" ");
+  }
+
   function setMiniNote(canvasId, noteId, message) {
     var canvas = document.getElementById(canvasId);
     var note = document.getElementById(noteId);
@@ -660,11 +683,10 @@ function addCard(container, label, value, sub, tone, gauge, delta, spark, pendin
     var dia = miniSeries(recent, "diastolic_bp");
     if (hasEnough(sys) || hasEnough(dia)) {
       setMiniNote("bpMiniChart", "bpMiniNote", "");
-      var bpSummary = document.getElementById("bpMiniSummary");
-      if (bpSummary && recent[0]) {
-        bpSummary.textContent = "Recent blood pressure trend. Latest reading is " +
-          (recent[0].systolic_bp || "—") + "/" + (recent[0].diastolic_bp || "—") + " mmHg.";
-      }
+      setChartSummary("bpMiniSummary", [
+        trendSentence(sys, "Systolic", "mmHg"),
+        trendSentence(dia, "Diastolic", "mmHg"),
+      ]);
       drawChart("bpMini", "bpMiniChart", {
         type: "line",
         data: {
@@ -707,11 +729,10 @@ function addCard(container, label, value, sub, tone, gauge, delta, spark, pendin
     var bmi = miniSeries(recent, "bmi");
     if (hasEnough(weight) || hasEnough(bmi)) {
       setMiniNote("weightMiniChart", "weightMiniNote", "");
-      var weightSummary = document.getElementById("weightMiniSummary");
-      if (weightSummary && recent[0]) {
-        weightSummary.textContent = "Recent weight and BMI trend. Latest weight is " +
-          (recent[0].weight || "—") + " kg, BMI is " + (recent[0].bmi || "—") + ".";
-      }
+      setChartSummary("weightMiniSummary", [
+        trendSentence(weight, "Weight", "kg", 1),
+        trendSentence(bmi, "BMI", "", 1),
+      ]);
       drawChart("weightMini", "weightMiniChart", {
         type: "line",
         data: {
@@ -1080,9 +1101,49 @@ function addCard(container, label, value, sub, tone, gauge, delta, spark, pendin
   var historyState = {
     logs: [],
     filter: "",
+    range: "all",
     page: 1,
     pageSize: 10,
   };
+
+  var HISTORY_RANGES = [
+    { key: "all", label: "All time", days: null },
+    { key: "7", label: "Last 7 days", days: 7 },
+    { key: "30", label: "Last 30 days", days: 30 },
+    { key: "90", label: "Last 90 days", days: 90 },
+  ];
+
+  function logTime(log) {
+    return new Date(String(log.timestamp).replace(" ", "T") + "Z").getTime();
+  }
+
+  /* Per-cell tone for the history table: "" | "cell-warn" | "cell-bad". */
+  function cellTone(kind, log) {
+    switch (kind) {
+      case "bp": {
+        var c = bpCategory(log.systolic_bp, log.diastolic_bp);
+        if (!c || c === "Normal") return "";
+        return c === "Elevated" || c === "Stage 1" ? "cell-warn" : "cell-bad";
+      }
+      case "spo2": {
+        var s = spo2Category(log.spo2);
+        return s === "Critical" ? "cell-bad" : s === "Low" ? "cell-warn" : "";
+      }
+      case "temp":
+        if (isMissing(log.temperature)) return "";
+        if (log.temperature >= 37.9) return "cell-bad";
+        return log.temperature < 35.5 ? "cell-warn" : "";
+      case "pulse":
+        if (isMissing(log.pulse_rate)) return "";
+        return log.pulse_rate < 60 || log.pulse_rate > 100 ? "cell-warn" : "";
+      case "bmi": {
+        var b = bmiCategory(log.bmi);
+        return b && b !== "Normal" ? "cell-warn" : "";
+      }
+      default:
+        return "";
+    }
+  }
 
   function renderLogTable(logs) {
     historyState.logs = logs || [];
@@ -1123,7 +1184,29 @@ function addCard(container, label, value, sub, tone, gauge, delta, spark, pendin
       searchDiv.appendChild(input);
       controls.appendChild(searchDiv);
 
-      var countLbl = U.el("span", { class: "muted", style: "font-size:0.85rem;" }, logs.length + " total readings");
+      var presets = U.el("div", { class: "date-presets", role: "group", "aria-label": "Show readings from" });
+      HISTORY_RANGES.forEach(function (r) {
+        var btn = U.el("button", {
+          type: "button",
+          class: "date-preset-btn" + (historyState.range === r.key ? " active" : ""),
+          "aria-pressed": historyState.range === r.key ? "true" : "false",
+        }, r.label);
+        btn.onclick = function () {
+          historyState.range = r.key;
+          historyState.page = 1;
+          presets.querySelectorAll(".date-preset-btn").forEach(function (b) {
+            b.classList.remove("active");
+            b.setAttribute("aria-pressed", "false");
+          });
+          btn.classList.add("active");
+          btn.setAttribute("aria-pressed", "true");
+          drawTableRows();
+        };
+        presets.appendChild(btn);
+      });
+      controls.appendChild(presets);
+
+      var countLbl = U.el("span", { id: "historyCount", class: "muted", style: "font-size:0.85rem;" }, logs.length + " total readings");
       controls.appendChild(countLbl);
     }
 
@@ -1136,12 +1219,23 @@ function addCard(container, label, value, sub, tone, gauge, delta, spark, pendin
     U.clear(wrap);
     if (paginationWrap) U.clear(paginationWrap);
 
+    var range = HISTORY_RANGES.filter(function (r) { return r.key === historyState.range; })[0];
+    var cutoff = range && range.days ? Date.now() - range.days * 86400000 : null;
+
     var filtered = historyState.logs.filter(function (log) {
+      if (cutoff !== null && logTime(log) < cutoff) return false;
       if (!historyState.filter) return true;
       var text = (U.fmtDT(log.timestamp) + " " + (log.weight || "") + " " + (log.bmi || "") + " " +
         (log.systolic_bp || "") + "/" + (log.diastolic_bp || "") + " " + (log.temperature || "")).toLowerCase();
       return text.indexOf(historyState.filter) >= 0;
     });
+
+    var countLbl = document.getElementById("historyCount");
+    if (countLbl) {
+      countLbl.textContent = filtered.length === historyState.logs.length
+        ? historyState.logs.length + " total readings"
+        : "Showing " + filtered.length + " of " + historyState.logs.length + " readings";
+    }
 
     if (!filtered.length) {
       U.empty(wrap, "No readings match your filter.");
@@ -1170,17 +1264,24 @@ function addCard(container, label, value, sub, tone, gauge, delta, spark, pendin
       var row = U.el("tr");
       row.appendChild(U.el("th", { class: "nowrap", scope: "row", title: U.fmtUTC(log.timestamp), style: "font-weight:600; text-align:left; background:transparent;" }, U.fmtDT(log.timestamp)));
       [
-        U.fmtNum(log.weight, 1),
-        U.fmtNum(log.height, 1),
-        U.fmtNum(log.bmi, 1),
-        U.fmtNum(log.temperature, 1),
-        U.fmtNum(log.pulse_rate, 0),
-        U.fmtNum(log.spo2, 0),
-        isMissing(log.systolic_bp) || isMissing(log.diastolic_bp)
+        [U.fmtNum(log.weight, 1), ""],
+        [U.fmtNum(log.height, 1), ""],
+        [U.fmtNum(log.bmi, 1), cellTone("bmi", log)],
+        [U.fmtNum(log.temperature, 1), cellTone("temp", log)],
+        [U.fmtNum(log.pulse_rate, 0), cellTone("pulse", log)],
+        [U.fmtNum(log.spo2, 0), cellTone("spo2", log)],
+        [isMissing(log.systolic_bp) || isMissing(log.diastolic_bp)
           ? "—"
-          : log.systolic_bp + "/" + log.diastolic_bp,
-      ].forEach(function (value) {
-        row.appendChild(U.el("td", { class: "num" }, value));
+          : log.systolic_bp + "/" + log.diastolic_bp, cellTone("bp", log)],
+      ].forEach(function (pair) {
+        var tone = pair[1];
+        var td = U.el("td", { class: "num" + (tone ? " " + tone : "") });
+        td.appendChild(document.createTextNode(pair[0]));
+        if (tone) {
+          // Not colour-only: screen readers and greyscale prints get a word.
+          td.appendChild(U.el("span", { class: "sr-only" }, tone === "cell-bad" ? " (needs attention)" : " (outside normal range)"));
+        }
+        row.appendChild(td);
       });
       rowsFrag.appendChild(row);
     });
@@ -1245,6 +1346,17 @@ function addCard(container, label, value, sub, tone, gauge, delta, spark, pendin
     var labels = ascending.map(function (log) {
       return U.fmtDT(log.timestamp);
     });
+    function series(key) {
+      return ascending.map(function (log) { return isMissing(log[key]) ? null : log[key]; });
+    }
+    setChartSummary("temperatureSummary", [trendSentence(series("temperature"), "Temperature", "°C", 1)]);
+    setChartSummary("weightSummary", [trendSentence(series("weight"), "Weight", "kg", 1)]);
+    setChartSummary("bmiSummary", [trendSentence(series("bmi"), "BMI", "", 1)]);
+    setChartSummary("bpSummary", [
+      trendSentence(series("systolic_bp"), "Systolic", "mmHg"),
+      trendSentence(series("diastolic_bp"), "Diastolic", "mmHg"),
+    ]);
+    setChartSummary("spo2Summary", [trendSentence(series("spo2"), "SpO2", "%")]);
     var green = "#0f6b53";
     var red = "#a5271d";
     var baseOptions = {
@@ -1495,6 +1607,10 @@ function addCard(container, label, value, sub, tone, gauge, delta, spark, pendin
     );
     document.getElementById("grantBtn").disabled = granted;
     document.getElementById("revokeBtn").disabled = !granted;
+    var colOn = document.getElementById("consentColOn");
+    var colOff = document.getElementById("consentColOff");
+    if (colOn) colOn.classList.toggle("is-current", granted);
+    if (colOff) colOff.classList.toggle("is-current", !granted);
   }
 
   function renderConsentHistory(history) {
@@ -1596,6 +1712,42 @@ function addCard(container, label, value, sub, tone, gauge, delta, spark, pendin
 
   /* ---------------- profile ---------------- */
 
+  /* Inline, per-field validation message under an input. Pass "" to clear. */
+  function setFieldError(input, message) {
+    if (!input) return;
+    var errId = input.id + "FieldError";
+    var node = document.getElementById(errId);
+    if (!node) {
+      node = U.el("p", { id: errId, class: "field-error" });
+      var field = input.closest(".field") || input.parentNode;
+      field.appendChild(node);
+      var described = (input.getAttribute("aria-describedby") || "").split(" ").filter(Boolean);
+      if (described.indexOf(errId) < 0) described.unshift(errId);
+      input.setAttribute("aria-describedby", described.join(" "));
+    }
+    node.textContent = message || "";
+    if (message) input.setAttribute("aria-invalid", "true");
+    else input.removeAttribute("aria-invalid");
+  }
+
+  function todayISO() {
+    var d = new Date();
+    return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+  }
+
+  function validateFullName(value) {
+    if (!value) return "Full name is required.";
+    if (value.length < 2) return "Enter your full name.";
+    return "";
+  }
+
+  function validateBirthdate(value) {
+    if (!value) return "Birthdate is required.";
+    if (value > todayISO()) return "Birthdate cannot be in the future.";
+    if (value < "1900-01-01") return "Check the year of your birthdate.";
+    return "";
+  }
+
   async function initProfile() {
     if (!API.requireRole("citizen")) return;
     var statusNode = document.getElementById("status");
@@ -1605,53 +1757,122 @@ function addCard(container, label, value, sub, tone, gauge, delta, spark, pendin
     var profileFeedback = document.getElementById("profileFeedback");
     var passwordError = document.getElementById("passwordError");
     var passwordFeedback = document.getElementById("passwordFeedback");
+    var nameInput = document.getElementById("fullName");
+    var birthInput = document.getElementById("birthdate");
+    var genderSelect = document.getElementById("gender");
+    var profileSubmit = document.getElementById("profileSubmit");
+    var newPwInput = document.getElementById("newPassword");
+    var pwHint = document.getElementById("passwordHint");
+    var saved = null; // last saved values, for unsaved-change tracking
+    var feedbackTimer = null;
+
+    birthInput.max = todayISO();
+
+    function currentValues() {
+      return { full_name: fieldValue("fullName"), birthdate: fieldValue("birthdate"), gender: fieldValue("gender") };
+    }
+
+    function isDirty() {
+      if (!saved) return false;
+      var now = currentValues();
+      return now.full_name !== saved.full_name || now.birthdate !== saved.birthdate || now.gender !== saved.gender;
+    }
+
+    function updateDirty() {
+      var dirty = isDirty();
+      profileSubmit.disabled = !dirty;
+      profileSubmit.textContent = dirty ? "Save changes" : "No changes to save";
+    }
+
+    function flash(node, message) {
+      node.textContent = message;
+      if (feedbackTimer) window.clearTimeout(feedbackTimer);
+      feedbackTimer = window.setTimeout(function () { node.textContent = ""; }, 6000);
+    }
 
     U.loading(statusNode, "Loading your profile…");
     try {
       var me = await API.apiFetch("/api/me");
       U.clear(statusNode);
       document.getElementById("usernameReadonly").value = me.username;
-      document.getElementById("fullName").value = me.full_name;
-      document.getElementById("birthdate").value = me.birthdate;
-      var genderSelect = document.getElementById("gender");
+      nameInput.value = me.full_name;
+      birthInput.value = me.birthdate;
       genderSelect.value = ["male", "female", "other"].indexOf(me.gender) >= 0 ? me.gender : "other";
+      saved = currentValues();
+      updateDirty();
     } catch (error) {
       U.error(statusNode, error.message);
       return;
     }
 
+    [nameInput, birthInput, genderSelect].forEach(function (node) {
+      node.addEventListener("input", function () {
+        showFormError(profileFeedback, "");
+        // Clear an error as soon as the user fixes it; don't nag while typing.
+        if (node.getAttribute("aria-invalid") === "true") {
+          setFieldError(node, node === nameInput ? validateFullName(node.value.trim()) : node === birthInput ? validateBirthdate(node.value) : "");
+        }
+        updateDirty();
+      });
+      node.addEventListener("change", updateDirty);
+    });
+    nameInput.addEventListener("blur", function () { if (saved) setFieldError(nameInput, validateFullName(nameInput.value.trim())); });
+    birthInput.addEventListener("blur", function () { if (saved) setFieldError(birthInput, validateBirthdate(birthInput.value)); });
+
+    // Warn before leaving with unsaved edits.
+    window.addEventListener("beforeunload", function (event) {
+      if (isDirty()) {
+        event.preventDefault();
+        event.returnValue = "";
+      }
+    });
+
     profileForm.addEventListener("submit", async function (event) {
       event.preventDefault();
       showFormError(profileError, "");
       showFormError(profileFeedback, "");
-      var submit = document.getElementById("profileSubmit");
-      var payload = {
-        full_name: fieldValue("fullName"),
-        birthdate: fieldValue("birthdate"),
-        gender: fieldValue("gender"),
-      };
-      if (!payload.full_name) {
-        showFormError(profileError, "Full name is required.");
+      var payload = currentValues();
+      var nameErr = validateFullName(payload.full_name);
+      var birthErr = validateBirthdate(payload.birthdate);
+      setFieldError(nameInput, nameErr);
+      setFieldError(birthInput, birthErr);
+      if (nameErr || birthErr) {
+        (nameErr ? nameInput : birthInput).focus();
         return;
       }
-      if (!payload.birthdate) {
-        showFormError(profileError, "Birthdate is required.");
-        return;
-      }
-      setBusy(submit, true, "Saving…");
+      setBusy(profileSubmit, true, "Saving…");
+      var ok = false;
       try {
         await API.apiFetch("/api/citizen/profile", { method: "PUT", body: payload });
-        profileFeedback.textContent = "Profile saved.";
-        U.toast("Profile updated successfully", "success");
+        ok = true;
+        saved = payload;
         API.saveSession(API.getToken(), API.getRole(), payload.full_name);
-        var whoami = document.getElementById("whoami");
-        if (whoami) whoami.textContent = payload.full_name;
+        if (API.renderWhoami) API.renderWhoami();
+        var time = new Intl.DateTimeFormat("en-PH", { timeZone: "Asia/Manila", hour: "numeric", minute: "2-digit" }).format(new Date());
+        flash(profileFeedback, "Saved at " + time + ". Your details are up to date.");
+        U.toast("Profile updated", "success");
       } catch (error) {
         showFormError(profileError, error.message);
         U.toast(error.message, "error");
       } finally {
-        setBusy(submit, false);
+        setBusy(profileSubmit, false);
+        updateDirty();
+        if (!ok) profileSubmit.disabled = false;
       }
+    });
+
+    function updatePwHint() {
+      var len = newPwInput.value.length;
+      pwHint.classList.toggle("hint-ok", len >= 8);
+      pwHint.textContent = len === 0
+        ? "At least 8 characters."
+        : len >= 8
+          ? "Length looks good (" + len + " characters)."
+          : (8 - len) + " more character" + (8 - len === 1 ? "" : "s") + " needed.";
+    }
+    newPwInput.addEventListener("input", function () {
+      updatePwHint();
+      if (newPwInput.getAttribute("aria-invalid") === "true" && newPwInput.value.length >= 8) setFieldError(newPwInput, "");
     });
 
     passwordForm.addEventListener("submit", async function (event) {
@@ -1659,14 +1880,16 @@ function addCard(container, label, value, sub, tone, gauge, delta, spark, pendin
       showFormError(passwordError, "");
       showFormError(passwordFeedback, "");
       var submit = document.getElementById("passwordSubmit");
-      var current = document.getElementById("currentPassword").value;
-      var next = document.getElementById("newPassword").value;
-      if (!current) {
-        showFormError(passwordError, "Enter your current password.");
-        return;
-      }
-      if (next.length < 8) {
-        showFormError(passwordError, "New password must be at least 8 characters.");
+      var currentInput = document.getElementById("currentPassword");
+      var current = currentInput.value;
+      var next = newPwInput.value;
+      setFieldError(currentInput, current ? "" : "Enter your current password.");
+      setFieldError(newPwInput, next.length >= 8 ? "" : "New password must be at least 8 characters.");
+      if (!current) { currentInput.focus(); return; }
+      if (next.length < 8) { newPwInput.focus(); return; }
+      if (next === current) {
+        setFieldError(newPwInput, "New password must be different from your current one.");
+        newPwInput.focus();
         return;
       }
       setBusy(submit, true, "Updating…");
@@ -1676,8 +1899,9 @@ function addCard(container, label, value, sub, tone, gauge, delta, spark, pendin
           body: { current_password: current, new_password: next },
         });
         passwordForm.reset();
-        passwordFeedback.textContent = "Password updated.";
-        U.toast("Password updated successfully", "success");
+        updatePwHint();
+        flash(passwordFeedback, "Password updated. Use your new password next time you sign in.");
+        U.toast("Password updated", "success");
       } catch (error) {
         showFormError(passwordError, error.message);
         U.toast(error.message, "error");

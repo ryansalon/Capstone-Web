@@ -354,6 +354,114 @@
       return close;
     },
 
+    /* Click-to-sort column headers for a rendered table. Each header becomes
+     * a button (keyboard + screen-reader friendly, aria-sort reflects state).
+     * Cells may carry data-sort for a machine value (timestamps, counts);
+     * otherwise the visible text is compared. opts.skip = column indexes to
+     * leave unsortable. opts.onSort(index, dir) lets callers remember it. */
+    makeSortable: function (table, opts) {
+      opts = opts || {};
+      var skip = opts.skip || [];
+      var heads = table.querySelectorAll("thead th");
+      var tbody = table.querySelector("tbody");
+      if (!tbody) return;
+      var state = { index: -1, dir: "none" };
+
+      function cellValue(row, index) {
+        var cell = row.children[index];
+        if (!cell) return "";
+        var raw = cell.getAttribute("data-sort");
+        return raw !== null ? raw : cell.textContent.trim();
+      }
+
+      function compare(a, b) {
+        var na = parseFloat(a);
+        var nb = parseFloat(b);
+        var numeric = a !== "" && b !== "" && !isNaN(na) && !isNaN(nb) && isFinite(a) && isFinite(b);
+        if (numeric) return na - nb;
+        return String(a).localeCompare(String(b), undefined, { sensitivity: "base", numeric: true });
+      }
+
+      function apply(index, dir) {
+        var rows = Array.prototype.slice.call(tbody.rows);
+        rows.sort(function (r1, r2) {
+          var v1 = cellValue(r1, index);
+          var v2 = cellValue(r2, index);
+          // Empty values always sink to the bottom.
+          if (v1 === "" && v2 !== "") return 1;
+          if (v2 === "" && v1 !== "") return -1;
+          var c = compare(v1, v2);
+          return dir === "ascending" ? c : -c;
+        });
+        var frag = document.createDocumentFragment();
+        rows.forEach(function (r) { frag.appendChild(r); });
+        tbody.appendChild(frag);
+        Array.prototype.forEach.call(heads, function (th, i) {
+          if (skip.indexOf(i) >= 0) return;
+          th.setAttribute("aria-sort", i === index ? dir : "none");
+        });
+        state.index = index;
+        state.dir = dir;
+      }
+
+      Array.prototype.forEach.call(heads, function (th, i) {
+        if (skip.indexOf(i) >= 0) return;
+        var label = th.textContent;
+        UI.clear(th);
+        var btn = UI.el("button", { type: "button", class: "th-sort" });
+        btn.appendChild(UI.el("span", null, label));
+        btn.appendChild(UI.el("span", { class: "th-sort-icon", "aria-hidden": "true" }));
+        th.appendChild(btn);
+        th.setAttribute("aria-sort", "none");
+        btn.addEventListener("click", function () {
+          var dir = state.index === i && state.dir === "ascending" ? "descending" : "ascending";
+          apply(i, dir);
+          if (opts.onSort) opts.onSort(i, dir);
+        });
+      });
+
+      if (opts.initial && opts.initial.index >= 0 && skip.indexOf(opts.initial.index) < 0) {
+        apply(opts.initial.index, opts.initial.dir === "descending" ? "descending" : "ascending");
+      }
+    },
+
+    /* Append text to node, wrapping case-insensitive matches of query in <mark>. */
+    highlight: function (node, text, query) {
+      text = String(text == null ? "" : text);
+      var q = String(query || "").trim();
+      if (!q) {
+        node.appendChild(document.createTextNode(text));
+        return node;
+      }
+      var lower = text.toLowerCase();
+      var needle = q.toLowerCase();
+      var pos = 0;
+      var hit = lower.indexOf(needle, pos);
+      while (hit >= 0) {
+        if (hit > pos) node.appendChild(document.createTextNode(text.slice(pos, hit)));
+        node.appendChild(UI.el("mark", { class: "match" }, text.slice(hit, hit + needle.length)));
+        pos = hit + needle.length;
+        hit = lower.indexOf(needle, pos);
+      }
+      if (pos < text.length) node.appendChild(document.createTextNode(text.slice(pos)));
+      return node;
+    },
+
+    /* Per-tab memory for filters (sessionStorage, cleared on logout so a
+     * shared health-center PC doesn't leak the last worker's searches). */
+    remember: function (key, value) {
+      try {
+        if (value === undefined) {
+          var raw = window.sessionStorage.getItem("bhm:" + key);
+          return raw ? JSON.parse(raw) : null;
+        }
+        window.sessionStorage.setItem("bhm:" + key, JSON.stringify(value));
+      } catch (e) {
+        return null;
+      }
+      return value;
+    },
+
     fmtDT: function (value) {
       if (!value) return "—";
       var date = new Date(String(value).replace(" ", "T") + "Z");
@@ -451,33 +559,98 @@
     UI: UI,
   };
 
+  /* Sidebar identity lockup: initials avatar + name + role. Re-callable
+   * (e.g. after a profile name change). */
+  function renderWhoami() {
+    var whoami = document.getElementById("whoami");
+    if (!whoami) return;
+    var name = getName() || "User";
+    var role = getRole();
+    var initials = name
+      .split(" ")
+      .filter(Boolean)
+      .slice(0, 2)
+      .map(function (w) { return w[0].toUpperCase(); })
+      .join("") || "U";
+    var roleLabel = role === "bhw" ? "Health Worker" : role === "admin" ? "Staff Admin" : "Citizen";
+
+    UI.clear(whoami);
+    var avatar = UI.el("span", { class: "user-avatar", "aria-hidden": "true" }, initials);
+    var textWrap = UI.el("div", { class: "user-info-text" });
+    textWrap.appendChild(UI.el("span", { class: "user-display-name", title: name }, name));
+    textWrap.appendChild(UI.el("span", { class: "user-role-badge" }, roleLabel));
+    whoami.appendChild(avatar);
+    whoami.appendChild(textWrap);
+  }
+  window.API.renderWhoami = renderWhoami;
+
   /* Fill the header name and wire the log-out button on every page. */
   document.addEventListener("DOMContentLoaded", function () {
-    var whoami = document.getElementById("whoami");
-    if (whoami) {
-      var name = getName() || "User";
-      var role = getRole();
-      var initials = name
-        .split(" ")
-        .filter(Boolean)
-        .slice(0, 2)
-        .map(function (w) { return w[0].toUpperCase(); })
-        .join("") || "U";
-      var roleLabel = role === "bhw" ? "Health Worker" : role === "admin" ? "Staff Admin" : "Citizen";
-
-      UI.clear(whoami);
-      var avatar = UI.el("span", { class: "user-avatar" }, initials);
-      var textWrap = UI.el("div", { class: "user-info-text" });
-      textWrap.appendChild(UI.el("span", { class: "user-display-name" }, name));
-      textWrap.appendChild(UI.el("span", { class: "user-role-badge" }, roleLabel));
-      whoami.appendChild(avatar);
-      whoami.appendChild(textWrap);
-    }
+    renderWhoami();
     var logoutBtn = document.getElementById("logoutBtn");
     if (logoutBtn) {
       logoutBtn.addEventListener("click", function () {
         logout();
       });
     }
+    initMobileNav();
   });
+
+  /* Phones/tablets: collapse the sidebar into a top bar with a menu button.
+   * Opens a panel with the nav + account; closes on Esc, tap outside,
+   * or picking a link. Desktop layout is untouched (button hidden by CSS). */
+  function initMobileNav() {
+    var sidebar = document.querySelector(".sidebar");
+    var nav = sidebar && sidebar.querySelector(".sidenav");
+    if (!sidebar || !nav) return;
+    if (!nav.id) nav.id = "sidenav";
+
+    var toggle = UI.el("button", {
+      class: "nav-toggle",
+      type: "button",
+      "aria-expanded": "false",
+      "aria-controls": nav.id,
+      "aria-label": "Open menu",
+    });
+    toggle.innerHTML =
+      '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true">' +
+      '<line class="l1" x1="4" y1="7" x2="20" y2="7"/><line class="l2" x1="4" y1="12" x2="20" y2="12"/><line class="l3" x1="4" y1="17" x2="20" y2="17"/></svg>';
+    var brand = sidebar.querySelector(".brand");
+    if (brand && brand.nextSibling) sidebar.insertBefore(toggle, brand.nextSibling);
+    else sidebar.appendChild(toggle);
+
+    var backdrop = UI.el("div", { class: "nav-backdrop", "aria-hidden": "true" });
+    document.body.appendChild(backdrop);
+
+    function setOpen(open) {
+      sidebar.classList.toggle("open", open);
+      document.body.classList.toggle("nav-open", open);
+      toggle.setAttribute("aria-expanded", open ? "true" : "false");
+      toggle.setAttribute("aria-label", open ? "Close menu" : "Open menu");
+    }
+
+    toggle.addEventListener("click", function () {
+      var open = !sidebar.classList.contains("open");
+      setOpen(open);
+      if (open) {
+        var current = nav.querySelector('[aria-current="page"]') || nav.querySelector("a");
+        if (current) current.focus();
+      }
+    });
+    backdrop.addEventListener("click", function () { setOpen(false); });
+    nav.addEventListener("click", function (event) {
+      if (event.target.closest("a")) setOpen(false);
+    });
+    document.addEventListener("keydown", function (event) {
+      if ((event.key === "Escape" || event.key === "Esc") && sidebar.classList.contains("open")) {
+        setOpen(false);
+        toggle.focus();
+      }
+    });
+    // Reset if the window grows back to desktop width while open.
+    var mq = window.matchMedia("(min-width: 901px)");
+    var onChange = function (e) { if (e.matches) setOpen(false); };
+    if (mq.addEventListener) mq.addEventListener("change", onChange);
+    else if (mq.addListener) mq.addListener(onChange);
+  }
 })();
