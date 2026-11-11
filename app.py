@@ -631,6 +631,34 @@ def print_response(report_type: str, period: str, header, rows) -> Response:
     return Response(document, mimetype="text/html")
 
 
+def start_keep_alive_pinger():
+    ping_url = os.getenv("RENDER_EXTERNAL_URL") or os.getenv("APP_PING_URL")
+    if not ping_url:
+        return
+    import urllib.request
+
+    target = ping_url.rstrip("/") + "/healthz"
+
+    def _loop():
+        import time
+
+        time.sleep(60)  # Wait 60s for server boot
+        while True:
+            try:
+                req = urllib.request.Request(
+                    target,
+                    headers={"User-Agent": "Render-KeepAlive/1.0"},
+                )
+                with urllib.request.urlopen(req, timeout=15) as res:
+                    pass
+            except Exception:
+                pass
+            time.sleep(12 * 60)  # Ping every 12 minutes (Render timeout is 15 min)
+
+    t = threading.Thread(target=_loop, daemon=True, name="render-keepalive")
+    t.start()
+
+
 # ---------------------------------------------------------------------------
 # App factory
 # ---------------------------------------------------------------------------
@@ -648,6 +676,11 @@ def create_app(database_url: str | None = None, seed: bool = True) -> Flask:
 
     register_routes(app)
     register_error_handlers(app)
+
+    if not app.config.get("TESTING") and not app.config.get("PING_STARTED"):
+        start_keep_alive_pinger()
+        app.config["PING_STARTED"] = True
+
     return app
 
 
@@ -971,6 +1004,13 @@ def register_routes(app: Flask):
                 "created_at": iso(user.created_at),
             }
         )
+
+    @app.route("/healthz", methods=["GET", "HEAD"])
+    @app.route("/api/ping", methods=["GET", "HEAD"])
+    def health_check():
+        resp = jsonify({"status": "healthy", "timestamp": iso(utcnow())})
+        resp.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+        return resp, 200
 
     @app.route("/api/logout", methods=["POST"])
     def logout():

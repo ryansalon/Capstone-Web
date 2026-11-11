@@ -944,3 +944,16 @@ def test_kiosk_reading_live_broadcast(client):
         broadcaster.unsubscribe(q)
 
 
+def test_healthz_and_ping_endpoints(client):
+    r1 = client.get("/healthz")
+    assert r1.status_code == 200
+    assert r1.get_json()["status"] == "healthy"
+
+    r2 = client.head("/healthz")
+    assert r2.status_code == 200
+
+    r3 = client.get("/api/ping")
+    assert r3.status_code == 200
+    assert r3.get_json()["status"] == "healthy"
+
+
