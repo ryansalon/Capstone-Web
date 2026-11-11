@@ -278,6 +278,9 @@
     addInfo("Username / ID", profile.username || "—");
     addInfo("Birthdate", profile.birthdate || "—");
     addInfo("Gender", profile.gender ? profile.gender.toUpperCase() : "—");
+    if (profile.visit_count !== undefined) {
+      addInfo("Total Kiosk Visits", String(profile.visit_count) + (profile.visit_count === 1 ? " check-in" : " check-ins"));
+    }
     passport.appendChild(infoDl);
 
     var grid = U.el("div", { class: "passport-grid" });
@@ -961,8 +964,10 @@ function addCard(container, label, value, sub, tone, gauge, delta, spark, pendin
         setVitalsVisible(true);
         if (passportBtn) passportBtn.hidden = false;
         var latest = logs[0];
+        var visitsCount = logs.length;
+        var visitsLabel = visitsCount === 1 ? "1 check-in" : (visitsCount + " check-ins");
         meta.textContent =
-          "Latest reading: " + U.fmtDT(latest.timestamp) + " · " + U.fmtAge(latest.timestamp);
+          "Latest reading: " + U.fmtDT(latest.timestamp) + " · " + U.fmtAge(latest.timestamp) + " · " + visitsLabel;
 
         // Re-render only when a new kiosk reading actually arrived, so the
         // 60s poll never disturbs the screen or screen-reader users.

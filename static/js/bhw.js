@@ -522,6 +522,7 @@
       // Period-scoped totals.
       U.clear(totalsNode);
       totalsNode.appendChild(totalCard("Measurements", totals.measurements || 0));
+      totalsNode.appendChild(totalCard("Active kiosk citizens", totals.active_citizens || 0));
       totalsNode.appendChild(totalCard("Guest measurements", totals.guest_measurements || 0));
       totalsNode.appendChild(
         totalCard("Alerts", alerts, {
@@ -656,9 +657,9 @@
     var table = U.el("table");
     var thead = U.el("thead");
     var headRow = U.el("tr");
-    ["Name", "Username", "Birthdate", "Last measurement (PHT)", "Consent", "Actions"].forEach(function (label, index) {
+    ["Name", "Username", "Birthdate", "Kiosk visits", "Last measurement (PHT)", "Consent", "Actions"].forEach(function (label, index) {
       headRow.appendChild(
-        U.el("th", index === 5 ? { style: "text-align:right;", scope: "col" } : { scope: "col" }, label)
+        U.el("th", index === 6 ? { style: "text-align:right;", scope: "col" } : { scope: "col" }, label)
       );
     });
     thead.appendChild(headRow);
@@ -674,6 +675,19 @@
       row.appendChild(U.el("th", { scope: "row", style: "font-weight:600; text-align:left; background:transparent;" }, citizen.full_name));
       row.appendChild(U.el("td", { class: "muted" }, citizen.username));
       row.appendChild(U.el("td", { class: "nowrap" }, citizen.birthdate || "—"));
+      var visitsCell = U.el("td", { class: "nowrap" });
+      var vCount = citizen.visit_count || 0;
+      if (vCount > 0) {
+        var vBadge = U.el(
+          "span",
+          { class: "badge badge-ok", style: "font-weight:700;" },
+          vCount + " " + (vCount === 1 ? "visit" : "visits")
+        );
+        visitsCell.appendChild(vBadge);
+      } else {
+        visitsCell.appendChild(U.el("span", { class: "muted" }, "0 visits"));
+      }
+      row.appendChild(visitsCell);
       row.appendChild(
         U.el("td", { class: "nowrap" }, citizen.last_measurement ? U.fmtDT(citizen.last_measurement) : "No readings")
       );
@@ -706,7 +720,7 @@
     U.loading(statusNode, "Searching citizens…");
     var results = document.getElementById("results");
     U.clear(results);
-    results.appendChild(U.tableSkeleton(["Name", "Username", "Birthdate", "Last measurement (PHT)", "Consent", "Actions"], 3));
+    results.appendChild(U.tableSkeleton(["Name", "Username", "Birthdate", "Kiosk visits", "Last measurement (PHT)", "Consent", "Actions"], 3));
     try {
       var data = await API.apiFetch(
         "/api/bhw/citizens?search=" + encodeURIComponent(query)
@@ -874,6 +888,8 @@
     addPair("Username", citizen.username);
     addPair("Birthdate", citizen.birthdate);
     addPair("Gender", citizen.gender);
+    var logsCount = data.logs ? data.logs.length : 0;
+    addPair("Total kiosk visits", logsCount + (logsCount === 1 ? " visit recorded" : " visits recorded"));
 
     var consent = data.consent || {};
     document.getElementById("consentLine").textContent =

@@ -151,6 +151,7 @@ def test_login_and_me_never_exposes_password_hash(client):
     assert body["birthdate"] == "1992-11-03"
     assert body["gender"] == "male"
     assert body["role"] == "citizen"
+    assert "visit_count" in body
     assert "password_hash" not in body
     assert "$2" not in json.dumps(body)
 
@@ -481,6 +482,7 @@ def test_dashboard_empty_database_returns_zeros(tmp_path):
     assert body["totals"] == {
         "measurements": 0,
         "users": 1,
+        "active_citizens": 0,
         "consent_grants": 0,
         "guest_measurements": 0,
         "alerts": 0,
@@ -752,6 +754,7 @@ def test_citizens_search_is_case_insensitive(client):
     assert [entry["username"] for entry in listed] == ["carl"]
     assert listed[0]["consent"] is False
     assert listed[0]["last_measurement"] is None
+    assert listed[0]["visit_count"] == 0
     assert "Carl Mendoza" in json.dumps(listed)
 
     client.post("/api/kiosk/health-data", json=kiosk_reading(), headers=KIOSK_HEADERS)
@@ -759,6 +762,7 @@ def test_citizens_search_is_case_insensitive(client):
         "citizens"
     ]
     assert listed[0]["last_measurement"] is not None
+    assert listed[0]["visit_count"] == 1
 
 
 # ---------------------------------------------------------------------------

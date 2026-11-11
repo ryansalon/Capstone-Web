@@ -355,11 +355,13 @@ def compute_metrics(session, logs):
     citizens = session.execute(
         select(func.count()).select_from(User).where(User.role == "citizen")
     ).scalar() or 0
+    active_citizens = len({log.user_id for log in logs if log.user_id is not None})
 
     return {
         "measurements": len(logs),
         "users": users_total,
         "citizens": citizens,
+        "active_citizens": active_citizens,
         "guest_measurements": guests,
         "alerts": alerts,
         "bmi": bmi_counts,
@@ -707,6 +709,13 @@ def register_routes(app: Flask):
     @require_any
     def me():
         user = g.user
+        with get_db().session() as session:
+            visit_count = (
+                session.execute(
+                    select(func.count(HealthLog.id)).where(HealthLog.user_id == user.id)
+                ).scalar()
+                or 0
+            )
         return jsonify(
             {
                 "id": user.id,
@@ -715,6 +724,7 @@ def register_routes(app: Flask):
                 "birthdate": user.birthdate,
                 "gender": user.gender,
                 "role": user.role,
+                "visit_count": visit_count,
                 "created_at": iso(user.created_at),
             }
         )
@@ -860,6 +870,7 @@ def register_routes(app: Flask):
                 "totals": {
                     "measurements": metrics["measurements"],
                     "users": metrics["users"],
+                    "active_citizens": metrics["active_citizens"],
                     "consent_grants": consent_grants,
                     "guest_measurements": metrics["guest_measurements"],
                     "alerts": metrics["alerts"],
@@ -889,14 +900,20 @@ def register_routes(app: Flask):
 
         citizen_ids = [c.id for c in citizens]
         last_map = {}
+        count_map = {}
         latest = {}
         if citizen_ids:
-            last_rows = session.execute(
-                select(HealthLog.user_id, func.max(HealthLog.timestamp))
+            stats_rows = session.execute(
+                select(
+                    HealthLog.user_id,
+                    func.count(HealthLog.id),
+                    func.max(HealthLog.timestamp),
+                )
                 .where(HealthLog.user_id.in_(citizen_ids))
                 .group_by(HealthLog.user_id)
             ).all()
-            last_map = {user_id: stamp for user_id, stamp in last_rows}
+            count_map = {user_id: count for user_id, count, stamp in stats_rows}
+            last_map = {user_id: stamp for user_id, count, stamp in stats_rows}
             latest = latest_consent_map(session, user_ids=citizen_ids)
 
         payload = []
@@ -914,6 +931,7 @@ def register_routes(app: Flask):
                     "birthdate": citizen.birthdate,
                     "gender": citizen.gender,
                     "last_measurement": iso(last_map.get(citizen.id)),
+                    "visit_count": count_map.get(citizen.id, 0),
                     "consent": granted,
                 }
             )
@@ -1222,6 +1240,7 @@ def register_routes(app: Flask):
                     ("period", label),
                     ("total_measurements", metrics["measurements"]),
                     ("unique_registered_users", metrics["citizens"]),
+                    ("active_kiosk_citizens", metrics["active_citizens"]),
                     ("citizens_with_consent", citizens_with_consent),
                     ("guest_measurements", metrics["guest_measurements"]),
                     ("alerts", metrics["alerts"]),
