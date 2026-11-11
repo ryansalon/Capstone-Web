@@ -860,6 +860,11 @@ def test_realtime_stream_and_watermark(client):
     assert "latest_id" in data
     assert "latest_timestamp" in data
 
+    # Authenticated stream request completes immediately without hanging
+    stream_resp = client.get(f"/api/realtime/stream?token={carl_token}")
+    assert stream_resp.status_code == 200
+    assert ": connected" in stream_resp.get_data(as_text=True)
+
 
 def test_kiosk_reading_live_broadcast(client):
     from app import broadcaster

@@ -1166,11 +1166,6 @@
         });
       },
     });
-
-    // Secondary fallback poll: checks every 15s when tab is active
-    setInterval(function () {
-      if (!document.hidden) load({ auto: true });
-    }, 15000);
   }
 
   /* ---------------- history ---------------- */

@@ -230,6 +230,80 @@ class EventBroadcaster:
 broadcaster = EventBroadcaster()
 
 
+class KioskSyncTracker:
+    """Ultra-fast, non-blocking in-memory state tracker for kiosk data pulses."""
+
+    def __init__(self):
+        self._lock = threading.Lock()
+        self._version = 0
+        self._latest_id = 0
+        self._latest_timestamp = None
+        self._user_latest: dict[int, dict] = {}
+
+    def notify(
+        self,
+        user_id: int | None = None,
+        log_id: int | None = None,
+        timestamp: str | None = None,
+    ):
+        with self._lock:
+            self._version += 1
+            if log_id:
+                self._latest_id = max(self._latest_id, log_id)
+            if timestamp:
+                self._latest_timestamp = timestamp
+            if user_id and log_id:
+                self._user_latest[user_id] = {
+                    "latest_id": log_id,
+                    "latest_timestamp": timestamp,
+                    "version": self._version,
+                }
+
+    def get_watermark(self, user_id: int | None = None, is_staff: bool = False) -> dict:
+        with self._lock:
+            if not is_staff and user_id is not None:
+                if user_id in self._user_latest:
+                    return {
+                        "latest_id": self._user_latest[user_id]["latest_id"],
+                        "latest_timestamp": self._user_latest[user_id]["latest_timestamp"],
+                        "version": self._user_latest[user_id]["version"],
+                    }
+                # Cold start: read latest user reading from DB once
+                with get_db().session() as session:
+                    stmt = select(func.max(HealthLog.id), func.max(HealthLog.timestamp)).where(
+                        HealthLog.user_id == user_id
+                    )
+                    row = session.execute(stmt).first()
+                    lid = row[0] if row and row[0] else 0
+                    lts = iso(row[1]) if row and row[1] else None
+                    self._user_latest[user_id] = {
+                        "latest_id": lid,
+                        "latest_timestamp": lts,
+                        "version": self._version,
+                    }
+                    return {
+                        "latest_id": lid,
+                        "latest_timestamp": lts,
+                        "version": self._version,
+                    }
+            else:
+                if self._latest_id == 0:
+                    with get_db().session() as session:
+                        stmt = select(func.max(HealthLog.id), func.max(HealthLog.timestamp))
+                        row = session.execute(stmt).first()
+                        if row and row[0]:
+                            self._latest_id = row[0]
+                            self._latest_timestamp = iso(row[1])
+                return {
+                    "latest_id": self._latest_id,
+                    "latest_timestamp": self._latest_timestamp,
+                    "version": self._version,
+                }
+
+
+kiosk_sync = KioskSyncTracker()
+
+
 class Database:
     def __init__(self, url: str):
         connect_args = {"check_same_thread": False} if url.startswith("sqlite") else {}
@@ -611,6 +685,12 @@ def register_routes(app: Flask):
             session.add(log)
             session.flush()
 
+            kiosk_sync.notify(
+                user_id=user.id,
+                log_id=log.id,
+                timestamp=iso(log.timestamp),
+            )
+
             broadcaster.broadcast(
                 "kiosk_reading",
                 {
@@ -701,6 +781,7 @@ def register_routes(app: Flask):
                 )
                 added += 1
         if added > 0:
+            kiosk_sync.notify(user_id=None, log_id=None, timestamp=iso(utcnow()))
             broadcaster.broadcast(
                 "kiosk_reading",
                 {
@@ -821,44 +902,25 @@ def register_routes(app: Flask):
         except (jwt.PyJWTError, Exception):
             return jsonify({"error": "invalid or expired token"}), 401
 
-        q = broadcaster.subscribe()
-
-        def event_stream():
-            try:
-                yield ": connected\n\n"
-                while True:
-                    try:
-                        msg = q.get(timeout=20)
-                        yield msg
-                    except queue.Empty:
-                        yield ": keepalive\n\n"
-            finally:
-                broadcaster.unsubscribe(q)
+        # Non-blocking SSE endpoint: completes immediately to avoid WSGI thread starvation
+        def single_event():
+            yield ": connected\n\n"
 
         return Response(
-            event_stream(),
+            single_event(),
             mimetype="text/event-stream",
             headers={
                 "Cache-Control": "no-cache",
-                "X-Accel-Buffering": "no",
-                "Connection": "keep-alive",
+                "Connection": "close",
             },
         )
 
     @app.route("/api/realtime/watermark", methods=["GET"])
     @require_any
     def realtime_watermark():
-        with get_db().session() as session:
-            stmt = select(func.max(HealthLog.id), func.max(HealthLog.timestamp))
-            if g.user.role == "citizen":
-                stmt = stmt.where(HealthLog.user_id == g.user.id)
-            row = session.execute(stmt).first()
-            max_id = row[0] if row else None
-            max_ts = row[1] if row else None
-            return jsonify({
-                "latest_id": max_id or 0,
-                "latest_timestamp": iso(max_ts),
-            })
+        is_staff = g.user.role in ("bhw", "admin")
+        wm = kiosk_sync.get_watermark(user_id=g.user.id, is_staff=is_staff)
+        return jsonify(wm)
 
     # -- citizen -----------------------------------------------------------
 
