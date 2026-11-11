@@ -211,8 +211,9 @@
           dataset.data.forEach(function (value, index) {
             if (value === null || value === undefined) return;
             var pct = total > 0 ? Math.round((value / total) * 100) : 0;
-            var xPos = xScale.getPixelForValue(value);
-            var yPos = yScale.getPixelForIndex(index);
+            var bar = meta.data && meta.data[index];
+            var xPos = bar ? bar.x : xScale.getPixelForValue(value);
+            var yPos = bar ? bar.y : (yScale.getPixelForValue ? yScale.getPixelForValue(index) : 0);
             ctx.fillText(value + " (" + pct + "%)", xPos + 6, yPos);
           });
         });
