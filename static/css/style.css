@@ -1251,7 +1251,7 @@ td {
   vertical-align: middle;
 }
 
-th {
+thead th {
   background: var(--green-050);
   font-size: 0.73rem;
   font-weight: 700;
@@ -1264,6 +1264,18 @@ th {
   top: 0;
   z-index: 2;
   box-shadow: 0 1px 0 var(--line-strong);
+}
+
+tbody th {
+  font-size: 0.88rem;
+  font-weight: 600;
+  text-transform: none;
+  letter-spacing: normal;
+  color: var(--ink);
+  position: static !important;
+  background: transparent;
+  box-shadow: none;
+  z-index: auto;
 }
 
 tbody tr {
@@ -3582,6 +3594,11 @@ td.cell-bad {
   padding: 0;
   width: 100%;
   text-align: left;
+}
+
+th.num .th-sort {
+  justify-content: flex-end;
+  text-align: right;
 }
 
 .th-sort:hover {
