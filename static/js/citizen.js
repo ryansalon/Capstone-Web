@@ -1091,10 +1091,28 @@ function addCard(container, label, value, sub, tone, gauge, delta, spark, pendin
 
     await load({});
 
-    // Gentle 60s poll: skips hidden tabs; re-renders only on new data.
+    // Real-time live synchronization: instantly updates cards when kiosk POSTs
+    var realtimeSync = API.initRealtimeSync({
+      initialLogId: (latestLog && latestLog.id) || 0,
+      onReading: function (reading) {
+        load({ auto: true }).then(function (ok) {
+          if (!ok) return;
+          var allCards = document.querySelectorAll("#cards .card, #supportCards .card");
+          allCards.forEach(function (c) {
+            c.classList.remove("card-pulse");
+            void c.offsetWidth;
+            c.classList.add("card-pulse");
+          });
+          var bmiNote = reading.bmi ? (" · BMI: " + reading.bmi) : "";
+          U.toast("New kiosk measurement received!" + bmiNote, "success");
+        });
+      },
+    });
+
+    // Secondary fallback poll: checks every 15s when tab is active
     setInterval(function () {
       if (!document.hidden) load({ auto: true });
-    }, 60000);
+    }, 15000);
   }
 
   /* ---------------- history ---------------- */
@@ -1578,6 +1596,21 @@ function addCard(container, label, value, sub, tone, gauge, delta, spark, pendin
       }
       renderLogTable(logs);
       renderCharts(logs);
+
+      API.initRealtimeSync({
+        onReading: function () {
+          API.apiFetch("/api/health-data").then(function (res) {
+            var freshLogs = res.logs || [];
+            historyState.logs = freshLogs;
+            if (freshLogs.length > 0) {
+              section.hidden = false;
+              renderLogTable(freshLogs);
+              renderCharts(freshLogs);
+              U.toast("New measurement added to history!", "success");
+            }
+          });
+        },
+      });
     } catch (error) {
       section.hidden = true;
       U.clear(tableWrap);

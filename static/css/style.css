@@ -963,6 +963,16 @@ h3 {
   border-top-color: var(--green-600);
 }
 
+@keyframes livePulse {
+  0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(15, 107, 83, 0.45); }
+  50% { transform: scale(1.02); box-shadow: 0 0 0 8px rgba(15, 107, 83, 0.2); }
+  100% { transform: scale(1); box-shadow: var(--shadow); }
+}
+
+.card-pulse {
+  animation: livePulse 1.4s ease-out;
+}
+
 .card .label {
   font-size: 0.74rem;
   text-transform: uppercase;

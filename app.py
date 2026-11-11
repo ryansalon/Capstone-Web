@@ -12,8 +12,11 @@ import csv
 import hmac
 import html as html_lib
 import io
+import json
 import os
+import queue
 import re
+import threading
 from contextlib import contextmanager
 from datetime import datetime, time, timedelta, timezone
 from functools import wraps
@@ -194,6 +197,37 @@ def check_password(password_hash: str, password: str) -> bool:
 # ---------------------------------------------------------------------------
 # Database wrapper (one engine per app instance, so tests can use temp files)
 # ---------------------------------------------------------------------------
+
+
+class EventBroadcaster:
+    """Thread-safe pub/sub broker for Server-Sent Events (SSE)."""
+
+    def __init__(self):
+        self._subscribers: list[queue.Queue] = []
+        self._lock = threading.Lock()
+
+    def subscribe(self) -> queue.Queue:
+        q = queue.Queue(maxsize=40)
+        with self._lock:
+            self._subscribers.append(q)
+        return q
+
+    def unsubscribe(self, q: queue.Queue):
+        with self._lock:
+            if q in self._subscribers:
+                self._subscribers.remove(q)
+
+    def broadcast(self, event_name: str, payload: dict):
+        raw = f"event: {event_name}\ndata: {json.dumps(payload)}\n\n"
+        with self._lock:
+            for q in list(self._subscribers):
+                try:
+                    q.put_nowait(raw)
+                except queue.Full:
+                    pass
+
+
+broadcaster = EventBroadcaster()
 
 
 class Database:
@@ -557,11 +591,12 @@ def register_routes(app: Flask):
             if user is None:
                 return jsonify({"error": "unknown user"}), 404
 
+            ts = parse_timestamp(data.get("timestamp"))
             source = data.get("source")
             source = (str(source)[:10] if source else "kiosk")
             log = HealthLog(
                 user_id=user.id,
-                timestamp=parse_timestamp(data.get("timestamp")),
+                timestamp=ts,
                 weight=sanitize_float(data.get("weight"), 20.0, 300.0),
                 height=sanitize_float(data.get("height"), 80.0, 220.0),
                 bmi=sanitize_float(data.get("bmi")),
@@ -575,6 +610,25 @@ def register_routes(app: Flask):
             )
             session.add(log)
             session.flush()
+
+            broadcaster.broadcast(
+                "kiosk_reading",
+                {
+                    "type": "citizen_reading",
+                    "user_id": user.id,
+                    "username": user.username,
+                    "log_id": log.id,
+                    "bmi": log.bmi,
+                    "weight": log.weight,
+                    "height": log.height,
+                    "systolic_bp": log.systolic_bp,
+                    "diastolic_bp": log.diastolic_bp,
+                    "temperature": log.temperature,
+                    "pulse_rate": log.pulse_rate,
+                    "spo2": log.spo2,
+                    "timestamp": iso(log.timestamp),
+                },
+            )
             return jsonify({"ok": True, "id": log.id}), 201
 
     @app.route("/api/kiosk/user", methods=["POST"])
@@ -646,6 +700,16 @@ def register_routes(app: Flask):
                     )
                 )
                 added += 1
+        if added > 0:
+            broadcaster.broadcast(
+                "kiosk_reading",
+                {
+                    "type": "guest_reading",
+                    "user_id": None,
+                    "added": added,
+                    "timestamp": iso(utcnow()),
+                },
+            )
         return jsonify({"ok": True, "added": added}), 201
 
     # -- auth --------------------------------------------------------------
@@ -739,6 +803,62 @@ def register_routes(app: Flask):
     @app.route("/api/logout", methods=["POST"])
     def logout():
         return jsonify({"ok": True})
+
+    # -- realtime live sync ------------------------------------------------
+
+    @app.route("/api/realtime/stream", methods=["GET"])
+    def realtime_stream():
+        raw_token = request.args.get("token") or request.headers.get("Authorization", "")
+        if raw_token.startswith("Bearer "):
+            raw_token = raw_token[7:]
+        raw_token = raw_token.strip()
+
+        if not raw_token:
+            return jsonify({"error": "missing token"}), 401
+
+        try:
+            jwt.decode(raw_token, JWT_SECRET, algorithms=["HS256"])
+        except (jwt.PyJWTError, Exception):
+            return jsonify({"error": "invalid or expired token"}), 401
+
+        q = broadcaster.subscribe()
+
+        def event_stream():
+            try:
+                yield ": connected\n\n"
+                while True:
+                    try:
+                        msg = q.get(timeout=20)
+                        yield msg
+                    except queue.Empty:
+                        yield ": keepalive\n\n"
+            finally:
+                broadcaster.unsubscribe(q)
+
+        return Response(
+            event_stream(),
+            mimetype="text/event-stream",
+            headers={
+                "Cache-Control": "no-cache",
+                "X-Accel-Buffering": "no",
+                "Connection": "keep-alive",
+            },
+        )
+
+    @app.route("/api/realtime/watermark", methods=["GET"])
+    @require_any
+    def realtime_watermark():
+        with get_db().session() as session:
+            stmt = select(func.max(HealthLog.id), func.max(HealthLog.timestamp))
+            if g.user.role == "citizen":
+                stmt = stmt.where(HealthLog.user_id == g.user.id)
+            row = session.execute(stmt).first()
+            max_id = row[0] if row else None
+            max_ts = row[1] if row else None
+            return jsonify({
+                "latest_id": max_id or 0,
+                "latest_timestamp": iso(max_ts),
+            })
 
     # -- citizen -----------------------------------------------------------
 

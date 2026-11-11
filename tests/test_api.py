@@ -839,3 +839,57 @@ def test_audit_trail_filtering_by_citizen_and_action(client):
     assert len(resp_none.get_json()["audit"]) == 0
 
 
+def test_realtime_stream_and_watermark(client):
+    # Missing token returns 401
+    missing = client.get("/api/realtime/stream")
+    assert missing.status_code == 401
+
+    # Invalid token returns 401
+    invalid = client.get("/api/realtime/stream?token=bad-token")
+    assert invalid.status_code == 401
+
+    # Watermark without token returns 401
+    wm_unauth = client.get("/api/realtime/watermark")
+    assert wm_unauth.status_code == 401
+
+    # Authenticated citizen watermark
+    carl_token = login(client, "carl", "citizen123")["token"]
+    wm = client.get("/api/realtime/watermark", headers=bearer(carl_token))
+    assert wm.status_code == 200
+    data = wm.get_json()
+    assert "latest_id" in data
+    assert "latest_timestamp" in data
+
+
+def test_kiosk_reading_live_broadcast(client):
+    from app import broadcaster
+
+    q = broadcaster.subscribe()
+    try:
+        ts = "2026-11-11 10:00:00"
+        reading = {
+            "username": "carl",
+            "timestamp": ts,
+            "weight": 70.0,
+            "height": 175.0,
+            "bmi": 22.9,
+            "temperature": 36.6,
+            "pulse_rate": 72,
+            "spo2": 98,
+            "systolic_bp": 120,
+            "diastolic_bp": 80,
+        }
+
+        # POST: succeeds with 201
+        res1 = client.post("/api/kiosk/health-data", json=reading, headers=KIOSK_HEADERS)
+        assert res1.status_code == 201
+
+        # Check broadcast received in queue
+        msg = q.get(timeout=2)
+        assert "event: kiosk_reading" in msg
+        assert '"bmi": 22.9' in msg
+        assert '"username": "carl"' in msg
+    finally:
+        broadcaster.unsubscribe(q)
+
+

@@ -685,6 +685,13 @@
 
     loadDashboard({ animate: true });
     loadContext(); // consent donut + kiosk freshness (isolated failures)
+
+    API.initRealtimeSync({
+      onReading: function () {
+        loadDashboard({ animate: false });
+        loadContext();
+      },
+    });
   }
 
   /* ---------------- search ---------------- */

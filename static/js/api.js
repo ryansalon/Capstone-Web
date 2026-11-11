@@ -543,6 +543,93 @@
     },
   };
 
+  /* Real-time live synchronization engine:
+   * 1. Subscribes to Server-Sent Events (/api/realtime/stream) for instant <100ms push.
+   * 2. Re-synchronizes on mobile tab wake-up (visibilitychange & window focus).
+   * 3. Maintains a lightweight database watermark heartbeat (/api/realtime/watermark)
+   *    every 6s as a multi-worker safety net. */
+  function initRealtimeSync(options) {
+    options = options || {};
+    var onReading = options.onReading || function () {};
+    var token = getToken();
+    if (!token) return { close: function () {}, setLastId: function () {} };
+
+    var closed = false;
+    var es = null;
+    var lastWatermarkId = options.initialLogId || 0;
+    var heartbeatInterval = null;
+
+    function connectSSE() {
+      if (!window.EventSource || closed) return;
+      try {
+        es = new EventSource("/api/realtime/stream?token=" + encodeURIComponent(token));
+        es.addEventListener("kiosk_reading", function (event) {
+          if (closed) return;
+          try {
+            var payload = JSON.parse(event.data);
+            if (payload && payload.log_id) {
+              lastWatermarkId = Math.max(lastWatermarkId, payload.log_id);
+            }
+            onReading(payload);
+          } catch (err) {}
+        });
+        es.onerror = function () {
+          if (es && es.readyState === EventSource.CLOSED) {
+            es.close();
+            es = null;
+          }
+        };
+      } catch (e) {
+        es = null;
+      }
+    }
+
+    async function checkWatermark() {
+      if (closed || document.hidden) return;
+      try {
+        var res = await apiFetch("/api/realtime/watermark");
+        if (res && res.latest_id) {
+          if (lastWatermarkId && res.latest_id > lastWatermarkId) {
+            lastWatermarkId = res.latest_id;
+            onReading({ type: "watermark_update", latest_id: res.latest_id, timestamp: res.latest_timestamp });
+          } else if (!lastWatermarkId) {
+            lastWatermarkId = res.latest_id;
+          }
+        }
+      } catch (err) {}
+    }
+
+    connectSSE();
+    heartbeatInterval = setInterval(checkWatermark, 6000);
+
+    function onWakeup() {
+      if (!document.hidden) {
+        checkWatermark();
+        if (!es || es.readyState === EventSource.CLOSED) {
+          connectSSE();
+        }
+      }
+    }
+    document.addEventListener("visibilitychange", onWakeup);
+    window.addEventListener("focus", onWakeup);
+
+    return {
+      close: function () {
+        closed = true;
+        if (heartbeatInterval) clearInterval(heartbeatInterval);
+        document.removeEventListener("visibilitychange", onWakeup);
+        window.removeEventListener("focus", onWakeup);
+        if (es) {
+          es.close();
+          es = null;
+        }
+      },
+      setLastId: function (id) {
+        if (id) lastWatermarkId = Math.max(lastWatermarkId, id);
+      },
+    };
+  }
+
   window.API = {
     apiFetch: apiFetch,
     apiFetchRaw: apiFetchRaw,
@@ -556,6 +643,7 @@
     isStaff: isStaff,
     loginPageForRole: loginPageForRole,
     homeForRole: homeForRole,
+    initRealtimeSync: initRealtimeSync,
     UI: UI,
   };
 
