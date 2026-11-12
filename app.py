@@ -28,12 +28,14 @@ from flask import Flask, Response, current_app, g, jsonify, request, send_from_d
 from flask_cors import CORS
 from sqlalchemy import (
     create_engine,
+    event,
     func,
     or_,
     select,
 )
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import aliased, sessionmaker
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 from models import AccessAuditTrail, Base, BhwNote, ConsentAudit, HealthLog, User, utcnow
 from vitals import (
@@ -66,20 +68,31 @@ if ENV in ("production", "prod") and (
     raise RuntimeError("FATAL: JWT_SECRET and API_KEY must be configured in production.")
 
 _AUTH_ATTEMPTS: dict[str, list[float]] = {}
+_AUTH_LOCK = threading.Lock()
 
 
 def check_rate_limit(key: str, max_attempts: int = 15, window_seconds: int = 60) -> bool:
-    """Sliding-window in-memory rate limiter."""
+    """Sliding-window in-memory rate limiter with thread-safety and bounded cache size."""
     now = datetime.now(timezone.utc).timestamp()
-    attempts = _AUTH_ATTEMPTS.get(key, [])
     cutoff = now - window_seconds
-    valid_attempts = [t for t in attempts if t > cutoff]
-    if len(valid_attempts) >= max_attempts:
+    with _AUTH_LOCK:
+        # Periodic eviction to prevent unbounded memory growth from random IP keys
+        if len(_AUTH_ATTEMPTS) > 500:
+            stale_keys = [
+                k for k, timestamps in _AUTH_ATTEMPTS.items()
+                if not timestamps or timestamps[-1] <= cutoff
+            ]
+            for k in stale_keys:
+                del _AUTH_ATTEMPTS[k]
+
+        attempts = _AUTH_ATTEMPTS.get(key, [])
+        valid_attempts = [t for t in attempts if t > cutoff]
+        if len(valid_attempts) >= max_attempts:
+            _AUTH_ATTEMPTS[key] = valid_attempts
+            return False
+        valid_attempts.append(now)
         _AUTH_ATTEMPTS[key] = valid_attempts
-        return False
-    valid_attempts.append(now)
-    _AUTH_ATTEMPTS[key] = valid_attempts
-    return True
+        return True
 
 try:
     JWT_EXPIRATION_HOURS = int(os.getenv("JWT_EXPIRATION_HOURS", "24"))
@@ -308,6 +321,15 @@ class Database:
     def __init__(self, url: str):
         connect_args = {"check_same_thread": False} if url.startswith("sqlite") else {}
         self.engine = create_engine(url, connect_args=connect_args, pool_pre_ping=True)
+        if url.startswith("sqlite"):
+            @event.listens_for(self.engine, "connect")
+            def set_sqlite_pragma(dbapi_connection, connection_record):
+                cursor = dbapi_connection.cursor()
+                cursor.execute("PRAGMA foreign_keys=ON")
+                cursor.execute("PRAGMA journal_mode=WAL")
+                cursor.execute("PRAGMA busy_timeout=5000")
+                cursor.close()
+
         self.Session = sessionmaker(
             bind=self.engine, autoflush=False, expire_on_commit=False
         )
@@ -566,12 +588,22 @@ def compute_metrics(session, logs):
 # ---------------------------------------------------------------------------
 
 
+def sanitize_csv_cell(value) -> str:
+    """Neutralize formula injection by prefixing triggering characters with a single quote."""
+    if value is None:
+        return ""
+    text = str(value)
+    if text and text[0] in ("=", "+", "-", "@", "\t", "\r"):
+        return "'" + text
+    return text
+
+
 def csv_response(report_type: str, header, rows) -> Response:
     buffer = io.StringIO()
     writer = csv.writer(buffer)
-    writer.writerow(header)
+    writer.writerow([sanitize_csv_cell(col) for col in header])
     for row in rows:
-        writer.writerow(["" if value is None else value for value in row])
+        writer.writerow([sanitize_csv_cell(value) for value in row])
     body = buffer.getvalue()
     response = Response(body, mimetype="text/csv")
     response.headers["Content-Disposition"] = (
@@ -667,6 +699,8 @@ def start_keep_alive_pinger():
 def create_app(database_url: str | None = None, seed: bool = True) -> Flask:
     app = Flask(__name__)
     CORS(app)
+    # Trust reverse proxy headers (e.g. Render, Nginx, Cloudflare) for real client IP in audit logs
+    app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1)
 
     db = Database(database_url or DATABASE_URL)
     db.create_all()
@@ -1474,9 +1508,13 @@ def register_routes(app: Flask):
             stmt = stmt.where(AccessAuditTrail.action_type == action_type.strip())
         if status:
             stmt = stmt.where(AccessAuditTrail.status == status.strip().lower())
+        try:
+            safe_limit = min(max(1, int(limit)), 1000)
+        except (ValueError, TypeError):
+            safe_limit = 500
         stmt = stmt.order_by(
             AccessAuditTrail.access_timestamp.desc(), AccessAuditTrail.id.desc()
-        ).limit(limit)
+        ).limit(safe_limit)
         return session.execute(stmt).all()
 
     def audit_payload(rows):

@@ -684,6 +684,7 @@
     }
     initMobileNav();
     initMobileBottomDock();
+    initOfflineIndicator();
   });
 
   /* Phones/tablets: collapse the sidebar into a top bar with a menu button.
@@ -819,5 +820,41 @@
     });
 
     document.body.appendChild(dock);
+  }
+
+  /* Ambient offline indicator */
+  function initOfflineIndicator() {
+    var banner = document.getElementById("offlineBanner");
+    if (!banner) {
+      banner = UI.el("div", {
+        id: "offlineBanner",
+        class: "offline-banner",
+        role: "status",
+        "aria-live": "polite",
+        style: "display:none;",
+      });
+      document.body.insertBefore(banner, document.body.firstChild);
+    }
+
+    function update() {
+      if (!navigator.onLine) {
+        banner.className = "offline-banner is-offline";
+        banner.style.display = "block";
+        banner.textContent = "⚠️ Internet connection interrupted. Changes will synchronize automatically once reconnected.";
+      } else if (banner.classList.contains("is-offline")) {
+        banner.className = "offline-banner is-online";
+        banner.textContent = "✓ Connection restored. Data synchronized.";
+        setTimeout(function () {
+          if (navigator.onLine) {
+            banner.style.display = "none";
+            banner.classList.remove("is-online");
+          }
+        }, 3000);
+      }
+    }
+
+    window.addEventListener("offline", update);
+    window.addEventListener("online", update);
+    if (!navigator.onLine) update();
   }
 })();

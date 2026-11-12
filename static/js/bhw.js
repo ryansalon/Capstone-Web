@@ -1524,22 +1524,27 @@
       "Details",
       "IP Address",
     ];
+    function sanitizeCell(val) {
+      var str = String(val == null ? "" : val);
+      if (/^[=+\-@\t\r]/.test(str)) str = "'" + str;
+      return '"' + str.replace(/"/g, '""') + '"';
+    }
     var csvLines = [headers.join(",")];
     rows.forEach(function (r) {
       var line = [
         r.id || "",
         r.time || "",
-        '"' + (U.fmtDT(r.time) || "").replace(/"/g, '""') + '"',
-        '"' + (r.bhw_name || "").replace(/"/g, '""') + '"',
-        '"' + (r.citizen_name || "").replace(/"/g, '""') + '"',
-        r.action || "",
-        r.status || "success",
-        '"' + (r.details || "").replace(/"/g, '""') + '"',
-        r.ip || "",
+        sanitizeCell(U.fmtDT(r.time)),
+        sanitizeCell(r.bhw_name),
+        sanitizeCell(r.citizen_name),
+        sanitizeCell(r.action),
+        sanitizeCell(r.status || "success"),
+        sanitizeCell(r.details),
+        sanitizeCell(r.ip),
       ];
       csvLines.push(line.join(","));
     });
-    var blob = new Blob([csvLines.join("\r\n")], { type: "text/csv;charset=utf-8;" });
+    var blob = new Blob(["\uFEFF" + csvLines.join("\r\n")], { type: "text/csv;charset=utf-8;" });
     var url = URL.createObjectURL(blob);
     var a = document.createElement("a");
     a.href = url;

@@ -957,3 +957,123 @@ def test_healthz_and_ping_endpoints(client):
     assert r3.get_json()["status"] == "healthy"
 
 
+# ---------------------------------------------------------------------------
+# Production Hardening & Security Tests
+# ---------------------------------------------------------------------------
+
+
+def test_sqlite_foreign_key_enforcement(client):
+    """Verify SQLite PRAGMA foreign_keys=ON is active and rejects orphaned foreign keys."""
+    from sqlalchemy.exc import IntegrityError
+    from models import HealthLog
+    from app import get_db
+
+    with client.application.app_context():
+        with pytest.raises(IntegrityError):
+            with get_db().session() as session:
+                session.add(
+                    HealthLog(
+                        user_id=99999,  # Non-existent user id
+                        systolic_bp=120,
+                        diastolic_bp=80,
+                    )
+                )
+
+
+def test_csv_formula_injection_defense(client):
+    """Verify cells starting with spreadsheet formula triggers (=, +, -, @) are sanitized with single quote."""
+    from models import AccessAuditTrail, User
+    from app import get_db, hash_password, sanitize_csv_cell
+
+    # 1. Direct unit test of sanitizer
+    assert sanitize_csv_cell("=1+1") == "'=1+1"
+    assert sanitize_csv_cell("+cmd") == "'+cmd"
+    assert sanitize_csv_cell("-10") == "'-10"
+    assert sanitize_csv_cell("@lookup") == "'@lookup"
+    assert sanitize_csv_cell("normal text") == "normal text"
+    assert sanitize_csv_cell(123) == "123"
+    assert sanitize_csv_cell(None) == ""
+
+    # 2. Integration test through report export
+    with client.application.app_context():
+        with get_db().session() as session:
+            user = User(
+                username="formula_user",
+                password_hash=hash_password("password123"),
+                full_name="=SUM(A1:B10)",
+                birthdate="1990-01-01",
+                gender="male",
+                role="citizen",
+            )
+            session.add(user)
+            session.flush()
+            session.add(
+                AccessAuditTrail(
+                    bhw_user_id=2,
+                    citizen_id=user.id,
+                    action_type="view_health_data",
+                    status="success",
+                    details="Formula test audit entry",
+                )
+            )
+
+    bhw_token = login(client, "bhw1", "bhw12345")["token"]
+    rep = client.get("/api/bhw/reports?type=audit&format=csv", headers=bearer(bhw_token))
+    assert rep.status_code == 200
+    csv_text = rep.get_data(as_text=True)
+    # The cell must be neutralized with a leading single quote
+    assert "'=SUM(A1:B10)" in csv_text
+
+
+def test_rate_limiter_eviction_and_recovery():
+    """Verify in-memory rate limiter prunes stale keys when size exceeds threshold."""
+    from app import check_rate_limit, _AUTH_ATTEMPTS
+
+    # 1. Fill limiter with expired attempts
+    for i in range(550):
+        _AUTH_ATTEMPTS[f"test-ip-{i}"] = [100.0]  # Very old timestamps
+
+    # 2. Next check should prune the stale keys
+    assert check_rate_limit("active-ip", max_attempts=5, window_seconds=60) is True
+    # Keys should be pruned down significantly
+    assert len(_AUTH_ATTEMPTS) < 500
+
+
+def test_proxy_fix_client_ip_resolution(client):
+    """Verify ProxyFix resolves the real client IP from X-Forwarded-For."""
+    spoofed_proxy_headers = {
+        "X-Forwarded-For": "203.177.100.55",
+        "X-Forwarded-Proto": "https",
+    }
+    # Login as staff with X-Forwarded-For header
+    res = client.post(
+        "/api/login",
+        json={"username": "bhw1", "password": "bhw12345"},
+        headers=spoofed_proxy_headers,
+    )
+    assert res.status_code == 200
+    token = res.get_json()["token"]
+
+    # Check the audit trail for the login event IP
+    audit_res = client.get("/api/bhw/audit-trail?action=staff_login", headers=bearer(token))
+    assert audit_res.status_code == 200
+    entries = audit_res.get_json()["audit"]
+    assert len(entries) >= 1
+    # IP address should be the resolved client IP, not 127.0.0.1
+    assert entries[0]["ip"] == "203.177.100.55"
+
+
+def test_global_json_error_handlers(client):
+    """Verify global error handlers return clean JSON envelopes."""
+    # 404 Not Found
+    r404 = client.get("/api/nonexistent-route")
+    assert r404.status_code == 404
+    assert r404.get_json() == {"error": "not found"}
+
+    # 405 Method Not Allowed
+    r405 = client.post("/healthz")
+    assert r405.status_code == 405
+    assert r405.get_json() == {"error": "method not allowed"}
+
+
+

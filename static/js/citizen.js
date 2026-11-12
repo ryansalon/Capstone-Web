@@ -1755,7 +1755,9 @@
             isMissing(log.bmi) ? "" : log.bmi,
             bmiCategory(log.bmi) || ""
           ].map(function (cell) {
-            var s = String(cell == null ? "" : cell).replace(/"/g, '""');
+            var s = String(cell == null ? "" : cell);
+            if (/^[=+\-@\t\r]/.test(s)) s = "'" + s;
+            s = s.replace(/"/g, '""');
             return /[",\r\n]/.test(s) ? '"' + s + '"' : s;
           }).join(",");
         });

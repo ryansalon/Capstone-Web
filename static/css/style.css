@@ -12,7 +12,7 @@
   --surface: #ffffff;
   --white: #ffffff;
   --ink: #0f221b;
-  --ink-soft: #466056;
+  --ink-soft: #364d44;
   --line: #d5e1dc;
   --line-strong: #b0c4bc;
 
@@ -4165,4 +4165,27 @@ mark.match {
   body[data-page^="bhw"] .workspace {
     padding-bottom: 4.8rem !important;
   }
+}
+
+/* Ambient offline indicator */
+.offline-banner {
+  position: sticky;
+  top: 0;
+  z-index: 9999;
+  padding: 0.55rem 1rem;
+  text-align: center;
+  font-size: 0.88rem;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+  transition: all 0.25s ease;
+}
+.offline-banner.is-offline {
+  background: var(--amber-bg, #fef6e4);
+  color: var(--amber-fg, #855100);
+  border-bottom: 2px solid #f0cf8e;
+}
+.offline-banner.is-online {
+  background: var(--status-normal-bg, #e2f3ec);
+  color: var(--status-normal-fg, #0a4f3b);
+  border-bottom: 2px solid #9dd0bc;
 }

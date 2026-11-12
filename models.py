@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 
-from sqlalchemy import Column, DateTime, Float, ForeignKey, Integer, String
+from sqlalchemy import Column, DateTime, Float, ForeignKey, Index, Integer, String
 from sqlalchemy.orm import declarative_base
 
 
@@ -20,7 +20,7 @@ class User(Base):
     id = Column(Integer, primary_key=True)
     username = Column(String(50), unique=True, nullable=False)
     password_hash = Column(String(255), nullable=False)
-    full_name = Column(String(100), nullable=False)
+    full_name = Column(String(100), nullable=False, index=True)
     birthdate = Column(String(10), nullable=False)
     gender = Column(String(10), nullable=False)
     role = Column(String(10), default="citizen")
@@ -46,6 +46,10 @@ class HealthLog(Base):
     age_group = Column(String(20), nullable=True)
     gender = Column(String(10), nullable=True)
 
+    __table_args__ = (
+        Index("ix_health_logs_user_timestamp", "user_id", "timestamp"),
+    )
+
 
 class ConsentAudit(Base):
     __tablename__ = "consent_audit"
@@ -65,8 +69,8 @@ class AccessAuditTrail(Base):
     bhw_user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
     citizen_id = Column(Integer, ForeignKey("users.id"), nullable=True, index=True)
     access_timestamp = Column(DateTime, default=utcnow, index=True)
-    action_type = Column(String(40), nullable=False)
-    status = Column(String(20), default="success", nullable=False)
+    action_type = Column(String(40), nullable=False, index=True)
+    status = Column(String(20), default="success", nullable=False, index=True)
     details = Column(String(255), nullable=True)
     ip_address = Column(String(64), nullable=True)
     user_agent = Column(String(255), nullable=True)
