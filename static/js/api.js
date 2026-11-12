@@ -683,6 +683,7 @@
       });
     }
     initMobileNav();
+    initMobileBottomDock();
   });
 
   /* Phones/tablets: collapse the sidebar into a top bar with a menu button.
@@ -741,5 +742,82 @@
     var onChange = function (e) { if (e.matches) setOpen(false); };
     if (mq.addEventListener) mq.addEventListener("change", onChange);
     else if (mq.addListener) mq.addListener(onChange);
+  }
+
+  /* Smartphone view: bottom navigation bar for quick one-handed navigation */
+  function initMobileBottomDock() {
+    var page = document.body.dataset.page;
+    if (!page) return;
+    if (document.querySelector(".mobile-bottom-dock")) return;
+
+    var dock = UI.el("nav", { class: "mobile-bottom-dock", "aria-label": "Mobile navigation dock" });
+    var items = [];
+
+    if (page.startsWith("citizen-") && page !== "citizen-login" && page !== "citizen-register") {
+      items = [
+        {
+          href: "/citizen/dashboard.html",
+          label: "Dashboard",
+          active: page === "citizen-dashboard",
+          icon: '<svg class="dock-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>'
+        },
+        {
+          href: "/citizen/history.html",
+          label: "History",
+          active: page === "citizen-history",
+          icon: '<svg class="dock-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>'
+        },
+        {
+          href: "/citizen/consent.html",
+          label: "Consent",
+          active: page === "citizen-consent",
+          icon: '<svg class="dock-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>'
+        },
+        {
+          href: "/citizen/profile.html",
+          label: "Profile",
+          active: page === "citizen-profile",
+          icon: '<svg class="dock-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>'
+        }
+      ];
+    } else if (page.startsWith("bhw-") && page !== "bhw-login") {
+      items = [
+        {
+          href: "/bhw/dashboard.html",
+          label: "Dashboard",
+          active: page === "bhw-dashboard",
+          icon: '<svg class="dock-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>'
+        },
+        {
+          href: "/bhw/search.html",
+          label: "Citizens",
+          active: page === "bhw-search" || page === "bhw-citizen-view",
+          icon: '<svg class="dock-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>'
+        },
+        {
+          href: "/bhw/audit-trail.html",
+          label: "Audit",
+          active: page === "bhw-audit-trail" || page === "bhw-audit",
+          icon: '<svg class="dock-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>'
+        },
+        {
+          href: "/bhw/reports.html",
+          label: "Reports",
+          active: page === "bhw-reports",
+          icon: '<svg class="dock-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>'
+        }
+      ];
+    }
+
+    if (!items.length) return;
+
+    items.forEach(function (it) {
+      var a = UI.el("a", { class: "mobile-bottom-link" + (it.active ? " is-active" : ""), href: it.href });
+      if (it.active) a.setAttribute("aria-current", "page");
+      a.innerHTML = it.icon + '<span>' + it.label + '</span>';
+      dock.appendChild(a);
+    });
+
+    document.body.appendChild(dock);
   }
 })();

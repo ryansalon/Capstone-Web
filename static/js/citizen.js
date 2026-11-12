@@ -369,6 +369,86 @@
     dismissBtn.onclick = handleClose;
   }
 
+  function showVitalsGuideModal() {
+    var backdrop = U.el("div", { class: "modal-backdrop" });
+    var card = U.el("div", { class: "modal-card vitals-guide-modal", style: "max-width: 640px;" });
+
+    var header = U.el("div", { class: "modal-header" });
+    header.appendChild(U.el("h3", null, "Clinical Vitals Reference Guide"));
+    var closeBtn = U.el("button", { class: "btn btn-ghost", type: "button", "aria-label": "Close" }, "✕");
+    header.appendChild(closeBtn);
+    card.appendChild(header);
+
+    var body = U.el("div", { class: "modal-body" });
+    var intro = U.el("p", { class: "lede", style: "font-size:0.9rem; margin-bottom:1rem;" },
+      "Standard clinical classification ranges used by the Barangay Health Station, Camiguin Rural Health Unit (RHU), and Department of Health (DOH)."
+    );
+    body.appendChild(intro);
+
+    function addSection(title, rows) {
+      var sec = U.el("div", { style: "margin-bottom:1.1rem;" });
+      sec.appendChild(U.el("h4", { style: "font-size:0.95rem; font-weight:700; color:var(--green-900); margin-bottom:0.4rem;" }, title));
+      var table = U.el("table", { class: "vitals-guide-table", style: "width:100%; font-size:0.85rem;" });
+      var tbody = U.el("tbody");
+      rows.forEach(function (r) {
+        var tr = U.el("tr");
+        var tdLabel = U.el("td", { style: "font-weight:600; width:40%; padding:0.35rem 0.5rem;" });
+        if (r.badge) {
+          tdLabel.appendChild(U.el("span", { class: "vital-badge badge-" + r.badge, style: "margin-right:0.35rem;" }, r.status));
+        } else {
+          tdLabel.textContent = r.status;
+        }
+        tr.appendChild(tdLabel);
+        tr.appendChild(U.el("td", { style: "width:30%; padding:0.35rem 0.5rem; color:var(--ink-soft);" }, r.range));
+        tr.appendChild(U.el("td", { style: "width:30%; padding:0.35rem 0.5rem; color:var(--ink-muted); font-size:0.8rem;" }, r.note));
+        tbody.appendChild(tr);
+      });
+      table.appendChild(tbody);
+      sec.appendChild(table);
+      body.appendChild(sec);
+    }
+
+    addSection("Blood Pressure (Systolic / Diastolic mmHg)", [
+      { status: "Normal", range: "< 120 and < 80", note: "Healthy optimal range", badge: "ok" },
+      { status: "Elevated", range: "120–129 and < 80", note: "Lifestyle counseling", badge: "warn" },
+      { status: "Stage 1 HTN", range: "130–139 or 80–89", note: "Monitor & follow-up", badge: "warn" },
+      { status: "Stage 2 HTN", range: "≥ 140 or ≥ 90", note: "Clinical referral required", badge: "alert" },
+      { status: "Hypertensive Crisis", range: "≥ 180 and/or ≥ 120", note: "Immediate medical care", badge: "alert" }
+    ]);
+
+    addSection("Body Mass Index (BMI — Asian / WHO-WPR)", [
+      { status: "Underweight", range: "< 18.5", note: "Nutritional review", badge: "warn" },
+      { status: "Normal weight", range: "18.5 – 24.9", note: "Healthy baseline", badge: "ok" },
+      { status: "Overweight", range: "25.0 – 29.9", note: "Weight management", badge: "warn" },
+      { status: "Obese", range: "≥ 30.0", note: "Health plan recommended", badge: "alert" }
+    ]);
+
+    addSection("Blood Oxygen (SpO2 %)", [
+      { status: "Normal", range: "95% – 100%", note: "Healthy oxygenation", badge: "ok" },
+      { status: "Low", range: "90% – 94%", note: "Rest and observation", badge: "warn" },
+      { status: "Critical", range: "< 90%", note: "Seek clinical care", badge: "alert" }
+    ]);
+
+    addSection("Body Temperature (°C)", [
+      { status: "Normal", range: "36.5°C – 37.5°C", note: "Normothermic", badge: "ok" },
+      { status: "Elevated / Fever", range: "≥ 37.9°C", note: "Hydration & monitoring", badge: "alert" }
+    ]);
+
+    card.appendChild(body);
+
+    var mFoot = U.el("div", { class: "modal-footer" });
+    var dismissBtn = U.el("button", { class: "btn btn-primary", type: "button" }, "Got it");
+    mFoot.appendChild(dismissBtn);
+    card.appendChild(mFoot);
+
+    backdrop.appendChild(card);
+    document.body.appendChild(backdrop);
+
+    var closeDialog = U.openDialog(backdrop, closeBtn);
+    closeBtn.onclick = closeDialog;
+    dismissBtn.onclick = closeDialog;
+  }
+
   function addCard(container, label, value, sub, tone, gauge, delta, spark, pendingSparks, refRange, badge, unit) {
     var card = U.el("div", { class: "card" + (tone ? " " + tone : "") });
     var topRow = U.el("div", { class: "card-top-row" });
@@ -1134,6 +1214,11 @@
       };
     }
 
+    var guideBtnDashboard = document.getElementById("vitalsGuideBtnDashboard");
+    if (guideBtnDashboard) {
+      guideBtnDashboard.onclick = showVitalsGuideModal;
+    }
+
     var refreshBtn = document.getElementById("citizenRefreshBtn");
     if (refreshBtn) {
       refreshBtn.addEventListener("click", async function () {
@@ -1627,6 +1712,65 @@
         }
         var latest = (historyState.logs && historyState.logs.length) ? historyState.logs[0] : null;
         showHealthPassportModal(me, latest);
+      };
+    }
+
+    var guideBtnHistory = document.getElementById("vitalsGuideBtnHistory");
+    if (guideBtnHistory) {
+      guideBtnHistory.onclick = showVitalsGuideModal;
+    }
+
+    var exportCsvBtn = document.getElementById("exportCsvBtn");
+    if (exportCsvBtn) {
+      exportCsvBtn.onclick = function () {
+        var logs = historyState.logs || [];
+        if (!logs.length) {
+          U.toast("No measurement records to export.", "warn");
+          return;
+        }
+        var headers = [
+          "Timestamp (PHT)",
+          "Systolic BP (mmHg)",
+          "Diastolic BP (mmHg)",
+          "BP Category",
+          "Heart Rate (bpm)",
+          "SpO2 (%)",
+          "Temperature (°C)",
+          "Weight (kg)",
+          "Height (cm)",
+          "BMI",
+          "BMI Category"
+        ];
+        var rows = logs.map(function (log) {
+          return [
+            U.fmtDT(log.timestamp),
+            isMissing(log.systolic_bp) ? "" : log.systolic_bp,
+            isMissing(log.diastolic_bp) ? "" : log.diastolic_bp,
+            bpCategory(log.systolic_bp, log.diastolic_bp) || "",
+            isMissing(log.pulse_rate) ? "" : log.pulse_rate,
+            isMissing(log.spo2) ? "" : log.spo2,
+            isMissing(log.temperature) ? "" : log.temperature,
+            isMissing(log.weight) ? "" : log.weight,
+            isMissing(log.height) ? "" : log.height,
+            isMissing(log.bmi) ? "" : log.bmi,
+            bmiCategory(log.bmi) || ""
+          ].map(function (cell) {
+            var s = String(cell == null ? "" : cell).replace(/"/g, '""');
+            return /[",\r\n]/.test(s) ? '"' + s + '"' : s;
+          }).join(",");
+        });
+        var csvContent = "\uFEFF" + headers.join(",") + "\r\n" + rows.join("\r\n");
+        var blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement("a");
+        var dateSlug = new Date().toISOString().slice(0, 10);
+        a.href = url;
+        a.download = "health_records_" + dateSlug + ".csv";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        U.toast("Exported " + logs.length + " health records to CSV", "success");
       };
     }
 

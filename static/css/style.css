@@ -64,8 +64,8 @@
   --radius-pill: 999px;
   --shadow: 0 1px 3px rgba(11, 38, 29, 0.06), 0 4px 12px rgba(11, 38, 29, 0.04);
   --shadow-md: 0 6px 20px rgba(11, 38, 29, 0.08), 0 2px 5px rgba(11, 38, 29, 0.05);
-  --font: "Inter", "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  --font-display: "Inter", "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font: "Plus Jakarta Sans", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-display: "Plus Jakarta Sans", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
 * {
@@ -957,17 +957,34 @@ h3 {
 .card {
   background: var(--white);
   border: 1px solid #dce5e0;
-  border-radius: 10px;
-  box-shadow: 0 1px 3px rgba(12, 42, 32, 0.04), 0 1px 2px rgba(12, 42, 32, 0.02);
-  padding: 1.15rem 1.25rem;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(12, 42, 32, 0.03), 0 1px 2px rgba(12, 42, 32, 0.02);
+  padding: 1.25rem 1.35rem;
   display: flex;
   flex-direction: column;
-  transition: border-color 0.16s ease, box-shadow 0.16s ease;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.2s ease;
+  position: relative;
+  overflow: hidden;
 }
 
 .card:hover {
+  transform: translateY(-2px);
   border-color: #b7cbbf;
-  box-shadow: 0 4px 12px rgba(12, 42, 32, 0.06);
+  box-shadow: 0 10px 25px rgba(12, 42, 32, 0.08);
+}
+
+.card.good {
+  border-top: 3px solid var(--green-600);
+}
+
+.card.warn {
+  border-top: 3px solid #d97706;
+}
+
+.card.alert {
+  border-top: 3px solid var(--red-fg);
 }
 
 @keyframes livePulse {
@@ -1185,18 +1202,32 @@ h3 {
 .total {
   background: var(--white);
   border: 1px solid #dce5e0;
-  border-radius: 10px;
-  padding: 1.15rem 1.25rem;
-  box-shadow: 0 1px 3px rgba(12, 42, 32, 0.04), 0 1px 2px rgba(12, 42, 32, 0.02);
+  border-radius: 12px;
+  padding: 1.25rem 1.35rem;
+  box-shadow: 0 2px 6px rgba(12, 42, 32, 0.03);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  transition: border-color 0.16s ease, box-shadow 0.16s ease;
+  transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+  position: relative;
+  overflow: hidden;
 }
 
 .total:hover {
+  transform: translateY(-2px);
   border-color: #b7cbbf;
-  box-shadow: 0 4px 12px rgba(12, 42, 32, 0.06);
+  box-shadow: 0 8px 20px rgba(12, 42, 32, 0.07);
+}
+
+.total.alert {
+  border-color: #f5b9b4;
+  background: linear-gradient(180deg, #ffffff 0%, #fdf5f4 100%);
+  border-top: 3px solid var(--red-fg);
+  box-shadow: 0 4px 14px rgba(165, 39, 29, 0.12);
+}
+
+.total.alert .value {
+  color: var(--red-fg);
 }
 
 .total .label {
@@ -2093,50 +2124,52 @@ footer.foot,
 
 /* ---------- Vitals Visual Clinical Indicator Bar ---------- */
 .vitals-gauge {
-  margin-top: 0.65rem;
-  padding-top: 0.45rem;
+  margin-top: 0.75rem;
+  padding-top: 0.5rem;
   border-top: 1px solid #edf2ef;
 }
 
 .gauge-track {
-  height: 6px;
-  border-radius: 3px;
+  height: 8px;
+  border-radius: 999px;
   position: relative;
   background: #e8eee9;
   overflow: visible;
-  margin: 0.35rem 0 0.2rem;
+  margin: 0.45rem 0 0.25rem;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.08);
 }
 
 .gauge-track.track-bmi {
-  background: linear-gradient(to right, #7fb7c4 0%, #7fb7c4 18%, #4f9a7d 18%, #4f9a7d 55%, #dfa552 55%, #dfa552 75%, #cf5c53 75%, #cf5c53 100%);
-  opacity: 0.88;
+  background: linear-gradient(90deg, #60a5fa 0%, #34d399 22%, #10b981 50%, #f59e0b 75%, #ef4444 100%);
+  opacity: 0.95;
 }
 
 .gauge-track.track-bp {
-  background: linear-gradient(to right, #4f9a7d 0%, #4f9a7d 35%, #76ad7a 35%, #76ad7a 55%, #dfa552 55%, #dfa552 75%, #cf5c53 75%, #cf5c53 100%);
-  opacity: 0.88;
+  background: linear-gradient(90deg, #10b981 0%, #34d399 35%, #fbbf24 55%, #f97316 75%, #ef4444 100%);
+  opacity: 0.95;
 }
 
 .gauge-track.track-spo2 {
-  background: linear-gradient(to right, #cf5c53 0%, #cf5c53 30%, #dfa552 30%, #dfa552 60%, #4f9a7d 60%, #4f9a7d 100%);
-  opacity: 0.88;
+  background: linear-gradient(90deg, #ef4444 0%, #f97316 30%, #fbbf24 60%, #10b981 100%);
+  opacity: 0.95;
 }
 
 .gauge-track.track-temp {
-  background: linear-gradient(to right, #7fb7c4 0%, #7fb7c4 15%, #4f9a7d 15%, #4f9a7d 65%, #dfa552 65%, #dfa552 80%, #cf5c53 80%, #cf5c53 100%);
-  opacity: 0.88;
+  background: linear-gradient(90deg, #60a5fa 0%, #10b981 35%, #34d399 65%, #f59e0b 80%, #ef4444 100%);
+  opacity: 0.95;
 }
 
 .gauge-pin {
   position: absolute;
   top: -3px;
-  width: 3px;
-  height: 12px;
-  background: #0c2a20;
-  border-radius: 1.5px;
+  width: 14px;
+  height: 14px;
+  background: #092c22;
+  border: 2.5px solid #ffffff;
+  border-radius: 50%;
   transform: translateX(-50%);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
-  transition: left 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.35);
+  transition: left 0.45s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .gauge-legend {
@@ -2299,6 +2332,79 @@ footer.foot,
   color: var(--white);
   border-color: var(--green-700);
   transform: translateY(-1px);
+}
+
+.chip.is-active {
+  background: var(--green-700) !important;
+  color: var(--white) !important;
+  border-color: var(--green-700) !important;
+  box-shadow: 0 1px 4px rgba(16, 73, 56, 0.25);
+}
+
+/* ---------- Search Triage Filter Chips ---------- */
+.search-triage-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+
+.search-triage-chips .chip {
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  color: var(--ink);
+}
+
+.search-triage-chips .chip:hover {
+  background: var(--green-050);
+  color: var(--green-800);
+  border-color: var(--green-600);
+}
+
+/* ---------- Clinical Reference Guide Table ---------- */
+.vitals-guide-table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.vitals-guide-table tr {
+  border-bottom: 1px solid var(--line);
+}
+
+.vitals-guide-table tr:last-child {
+  border-bottom: none;
+}
+
+.vitals-guide-table td {
+  padding: 0.4rem 0.5rem;
+}
+
+/* ---------- Official RHU Clinical Referral Slip ---------- */
+.referral-slip-card {
+  background: var(--surface);
+  border: 2px solid var(--green-800);
+  border-radius: 12px;
+  padding: 1.35rem 1.5rem;
+  color: var(--ink);
+  box-shadow: 0 4px 18px rgba(16, 73, 56, 0.08);
+}
+
+.referral-slip-card .referral-header {
+  text-align: center;
+  border-bottom: 2px solid var(--green-800);
+  padding-bottom: 0.65rem;
+  margin-bottom: 0.9rem;
+}
+
+.referral-slip-card .referral-reason-box {
+  background: #f7faf8;
+  border: 1px solid #cce3da;
+  border-left: 4px solid var(--green-700);
+  border-radius: 6px;
+  padding: 0.65rem 0.9rem;
+  margin: 0.85rem 0;
+  font-size: 0.9rem;
 }
 
 /* ---------- In-App Report & Referral Modal ---------- */
@@ -2869,9 +2975,11 @@ a.status-chip:hover {
     page-break-inside: avoid;
   }
 
-  /* When printing the passport, completely eliminate the dashboard page flow */
+  /* When printing the passport or referral slip, completely eliminate the dashboard page flow */
   body.printing-passport,
-  html:has(body.printing-passport) {
+  body.printing-referral,
+  html:has(body.printing-passport),
+  html:has(body.printing-referral) {
     height: auto !important;
     min-height: 0 !important;
     overflow: visible !important;
@@ -2879,11 +2987,14 @@ a.status-chip:hover {
   }
 
   body.printing-passport .shell,
-  body.printing-passport .foot {
+  body.printing-referral .shell,
+  body.printing-passport .foot,
+  body.printing-referral .foot {
     display: none !important;
   }
 
-  body.printing-passport .modal-backdrop {
+  body.printing-passport .modal-backdrop,
+  body.printing-referral .modal-backdrop {
     position: static !important;
     display: block !important;
     background: transparent !important;
@@ -2896,7 +3007,8 @@ a.status-chip:hover {
     overflow: visible !important;
   }
 
-  body.printing-passport .modal-card {
+  body.printing-passport .modal-card,
+  body.printing-referral .modal-card {
     position: static !important;
     display: block !important;
     background: transparent !important;
@@ -2913,11 +3025,14 @@ a.status-chip:hover {
   }
 
   body.printing-passport .modal-header,
-  body.printing-passport .modal-footer {
+  body.printing-referral .modal-header,
+  body.printing-passport .modal-footer,
+  body.printing-referral .modal-footer {
     display: none !important;
   }
 
-  body.printing-passport .modal-body {
+  body.printing-passport .modal-body,
+  body.printing-referral .modal-body {
     padding: 0 !important;
     margin: 0 !important;
     height: auto !important;
@@ -2926,7 +3041,8 @@ a.status-chip:hover {
     display: block !important;
   }
 
-  body.printing-passport .passport-card {
+  body.printing-passport .passport-card,
+  body.printing-referral .referral-slip-card {
     position: relative !important;
     left: auto !important;
     top: auto !important;
@@ -2948,22 +3064,26 @@ a.status-chip:hover {
     box-sizing: border-box !important;
   }
 
-  body.printing-passport .passport-header {
+  body.printing-passport .passport-header,
+  body.printing-referral .referral-header {
     border-bottom: 2px solid var(--green-800) !important;
     padding-bottom: 0.45rem !important;
     margin-bottom: 0.6rem !important;
   }
 
-  body.printing-passport .passport-logos {
+  body.printing-passport .passport-logos,
+  body.printing-referral .referral-logos {
     margin-bottom: 0.35rem !important;
   }
 
-  body.printing-passport .passport-logos img {
+  body.printing-passport .passport-logos img,
+  body.printing-referral .referral-logos img {
     width: 38px !important;
     height: 38px !important;
   }
 
-  body.printing-passport .passport-card .kv {
+  body.printing-passport .passport-card .kv,
+  body.printing-referral .referral-slip-card .kv {
     display: grid !important;
     grid-template-columns: repeat(4, 1fr) !important;
     gap: 0.35rem 0.75rem !important;
@@ -2972,60 +3092,70 @@ a.status-chip:hover {
     border-bottom: 1px solid var(--line-strong) !important;
   }
 
-  body.printing-passport .passport-card .kv dt {
+  body.printing-passport .passport-card .kv dt,
+  body.printing-referral .referral-slip-card .kv dt {
     font-size: 0.65rem !important;
     letter-spacing: 0.04em !important;
   }
 
-  body.printing-passport .passport-card .kv dd {
+  body.printing-passport .passport-card .kv dd,
+  body.printing-referral .referral-slip-card .kv dd {
     font-size: 0.82rem !important;
     margin-top: 0.1rem !important;
   }
 
-  body.printing-passport .passport-grid {
+  body.printing-passport .passport-grid,
+  body.printing-referral .passport-grid {
     display: grid !important;
     grid-template-columns: repeat(3, 1fr) !important;
     gap: 0.4rem 0.6rem !important;
     margin-bottom: 0.6rem !important;
   }
 
-  body.printing-passport .passport-stat {
+  body.printing-passport .passport-stat,
+  body.printing-referral .passport-stat {
     padding: 0.4rem 0.55rem !important;
     border: 1px solid #7ea898 !important;
     background: #f7faf8 !important;
     border-radius: 6px !important;
   }
 
-  body.printing-passport .passport-stat .lbl {
+  body.printing-passport .passport-stat .lbl,
+  body.printing-referral .passport-stat .lbl {
     font-size: 0.65rem !important;
     color: #1e4537 !important;
     margin-bottom: 0.1rem !important;
   }
 
-  body.printing-passport .passport-stat .val {
+  body.printing-passport .passport-stat .val,
+  body.printing-referral .passport-stat .val {
     font-size: 1.05rem !important;
     color: #0b3d30 !important;
     line-height: 1.2 !important;
   }
 
-  body.printing-passport .passport-stat .sub {
+  body.printing-passport .passport-stat .sub,
+  body.printing-referral .passport-stat .sub {
     font-size: 0.65rem !important;
     color: #4b6b62 !important;
   }
 
-  body.printing-passport .passport-footer {
+  body.printing-passport .passport-footer,
+  body.printing-referral .referral-footer {
     border-top: 1px dashed var(--line-strong) !important;
     padding-top: 0.45rem !important;
     margin-top: 0.45rem !important;
     font-size: 0.7rem !important;
   }
 
-  body.printing-passport .official-signature-block {
+  body.printing-passport .official-signature-block,
+  body.printing-referral .official-signature-block {
     display: block !important;
     margin-top: 0.85rem !important;
   }
 
-  body.printing-passport .official-signature-block > div {
+  body.printing-passport .official-signature-block > div,
+  body.printing-referral .official-signature-block > div {
     margin-top: 1.15rem !important;
   }
 }
@@ -3094,17 +3224,18 @@ a.status-chip:hover {
 
 .portal-citizen .hero {
   position: relative;
-  background: #0f3d30;
+  background: radial-gradient(100% 120% at 88% 0%, rgba(126, 224, 189, 0.16) 0%, transparent 60%),
+              linear-gradient(135deg, #092c22 0%, #0f3d30 50%, #082119 100%);
   color: var(--white);
-  border: 1px solid #1a5142;
-  border-radius: 12px;
+  border: 1px solid rgba(126, 224, 189, 0.24);
+  border-radius: 16px;
   padding: 1.5rem 1.7rem;
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: 1.15rem;
-  box-shadow: 0 2px 8px rgba(11, 41, 32, 0.12);
-  margin-bottom: 1.25rem;
+  box-shadow: 0 8px 30px rgba(8, 28, 20, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  margin-bottom: 1.35rem;
   overflow: hidden;
 }
 
@@ -3112,7 +3243,7 @@ a.status-chip:hover {
   flex-direction: column;
   align-items: stretch;
   gap: 1.15rem;
-  padding: 1.6rem 1.85rem;
+  padding: 1.65rem 1.95rem;
 }
 
 .portal-citizen .hero-header-top {
@@ -3961,4 +4092,77 @@ mark.match {
   margin: 0;
   color: var(--ink);
   word-break: break-word;
+}
+
+/* ==========================================================================
+   Mobile Bottom Navigation Dock (Phones & Small Tablets)
+   ========================================================================== */
+.mobile-bottom-dock {
+  display: none;
+}
+
+@media (max-width: 640px) {
+  .mobile-bottom-dock {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    background: rgba(8, 28, 20, 0.94);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
+    z-index: 60;
+    align-items: center;
+    justify-content: space-around;
+    padding: 0 0.25rem;
+    box-shadow: 0 -4px 18px rgba(0, 0, 0, 0.22);
+  }
+
+  .mobile-bottom-link {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    color: #bad3c8;
+    text-decoration: none;
+    font-size: 0.68rem;
+    font-weight: 600;
+    padding: 6px 10px;
+    border-radius: 8px;
+    min-width: 58px;
+    min-height: 48px;
+    transition: all 0.15s ease;
+  }
+
+  .mobile-bottom-link .dock-icon {
+    width: 20px;
+    height: 20px;
+    stroke: currentColor;
+    opacity: 0.82;
+    transition: transform 0.15s ease, opacity 0.15s ease;
+  }
+
+  .mobile-bottom-link:hover,
+  .mobile-bottom-link:focus-visible {
+    color: var(--white);
+  }
+
+  .mobile-bottom-link.is-active {
+    color: var(--mint);
+  }
+
+  .mobile-bottom-link.is-active .dock-icon {
+    stroke: var(--mint);
+    opacity: 1;
+    transform: translateY(-1px);
+  }
+
+  /* Prevent page content from hiding underneath the bottom dock on mobile */
+  body[data-page^="citizen"] .workspace,
+  body[data-page^="bhw"] .workspace {
+    padding-bottom: 4.8rem !important;
+  }
 }

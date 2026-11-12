@@ -5,9 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>My history — Barangay Health Monitor</title>
   <link rel="icon" href="data:,">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="preload" as="image" href="/img/cpsc-logo.png">
   <link rel="preload" as="image" href="/img/rhu-logo.png">
-  <link rel="stylesheet" href="/css/style.css?v=12">
+  <link rel="stylesheet" href="/css/style.css?v=14">
 </head>
 <body data-page="citizen-history">
   <a class="skip-link" href="#main">Skip to main content</a>
@@ -56,6 +59,14 @@
           <p class="lede">Every reading saved for your account, newest first. Charts show the trend over time (oldest to newest).</p>
         </div>
         <div class="page-actions">
+          <button id="vitalsGuideBtnHistory" class="btn btn-ghost" type="button" title="View clinical vitals reference guide">
+            <svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+            Clinical guide
+          </button>
+          <button id="exportCsvBtn" class="btn btn-secondary" type="button" title="Download your complete reading history as CSV (RA 10173 data portability)">
+            <svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Export CSV
+          </button>
           <button id="passportBtnHistory" class="btn btn-primary" type="button">Print health passport</button>
           <a href="/citizen/dashboard.html" class="btn btn-secondary">Dashboard</a>
         </div>
@@ -110,7 +121,7 @@
     </div>
   </div>
   <script src="/vendor/chart.umd.min.js"></script>
-  <script src="/js/api.js"></script>
-  <script src="/js/citizen.js?v=12"></script>
+  <script src="/js/api.js?v=14"></script>
+  <script src="/js/citizen.js?v=14"></script>
 </body>
 </html>

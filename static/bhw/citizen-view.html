@@ -5,9 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Citizen record — Barangay Health Monitor</title>
   <link rel="icon" href="data:,">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="preload" as="image" href="/img/cpsc-logo.png">
   <link rel="preload" as="image" href="/img/rhu-logo.png">
-  <link rel="stylesheet" href="/css/style.css?v=12">
+  <link rel="stylesheet" href="/css/style.css?v=14">
 </head>
 <body data-page="bhw-citizen-view">
   <a class="skip-link" href="#main">Skip to main content</a>
@@ -63,6 +66,10 @@
           <p id="consentLine" class="notice consent-line-top"></p>
           <div class="btn-row">
             <button id="referBtn" class="btn btn-secondary" type="button">Refer to RHU</button>
+            <button id="printReferralBtn" class="btn btn-primary" type="button" title="Generate printable clinical referral slip for RHU Mahinog">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px; margin-right:4px;" aria-hidden="true"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+              Print Referral Slip
+            </button>
           </div>
         </section>
 
@@ -99,7 +106,7 @@
     <footer class="foot">Notes and record views are audited. RA 10173 applies.</footer>
     </div>
   </div>
-  <script src="/js/api.js"></script>
-  <script src="/js/bhw.js?v=12"></script>
+  <script src="/js/api.js?v=14"></script>
+  <script src="/js/bhw.js?v=14"></script>
 </body>
 </html>

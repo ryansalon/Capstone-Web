@@ -700,12 +700,39 @@
 
   /* ---------------- search ---------------- */
 
+  var searchState = { allCitizens: [], filter: "all", query: "" };
+
   function consentBadge(granted) {
     return U.el(
       "span",
       { class: "badge " + (granted ? "badge-ok" : "badge-no") },
       granted ? "Granted" : "Not granted"
     );
+  }
+
+  function updateSearchChipCounts() {
+    var all = searchState.allCitizens;
+    var countAll = document.getElementById("countAll");
+    var countConsented = document.getElementById("countConsented");
+    var countActive = document.getElementById("countActive");
+    var countNoVisit = document.getElementById("countNoVisit");
+
+    if (countAll) countAll.textContent = all.length;
+    if (countConsented) countConsented.textContent = all.filter(function (c) { return Boolean(c.consent); }).length;
+    if (countActive) countActive.textContent = all.filter(function (c) { return (c.visit_count || 0) > 0; }).length;
+    if (countNoVisit) countNoVisit.textContent = all.filter(function (c) { return (c.visit_count || 0) === 0; }).length;
+  }
+
+  function applySearchFilter() {
+    var list = searchState.allCitizens;
+    if (searchState.filter === "consented") {
+      list = list.filter(function (c) { return Boolean(c.consent); });
+    } else if (searchState.filter === "active") {
+      list = list.filter(function (c) { return (c.visit_count || 0) > 0; });
+    } else if (searchState.filter === "novisit") {
+      list = list.filter(function (c) { return (c.visit_count || 0) === 0; });
+    }
+    renderCitizens(list, searchState.query);
   }
 
   function renderCitizens(citizens, query) {
@@ -717,16 +744,42 @@
       var icon = U.el("div", { class: "empty-icon" });
       icon.innerHTML = '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="8" y1="11" x2="14" y2="11"/></svg>';
       emptyBox.appendChild(icon);
-      emptyBox.appendChild(U.el("h3", { class: "empty-title" }, q ? "No citizens matching \u201C" + q + "\u201D" : "No citizens found"));
-      emptyBox.appendChild(U.el("p", { class: "empty-desc" }, q ? "Check the name spelling or try searching by username." : "No registered citizens are currently available in the database."));
+
+      var isFilterActive = searchState.filter !== "all";
+      var titleText = isFilterActive
+        ? "No citizens match the active filter"
+        : (q ? "No citizens matching \u201C" + q + "\u201D" : "No citizens found");
+      var descText = isFilterActive
+        ? "Try choosing another status chip or show all citizens."
+        : (q ? "Check the name spelling or try searching by username." : "No registered citizens are currently available in the database.");
+
+      emptyBox.appendChild(U.el("h3", { class: "empty-title" }, titleText));
+      emptyBox.appendChild(U.el("p", { class: "empty-desc" }, descText));
+
+      var btnRow = U.el("div", { style: "display:flex; gap:0.5rem; justify-content:center; flex-wrap:wrap; margin-top:0.6rem;" });
+      if (isFilterActive) {
+        var clearFilterBtn = U.el("button", { class: "btn btn-secondary", type: "button" }, "Show all citizens");
+        clearFilterBtn.addEventListener("click", function () {
+          searchState.filter = "all";
+          var chips = document.querySelectorAll("#searchTriageChips button.chip");
+          chips.forEach(function (c) {
+            c.classList.toggle("is-active", (c.getAttribute("data-filter") || "all") === "all");
+          });
+          applySearchFilter();
+        });
+        btnRow.appendChild(clearFilterBtn);
+      }
       if (q) {
-        var clearBtn = U.el("button", { class: "btn btn-secondary", type: "button" }, "Show all citizens");
-        clearBtn.addEventListener("click", function () {
+        var clearSearchBtn = U.el("button", { class: "btn btn-secondary", type: "button" }, "Clear search term");
+        clearSearchBtn.addEventListener("click", function () {
           var input = document.getElementById("searchInput");
           if (input) input.value = "";
           searchCitizens();
         });
-        emptyBox.appendChild(clearBtn);
+        btnRow.appendChild(clearSearchBtn);
+      }
+      if (btnRow.children.length > 0) {
+        emptyBox.appendChild(btnRow);
       }
       results.appendChild(emptyBox);
       return;
@@ -819,7 +872,10 @@
         "/api/bhw/citizens?search=" + encodeURIComponent(query)
       );
       U.clear(statusNode);
-      renderCitizens(data.citizens || [], query);
+      searchState.allCitizens = data.citizens || [];
+      searchState.query = query;
+      updateSearchChipCounts();
+      applySearchFilter();
     } catch (error) {
       U.clear(document.getElementById("results"));
       U.error(statusNode, error.message, searchCitizens);
@@ -837,6 +893,17 @@
       event.preventDefault();
       searchCitizens();
     });
+
+    var chips = document.querySelectorAll("#searchTriageChips button.chip");
+    chips.forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        chips.forEach(function (c) { c.classList.remove("is-active"); });
+        btn.classList.add("is-active");
+        searchState.filter = btn.getAttribute("data-filter") || "all";
+        applySearchFilter();
+      });
+    });
+
     searchCitizens();
   }
 
@@ -947,6 +1014,129 @@
     box.appendChild(link);
     panel.appendChild(box);
     document.getElementById("record").hidden = true;
+  }
+
+  function showReferralSlipModal(citizen, log, reason) {
+    document.body.classList.add("printing-referral");
+    var backdrop = U.el("div", { class: "modal-backdrop" });
+    var card = U.el("div", { class: "modal-card", style: "max-width: 680px;" });
+
+    var header = U.el("div", { class: "modal-header" });
+    header.appendChild(U.el("h3", null, "Official Clinical Referral Slip"));
+    var closeBtn = U.el("button", { class: "btn btn-ghost", type: "button", "aria-label": "Close" }, "✕");
+    header.appendChild(closeBtn);
+    card.appendChild(header);
+
+    var body = U.el("div", { class: "modal-body" });
+    var slip = U.el("div", { class: "referral-slip-card" });
+
+    var pHead = U.el("div", { class: "referral-header" });
+    var pLogos = U.el("div", { class: "referral-logos", style: "display:flex; align-items:center; justify-content:center; gap:1.25rem; margin-bottom:0.6rem;" });
+    pLogos.appendChild(U.el("img", { src: "/img/cpsc-logo.png", alt: "CPSC", width: "48", height: "48", style: "object-fit:contain;" }));
+    pLogos.appendChild(U.el("img", { src: "/img/rhu-logo.png", alt: "RHU Mahinog", width: "48", height: "48", style: "object-fit:contain;" }));
+    pHead.appendChild(pLogos);
+    pHead.appendChild(U.el("div", { style: "font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:#0b3d30;" }, "Republic of the Philippines · Province of Camiguin"));
+    pHead.appendChild(U.el("h2", { style: "margin:0.25rem 0; font-size:1.3rem; color:#0b3d30;" }, "Clinical Referral Slip (RHU Mahinog)"));
+    pHead.appendChild(U.el("p", { style: "margin:0; font-size:0.82rem; color:#4a655a;" }, "Municipality of Mahinog · Barangay Health Station & Rural Health Unit"));
+    slip.appendChild(pHead);
+
+    var infoDl = U.el("dl", { class: "kv", style: "margin-bottom:0.85rem;" });
+    function addInfo(lbl, val) {
+      infoDl.appendChild(U.el("dt", null, lbl));
+      infoDl.appendChild(U.el("dd", null, val || "—"));
+    }
+    addInfo("Patient Name", citizen.full_name || "—");
+    addInfo("Username / ID", citizen.username || "—");
+    addInfo("Birthdate", citizen.birthdate || "—");
+    addInfo("Gender", citizen.gender ? citizen.gender.toUpperCase() : "—");
+    slip.appendChild(infoDl);
+
+    var reasonBox = U.el("div", { class: "referral-reason-box" });
+    reasonBox.appendChild(U.el("div", { style: "font-weight:700; font-size:0.8rem; text-transform:uppercase; letter-spacing:0.04em; color:var(--green-900); margin-bottom:0.25rem;" }, "Reason for Referral & Clinical Findings:"));
+    reasonBox.appendChild(U.el("div", { style: "line-height:1.45; white-space:pre-wrap;" }, reason || "Patient referred for medical evaluation, diagnosis, and prescription management at the Rural Health Unit."));
+    slip.appendChild(reasonBox);
+
+    var vitalsTitle = U.el("h4", { style: "margin:0.75rem 0 0.35rem 0; font-size:0.85rem; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; color:#0b3d30;" }, "Latest Vital Signs (Barangay Health Kiosk)");
+    slip.appendChild(vitalsTitle);
+
+    var grid = U.el("div", { class: "passport-grid" });
+    function addStat(lbl, val, sub) {
+      var box = U.el("div", { class: "passport-stat" });
+      box.appendChild(U.el("div", { class: "lbl" }, lbl));
+      box.appendChild(U.el("div", { class: "val" }, val));
+      if (sub) box.appendChild(U.el("div", { class: "sub", style: "font-size:0.75rem; color:#4b6b62;" }, sub));
+      grid.appendChild(box);
+    }
+
+    if (log) {
+      var hasBp = (log.systolic_bp !== null && log.systolic_bp !== undefined && log.diastolic_bp !== null && log.diastolic_bp !== undefined);
+      var bpVal = hasBp ? (log.systolic_bp + "/" + log.diastolic_bp + " mmHg") : "—";
+      var bpSub = (log.systolic_bp >= 140 || log.diastolic_bp >= 90) ? "Stage 2 HTN Alert" : (log.systolic_bp >= 130 || log.diastolic_bp >= 80 ? "Stage 1 HTN" : "Normal BP");
+      addStat("Blood Pressure", bpVal, bpSub);
+      addStat("Body Mass Index", U.fmtNum(log.bmi, 1), log.weight ? (U.fmtNum(log.weight, 1, "kg") + " / " + U.fmtNum(log.height, 1, "cm")) : "");
+      addStat("Blood Oxygen (SpO2)", U.fmtNum(log.spo2, 0, "%"), (log.spo2 && log.spo2 < 95) ? "Attention required" : "Normal");
+      addStat("Body Temperature", U.fmtNum(log.temperature, 1, "°C"), (log.temperature >= 37.9) ? "Fever alert" : "Normothermic");
+      addStat("Pulse / Heart Rate", U.fmtNum(log.pulse_rate, 0, "bpm"), "Resting pulse");
+      addStat("Measurement Time", U.fmtDT(log.timestamp), "Kiosk Station");
+    } else {
+      grid.appendChild(U.el("p", { class: "muted" }, "No vital readings recorded yet."));
+    }
+    slip.appendChild(grid);
+
+    var sigBlock = U.el("div", { class: "official-signature-block", style: "margin-top:1.5rem;" });
+    var sigFlex = U.el("div", { style: "display:flex; justify-content:space-between; gap:1rem;" });
+    
+    var sig1 = U.el("div");
+    sig1.appendChild(U.el("div", { style: "border-bottom:1.5px solid #000; width:220px; height:1.4rem;" }));
+    sig1.appendChild(U.el("div", { style: "font-size:0.75rem; margin-top:0.3rem; font-weight:600;" }, "Referring BHW / Health Worker"));
+    sig1.appendChild(U.el("div", { style: "font-size:0.72rem; color:#4a655a;" }, API.getName() || "Barangay Health Worker"));
+    sigFlex.appendChild(sig1);
+
+    var sig2 = U.el("div");
+    sig2.appendChild(U.el("div", { style: "border-bottom:1.5px solid #000; width:220px; height:1.4rem;" }));
+    sig2.appendChild(U.el("div", { style: "font-size:0.75rem; margin-top:0.3rem; font-weight:600;" }, "Receiving RHU Doctor / Nurse"));
+    sig2.appendChild(U.el("div", { style: "font-size:0.72rem; color:#4a655a;" }, "Rural Health Unit Mahinog"));
+    sigFlex.appendChild(sig2);
+
+    sigBlock.appendChild(sigFlex);
+    slip.appendChild(sigBlock);
+
+    var foot = U.el("div", { class: "referral-footer", style: "margin-top:1.1rem; border-top:1px dashed var(--line-strong); padding-top:0.45rem; display:flex; justify-content:space-between; font-size:0.72rem; color:#4a655a;" });
+    foot.appendChild(U.el("span", null, "Generated: " + nowPht()));
+    foot.appendChild(U.el("span", { style: "font-weight:700; color:#0b3d30;" }, "OFFICIAL RHU REFERRAL · RA 10173 AUDITED"));
+    slip.appendChild(foot);
+
+    body.appendChild(slip);
+    card.appendChild(body);
+
+    var mFoot = U.el("div", { class: "modal-footer" });
+    var dismissBtn = U.el("button", { class: "btn btn-secondary", type: "button" }, "Close");
+    var printBtn = U.el("button", { class: "btn btn-primary", type: "button" }, "Print / Save PDF");
+    printBtn.onclick = function () {
+      document.body.classList.add("printing-referral");
+      var clearPrint = function () {
+        document.body.classList.remove("printing-referral");
+        window.removeEventListener("afterprint", clearPrint);
+      };
+      window.addEventListener("afterprint", clearPrint);
+      window.print();
+      setTimeout(clearPrint, 30000);
+    };
+
+    mFoot.appendChild(dismissBtn);
+    mFoot.appendChild(printBtn);
+    card.appendChild(mFoot);
+
+    backdrop.appendChild(card);
+    document.body.appendChild(backdrop);
+
+    var closeDialog = U.openDialog(backdrop, closeBtn);
+    var handleClose = function () {
+      document.body.classList.remove("printing-referral");
+      closeDialog();
+    };
+    closeBtn.onclick = handleClose;
+    dismissBtn.onclick = handleClose;
   }
 
   async function initCitizenView() {
@@ -1113,6 +1303,9 @@
           var consentLine = document.getElementById("consentLine");
           if (consentLine) consentLine.after(notice);
           U.toast("Referral to RHU submitted", "success");
+          var logs = data.logs || [];
+          var latest = logs.length ? logs[0] : null;
+          showReferralSlipModal(citizen, latest, value);
         } catch (error) {
           U.error(statusNode, error.message);
           U.toast(error.message, "error");
@@ -1121,6 +1314,15 @@
         }
       };
     });
+
+    var printReferralBtn = document.getElementById("printReferralBtn");
+    if (printReferralBtn) {
+      printReferralBtn.addEventListener("click", function () {
+        var logs = data.logs || [];
+        var latest = logs.length ? logs[0] : null;
+        showReferralSlipModal(citizen, latest, "");
+      });
+    }
   }
 
   /* ---------------- audit trail ---------------- */
