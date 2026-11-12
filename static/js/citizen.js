@@ -652,6 +652,7 @@
           method: "POST",
           body: { consent_granted: granted },
         });
+        sessionStorage.setItem("bhm:citizen_terms_seen", "1");
         closeDialog();
         if (typeof onConsentChosen === "function") {
           onConsentChosen(granted);
@@ -1379,7 +1380,12 @@
         var consentInfo = results[1] || {};
         renderConsentChip(Boolean(consentInfo.consent_granted));
 
-        if (!isAuto && consentInfo.has_recorded_consent === false) {
+        var shouldShowConsentModal =
+          !isAuto &&
+          (consentInfo.has_recorded_consent === false ||
+            !sessionStorage.getItem("bhm:citizen_terms_seen"));
+
+        if (shouldShowConsentModal) {
           showCitizenConsentModal(function (newGranted) {
             renderConsentChip(newGranted);
           });

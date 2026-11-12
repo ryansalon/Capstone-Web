@@ -38,6 +38,7 @@
     localStorage.removeItem(NAME_KEY);
     try {
       sessionStorage.removeItem("bhm:staff_privacy_oath");
+      sessionStorage.removeItem("bhm:citizen_terms_seen");
     } catch (_) {}
   }
 
