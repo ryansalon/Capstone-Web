@@ -1323,6 +1323,96 @@
         showReferralSlipModal(citizen, latest, "");
       });
     }
+
+    var resetPwBtn = document.getElementById("resetCitizenPwBtn");
+    if (resetPwBtn) {
+      resetPwBtn.addEventListener("click", function () {
+        var citizenId = currentCitizenId();
+        if (!citizenId) return;
+
+        var backdrop = U.el("div", { class: "modal-backdrop" });
+        var card = U.el("div", { class: "modal-card", style: "max-width: 480px; width: 100%;" });
+
+        var header = U.el("div", { class: "modal-header" });
+        header.appendChild(U.el("h3", null, "Reset Citizen Password"));
+        var closeBtn = U.el("button", { class: "btn btn-ghost", type: "button", "aria-label": "Close" }, "✕");
+        header.appendChild(closeBtn);
+        card.appendChild(header);
+
+        var body = U.el("div", { class: "modal-body" });
+        var citizenName = (citizen && citizen.full_name) ? citizen.full_name : "this citizen";
+        body.appendChild(U.el("p", { style: "margin-bottom: 0.85rem;" }, "Issue a temporary password for " + citizenName + ". Ensure you have verified their resident or government ID in person."));
+        body.appendChild(U.el("label", { style: "display:block; font-weight:600; font-size:0.88rem; margin-bottom:0.35rem;" }, "Custom temporary password (optional, min 8 chars):"));
+        var pwInput = U.el("input", { type: "text", placeholder: "Leave blank for auto-generated password", style: "width:100%; padding:0.5rem 0.65rem; border:1px solid #b9cdc6; border-radius:8px; font-size:0.92rem;" });
+        body.appendChild(pwInput);
+        card.appendChild(body);
+
+        var footer = U.el("div", { class: "modal-footer" });
+        var cancelBtn = U.el("button", { class: "btn btn-secondary", type: "button" }, "Cancel");
+        var confirmBtn = U.el("button", { class: "btn btn-primary", type: "button" }, "Reset Password");
+        footer.appendChild(cancelBtn);
+        footer.appendChild(confirmBtn);
+        card.appendChild(footer);
+
+        backdrop.appendChild(card);
+        document.body.appendChild(backdrop);
+
+        var closeDialog = U.openDialog(backdrop, confirmBtn);
+        closeBtn.onclick = closeDialog;
+        cancelBtn.onclick = closeDialog;
+
+        confirmBtn.onclick = async function () {
+          var customVal = pwInput.value.trim();
+          if (customVal && customVal.length < 8) {
+            alert("Custom password must be at least 8 characters long.");
+            pwInput.focus();
+            return;
+          }
+          setBusy(confirmBtn, true, "Resetting…");
+          try {
+            var res = await API.apiFetch("/api/bhw/citizen/" + encodeURIComponent(citizenId) + "/reset-password", {
+              method: "POST",
+              body: customVal ? { password: customVal } : {},
+            });
+            closeDialog();
+
+            var resBackdrop = U.el("div", { class: "modal-backdrop" });
+            var resCard = U.el("div", { class: "modal-card", style: "max-width: 480px; width: 100%; text-align:center;" });
+            var resHeader = U.el("div", { class: "modal-header" });
+            resHeader.appendChild(U.el("h3", null, "New Temporary Password"));
+            var resClose = U.el("button", { class: "btn btn-ghost", type: "button", "aria-label": "Close" }, "✕");
+            resHeader.appendChild(resClose);
+            resCard.appendChild(resHeader);
+
+            var resBody = U.el("div", { class: "modal-body", style: "padding: 1.5rem 1rem;" });
+            var p1 = U.el("p", { style: "margin-bottom:0.75rem;" });
+            p1.innerHTML = "Temporary password generated for <strong>" + citizenName + "</strong>:";
+            resBody.appendChild(p1);
+            var codeBox = U.el("div", { style: "font-size:1.35rem; font-family:monospace; font-weight:700; color:#0f6b53; background:#eaf4f0; padding:0.75rem; border-radius:8px; border:1px solid #b0c4bc; margin-bottom:1rem; user-select:all;" }, res.temporary_password);
+            resBody.appendChild(codeBox);
+            resBody.appendChild(U.el("p", { style: "font-size:0.85rem; color:var(--ink-soft);" }, "Please write this down or hand it to the citizen. They should sign in and update their password on their profile."));
+            resCard.appendChild(resBody);
+
+            var resFooter = U.el("div", { class: "modal-footer", style: "justify-content:center;" });
+            var doneBtn = U.el("button", { class: "btn btn-primary", type: "button" }, "Done");
+            resFooter.appendChild(doneBtn);
+            resCard.appendChild(resFooter);
+
+            resBackdrop.appendChild(resCard);
+            document.body.appendChild(resBackdrop);
+
+            var closeResDialog = U.openDialog(resBackdrop, doneBtn);
+            resClose.onclick = closeResDialog;
+            doneBtn.onclick = closeResDialog;
+
+            U.toast("Citizen password reset successfully", "success");
+          } catch (err) {
+            alert("Error: " + (err.message || "Failed to reset password"));
+            setBusy(confirmBtn, false);
+          }
+        };
+      });
+    }
   }
 
   /* ---------------- audit trail ---------------- */
@@ -1335,6 +1425,8 @@
     unauthorized_access: { label: "Blocked: No Consent", cls: "badge-danger" },
     export_report: { label: "Exported Report", cls: "badge-info" },
     staff_login: { label: "Staff Login", cls: "badge-admin" },
+    self_password_reset: { label: "Self Password Reset", cls: "badge-info" },
+    staff_password_reset: { label: "Staff Password Reset", cls: "badge-warn" },
   };
 
   var currentAuditRows = [];

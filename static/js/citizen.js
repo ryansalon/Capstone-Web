@@ -2151,12 +2151,91 @@
     }
   }
 
+  /* ---------------- forgot password ---------------- */
+
+  function initForgotPassword() {
+    var form = document.getElementById("forgotPasswordForm");
+    if (!form) return;
+    var errorNode = document.getElementById("resetError");
+    var successCard = document.getElementById("resetSuccess");
+    var submit = document.getElementById("resetSubmit");
+    var newPwInput = document.getElementById("newPassword");
+    var pwHint = document.getElementById("passwordHint");
+
+    function updatePwHint() {
+      if (!pwHint || !newPwInput) return;
+      var len = newPwInput.value.length;
+      pwHint.classList.toggle("hint-ok", len >= 8);
+      pwHint.textContent = len === 0
+        ? "At least 8 characters."
+        : len >= 8
+          ? "Length looks good (" + len + " characters)."
+          : (8 - len) + " more character" + (8 - len === 1 ? "" : "s") + " needed.";
+    }
+
+    if (newPwInput) {
+      newPwInput.addEventListener("input", updatePwHint);
+    }
+
+    form.addEventListener("submit", async function (event) {
+      event.preventDefault();
+      showFormError(errorNode, "");
+
+      var username = fieldValue("username");
+      var fullName = fieldValue("fullName");
+      var birthdate = fieldValue("birthdate");
+      var newPassword = document.getElementById("newPassword").value;
+      var confirmPassword = document.getElementById("confirmPassword").value;
+
+      if (!username) {
+        showFormError(errorNode, "Please enter your username.");
+        return;
+      }
+      if (!fullName) {
+        showFormError(errorNode, "Please enter your full name as registered.");
+        return;
+      }
+      if (!birthdate) {
+        showFormError(errorNode, "Please select your registered birthdate.");
+        return;
+      }
+      if (!newPassword || newPassword.length < 8) {
+        showFormError(errorNode, "New password must be at least 8 characters long.");
+        return;
+      }
+      if (newPassword !== confirmPassword) {
+        showFormError(errorNode, "Passwords do not match. Please verify both fields.");
+        return;
+      }
+
+      setBusy(submit, true, "Verifying details…");
+      try {
+        await API.apiFetch("/api/forgot-password", {
+          method: "POST",
+          body: {
+            username: username,
+            full_name: fullName,
+            birthdate: birthdate,
+            new_password: newPassword,
+          },
+        });
+        form.style.display = "none";
+        if (successCard) successCard.style.display = "block";
+        U.toast("Password reset complete. You can now sign in.", "success");
+      } catch (err) {
+        showFormError(errorNode, err.message || "Failed to reset password. Please check your details.");
+        setBusy(submit, false);
+      }
+    });
+  }
+
   /* ---------------- router ---------------- */
 
   document.addEventListener("DOMContentLoaded", function () {
     var page = document.body.getAttribute("data-page");
     if (page === "citizen-login" || page === "bhw-login") initLogin();
     else if (page === "citizen-register") initRegister();
+    else if (page === "citizen-forgot-password") initForgotPassword();
     else if (page === "citizen-dashboard") initDashboard();
     else if (page === "citizen-history") initHistory();
     else if (page === "citizen-consent") initConsent();

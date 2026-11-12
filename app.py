@@ -1015,6 +1015,46 @@ def register_routes(app: Flask):
             {"token": token, "role": user.role, "full_name": user.full_name}
         )
 
+    @app.route("/api/forgot-password", methods=["POST"])
+    def forgot_password():
+        if not current_app.config.get("TESTING"):
+            client_ip = request.remote_addr or "unknown"
+            if not check_rate_limit(f"auth:reset:{client_ip}", max_attempts=5, window_seconds=900):
+                return jsonify({"error": "Too many reset attempts. Please wait 15 minutes."}), 429
+
+        data = json_body()
+        username = str(data.get("username") or "").strip()
+        birthdate = str(data.get("birthdate") or "").strip()
+        full_name = str(data.get("full_name") or "").strip()
+        new_password = str(data.get("new_password") or "")
+
+        if not username or not birthdate or not full_name:
+            return jsonify({"error": "Username, full name, and birthdate are required."}), 400
+        if len(new_password) < 8:
+            return jsonify({"error": "New password must be at least 8 characters long."}), 400
+
+        with get_db().session() as session:
+            user = session.execute(
+                select(User).where(func.lower(User.username) == username.lower())
+            ).scalar_one_or_none()
+
+            if user is None or user.role != "citizen":
+                return jsonify({"error": "Account not found or not eligible for self-service reset."}), 404
+
+            if user.birthdate != birthdate or user.full_name.strip().lower() != full_name.lower():
+                return jsonify({"error": "Provided birthdate or full name does not match our records."}), 403
+
+            user.password_hash = hash_password(new_password)
+            write_audit(
+                session,
+                user.id,
+                user.id,
+                "self_password_reset",
+                status="success",
+                details="Citizen self-service password reset completed via demographic verification",
+            )
+        return jsonify({"ok": True, "message": "Password reset successfully."}), 200
+
     @app.route("/api/me", methods=["GET"])
     @require_any
     def me():
@@ -1462,6 +1502,33 @@ def register_routes(app: Flask):
                     )
                 )
             return jsonify({"ok": True}), 201
+
+    @app.route("/api/bhw/citizen/<int:citizen_id>/reset-password", methods=["POST"])
+    @require_staff
+    def reset_citizen_password(citizen_id):
+        with get_db().session() as session:
+            citizen = session.get(User, citizen_id)
+            if citizen is None or citizen.role != "citizen":
+                return jsonify({"error": "Citizen account not found"}), 404
+
+            data = json_body()
+            custom_pw = data.get("password")
+            if custom_pw and isinstance(custom_pw, str) and len(custom_pw.strip()) >= 8:
+                temp_pw = custom_pw.strip()
+            else:
+                import random
+                temp_pw = f"Citizen@{random.randint(100000, 999999)}"
+
+            citizen.password_hash = hash_password(temp_pw)
+            write_audit(
+                session,
+                g.user.id,
+                citizen.id,
+                "staff_password_reset",
+                status="success",
+                details=f"Staff {g.user.full_name} reset password for citizen {citizen.full_name}",
+            )
+            return jsonify({"ok": True, "temporary_password": temp_pw}), 200
 
     def audit_rows(
         session,

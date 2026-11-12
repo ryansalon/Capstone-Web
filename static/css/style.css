@@ -4189,3 +4189,49 @@ mark.match {
   color: var(--status-normal-fg, #0a4f3b);
   border-bottom: 2px solid #9dd0bc;
 }
+
+/* ---------- Forgot Password & Auth Helpers ---------- */
+.auth-helper-row {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  margin-top: -0.25rem;
+  margin-bottom: 0.95rem;
+  font-size: 0.85rem;
+}
+
+.auth-forgot-link {
+  color: var(--green-700);
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 0.15s ease, text-decoration 0.15s ease;
+}
+
+.auth-forgot-link:hover,
+.auth-forgot-link:focus-visible {
+  color: var(--green-900);
+  text-decoration: underline;
+}
+
+.auth-staff-hint {
+  color: var(--ink-soft);
+  font-size: 0.82rem;
+  font-style: italic;
+}
+
+.auth-sub-link {
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+  margin-top: 0.45rem;
+  margin-bottom: 0.75rem;
+}
+
+.auth-sub-link a {
+  color: var(--green-700);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.auth-sub-link a:hover {
+  text-decoration: underline;
+}

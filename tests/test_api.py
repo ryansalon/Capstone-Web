@@ -1076,4 +1076,85 @@ def test_global_json_error_handlers(client):
     assert r405.get_json() == {"error": "method not allowed"}
 
 
+def test_citizen_forgot_password_success(client):
+    """Verify citizen can reset their password via demographic verification and log in."""
+    reset_payload = {
+        "username": "carl",
+        "full_name": "Carl Mendoza",
+        "birthdate": "1992-11-03",
+        "new_password": "NewCitizenPassword123!",
+    }
+    res = client.post("/api/forgot-password", json=reset_payload)
+    assert res.status_code == 200
+    assert res.get_json()["ok"] is True
+
+    # Old password citizen123 should now fail
+    fail_old = client.post("/api/login", json={"username": "carl", "password": "citizen123"})
+    assert fail_old.status_code == 401
+
+    # New password should succeed
+    login_res = login(client, "carl", "NewCitizenPassword123!")
+    assert login_res["role"] == "citizen"
+
+    # Check audit trail records self_password_reset
+    bhw_token = login(client, "bhw1", "bhw12345")["token"]
+    audit = client.get("/api/bhw/audit-trail?action=self_password_reset", headers=bearer(bhw_token)).get_json()["audit"]
+    assert len(audit) >= 1
+    assert audit[0]["action"] == "self_password_reset"
+
+
+def test_citizen_forgot_password_validations(client):
+    """Verify validations: wrong birthdate, wrong name, short password, staff accounts."""
+    # 1. Wrong birthdate
+    res1 = client.post(
+        "/api/forgot-password",
+        json={"username": "carl", "full_name": "Carl Mendoza", "birthdate": "2000-01-01", "new_password": "ValidPassword123"},
+    )
+    assert res1.status_code == 403
+    assert "not match" in res1.get_json()["error"]
+
+    # 2. Wrong full name
+    res2 = client.post(
+        "/api/forgot-password",
+        json={"username": "carl", "full_name": "Wrong Person", "birthdate": "1992-11-03", "new_password": "ValidPassword123"},
+    )
+    assert res2.status_code == 403
+
+    # 3. Short password (< 8 chars)
+    res3 = client.post(
+        "/api/forgot-password",
+        json={"username": "carl", "full_name": "Carl Mendoza", "birthdate": "1992-11-03", "new_password": "short"},
+    )
+    assert res3.status_code == 400
+
+    # 4. Ineligible staff account (bhw1)
+    res4 = client.post(
+        "/api/forgot-password",
+        json={"username": "bhw1", "full_name": "Maria Santos", "birthdate": "1985-04-12", "new_password": "ValidPassword123"},
+    )
+    assert res4.status_code == 404
+
+
+def test_staff_assisted_citizen_password_reset(client):
+    """Verify staff can reset a citizen's password in clinic and audit entry is created."""
+    bhw_token = login(client, "bhw1", "bhw12345")["token"]
+
+    # Staff resets carl's password with auto-generated temporary password
+    res = client.post("/api/bhw/citizen/1/reset-password", json={}, headers=bearer(bhw_token))
+    assert res.status_code == 200
+    temp_pw = res.get_json()["temporary_password"]
+    assert temp_pw.startswith("Citizen@")
+
+    # Citizen can log in with temporary password
+    carl_login = login(client, "carl", temp_pw)
+    assert carl_login["role"] == "citizen"
+
+    # Verify audit trail contains staff_password_reset
+    audit = client.get("/api/bhw/audit-trail?action=staff_password_reset", headers=bearer(bhw_token)).get_json()["audit"]
+    assert len(audit) >= 1
+    assert audit[0]["action"] == "staff_password_reset"
+    assert audit[0]["citizen"] == 1
+
+
+
 
