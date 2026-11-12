@@ -2284,6 +2284,250 @@
     });
   }
 
+  /* ---------------- statutory privacy oath (RA 10173) ---------------- */
+
+  function showStaffPenaltiesModal(onAcknowledged) {
+    if (document.getElementById("staffPenaltiesModalBackdrop")) return;
+
+    var backdrop = U.el("div", {
+      id: "staffPenaltiesModalBackdrop",
+      class: "modal-backdrop",
+    });
+    var card = U.el("div", {
+      class: "modal-card staff-penalties-modal",
+      style: "max-width: 720px;",
+    });
+
+    var header = U.el("div", {
+      class: "modal-header",
+      style: "background: var(--red-700, #b91c1c);",
+    });
+    var headerLeft = U.el("div");
+    var warningBadge = U.el(
+      "span",
+      {
+        class: "badge",
+        style:
+          "display:inline-block; font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; background:#fee2e2; color:#991b1b; margin-bottom:0.25rem;",
+      },
+      "Statutory Compliance Notice · Republic Act No. 10173"
+    );
+    headerLeft.appendChild(warningBadge);
+    headerLeft.appendChild(
+      U.el(
+        "h3",
+        { style: "margin:0; font-size:1.15rem; color:#fff;" },
+        "Health Worker Fiduciary Duty & Penalties Undertaking"
+      )
+    );
+    header.appendChild(headerLeft);
+
+    var exitBtn = U.el(
+      "button",
+      {
+        class: "btn btn-ghost",
+        type: "button",
+        "aria-label": "Decline and Log Out",
+        title: "Decline and Log Out",
+      },
+      "✕"
+    );
+    header.appendChild(exitBtn);
+    card.appendChild(header);
+
+    var body = U.el("div", {
+      class: "modal-body",
+      style: "font-size:0.92rem; line-height:1.55;",
+    });
+
+    var intro = U.el("p", { style: "margin-top:0; color:var(--ink-base);" });
+    intro.innerHTML =
+      "As an authorized <strong>Barangay Health Worker or Clinic Administrator</strong>, " +
+      "you have access to <strong>Sensitive Personal Information (SPI)</strong> under Section 3(l) of " +
+      "<strong>Republic Act No. 10173 (Philippine Data Privacy Act of 2012)</strong>. " +
+      "You are bound by strict legal, ethical, and administrative fiduciary duties.";
+    body.appendChild(intro);
+
+    var dutiesBox = U.el("div", {
+      style:
+        "background:var(--sand-050, #fcfbf9); border:1px solid var(--line); border-radius:6px; padding:0.85rem 1rem; margin-bottom:1rem;",
+    });
+    dutiesBox.appendChild(
+      U.el(
+        "h4",
+        {
+          style:
+            "margin:0 0 0.45rem 0; font-size:0.9rem; font-weight:700; color:var(--green-900);",
+        },
+        "Mandatory Confidentiality & Fiduciary Duties"
+      )
+    );
+    var dutiesList = U.el("ul", {
+      style: "margin:0; padding-left:1.2rem; font-size:0.86rem; color:var(--ink-soft);",
+    });
+    dutiesList.appendChild(
+      U.el(
+        "li",
+        null,
+        "Consent-Gated Access: You may only review vitals and clinical notes of residents who have explicitly granted consent."
+      )
+    );
+    dutiesList.appendChild(
+      U.el(
+        "li",
+        null,
+        "Strict Non-Disclosure: Do not disclose, discuss, or forward resident records to unauthorized persons, family members, or third parties."
+      )
+    );
+    dutiesList.appendChild(
+      U.el(
+        "li",
+        null,
+        "No Unauthorized Copying: Taking phone photos, unsanctioned screenshots, or printing confidential patient files without clinical authorization is strictly prohibited."
+      )
+    );
+    dutiesList.appendChild(
+      U.el(
+        "li",
+        null,
+        "Full Auditability: Every citizen lookup, note addition, password reset, and report export is permanently recorded with your name, real IP address, and timestamp."
+      )
+    );
+    dutiesBox.appendChild(dutiesList);
+    body.appendChild(dutiesBox);
+
+    var penaltyBox = U.el("div", {
+      class: "statutory-penalties-callout",
+      style:
+        "background:#fff5f5; border:1.5px solid #f87171; border-radius:6px; padding:0.85rem 1rem; margin-bottom:1rem;",
+    });
+    penaltyBox.appendChild(
+      U.el(
+        "h4",
+        {
+          style:
+            "margin:0 0 0.45rem 0; font-size:0.9rem; font-weight:700; color:#991b1b; display:flex; align-items:center; gap:0.4rem;",
+        },
+        "⚠️ Statutory Criminal Liabilities & Sanctions (RA 10173 Chapter VIII)"
+      )
+    );
+
+    var penaltyList = U.el("ul", {
+      style: "margin:0; padding-left:1.2rem; font-size:0.84rem; color:#7f1d1d;",
+    });
+    penaltyList.appendChild(
+      U.el(
+        "li",
+        null,
+        "Section 25 (Unauthorized Processing of SPI): Imprisonment of 3 to 6 years and fine of ₱500,000 to ₱4,000,000."
+      )
+    );
+    penaltyList.appendChild(
+      U.el(
+        "li",
+        null,
+        "Section 26 (Accessing Due to Negligence): Imprisonment of 2 to 4 years and fine of ₱500,000 to ₱2,000,000."
+      )
+    );
+    penaltyList.appendChild(
+      U.el(
+        "li",
+        null,
+        "Section 31 & 32 (Malicious or Unauthorized Disclosure): Imprisonment of 1 to 5 years and fine of ₱500,000 to ₱1,000,000, plus immediate administrative termination and permanent disqualification from public office."
+      )
+    );
+    penaltyBox.appendChild(penaltyList);
+    body.appendChild(penaltyBox);
+
+    var oathP = U.el("p", {
+      style:
+        "font-size:0.82rem; color:var(--ink-muted); margin:0; line-height:1.4;",
+    });
+    oathP.innerHTML =
+      "By proceeding, you attest that you understand these statutory obligations and penalties. " +
+      "Your acknowledgment will be timestamped and recorded in the audit trail. Declining will sign you out.";
+    body.appendChild(oathP);
+
+    card.appendChild(body);
+
+    var mFoot = U.el("div", {
+      class: "modal-footer",
+      style: "display:flex; justify-content:space-between; align-items:center;",
+    });
+    var declineBtn = U.el(
+      "button",
+      {
+        class: "btn btn-secondary",
+        type: "button",
+        style: "color:var(--red-700, #b91c1c);",
+      },
+      "Decline & Log Out"
+    );
+    var acceptBtn = U.el(
+      "button",
+      { class: "btn btn-primary", type: "button" },
+      "I Acknowledge & Agree to Comply"
+    );
+    mFoot.appendChild(declineBtn);
+    mFoot.appendChild(acceptBtn);
+    card.appendChild(mFoot);
+
+    backdrop.appendChild(card);
+    document.body.appendChild(backdrop);
+
+    var closeDialog = U.openDialog(backdrop, acceptBtn);
+
+    function doDecline() {
+      closeDialog();
+      API.logout();
+    }
+
+    exitBtn.onclick = doDecline;
+    declineBtn.onclick = doDecline;
+
+    // Enforce logout if closed without acknowledging
+    if (window.MutationObserver) {
+      var observer = new MutationObserver(function () {
+        if (!document.body.contains(backdrop)) {
+          observer.disconnect();
+          if (sessionStorage.getItem("bhm:staff_privacy_oath") !== "acknowledged") {
+            API.logout();
+          }
+        }
+      });
+      observer.observe(document.body, { childList: true });
+    }
+
+    acceptBtn.onclick = async function () {
+      acceptBtn.disabled = true;
+      declineBtn.disabled = true;
+      try {
+        await API.apiFetch("/api/bhw/acknowledge-oath", { method: "POST" });
+        sessionStorage.setItem("bhm:staff_privacy_oath", "acknowledged");
+        closeDialog();
+        if (typeof onAcknowledged === "function") {
+          onAcknowledged();
+        }
+        U.toast(
+          "Statutory undertaking acknowledged. Clinic operations unlocked.",
+          "success"
+        );
+      } catch (err) {
+        acceptBtn.disabled = false;
+        declineBtn.disabled = false;
+        U.toast("Failed to record oath: " + err.message, "error");
+      }
+    };
+  }
+
+  function checkStaffPrivacyOath(callback) {
+    if (sessionStorage.getItem("bhm:staff_privacy_oath") === "acknowledged") {
+      if (typeof callback === "function") callback();
+      return;
+    }
+    showStaffPenaltiesModal(callback);
+  }
+
   /* ---------------- router ---------------- */
 
   document.addEventListener("DOMContentLoaded", function () {
@@ -2302,8 +2546,14 @@
     }
 
     var page = document.body.getAttribute("data-page");
-    if (page === "bhw-login") initBhwLogin();
-    else if (page === "bhw-dashboard") initDashboard();
+    if (page === "bhw-login") {
+      initBhwLogin();
+      return;
+    }
+
+    checkStaffPrivacyOath();
+
+    if (page === "bhw-dashboard") initDashboard();
     else if (page === "bhw-search") initSearch();
     else if (page === "bhw-citizen-view") initCitizenView();
     else if (page === "bhw-audit") initAudit();

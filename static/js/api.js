@@ -36,6 +36,9 @@
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(ROLE_KEY);
     localStorage.removeItem(NAME_KEY);
+    try {
+      sessionStorage.removeItem("bhm:staff_privacy_oath");
+    } catch (_) {}
   }
 
   function isStaff(role) {

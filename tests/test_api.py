@@ -351,7 +351,9 @@ def test_consent_gate_controls_health_logs_and_audit(client):
 
     grant_consent(client, True)
     consent = client.get("/api/consent", headers=bearer(login(client, "carl", "citizen123")["token"]))
-    assert consent.get_json() == {"consent_granted": True}
+    consent_data = consent.get_json()
+    assert consent_data["consent_granted"] is True
+    assert consent_data["has_recorded_consent"] is True
 
     allowed = client.get(
         f"/api/bhw/citizen/{citizen_id}/health-logs", headers=bearer(bhw)
@@ -1154,6 +1156,75 @@ def test_staff_assisted_citizen_password_reset(client):
     assert len(audit) >= 1
     assert audit[0]["action"] == "staff_password_reset"
     assert audit[0]["citizen"] == 1
+
+
+def test_first_login_consent_status_detection(client):
+    """Verify newly registered citizen has has_recorded_consent=False until explicitly choosing."""
+    # Register fresh citizen
+    reg_resp = client.post(
+        "/api/register",
+        json={
+            "username": "fresh_resident",
+            "password": "ValidPassword123",
+            "full_name": "Fresh Resident",
+            "birthdate": "1998-05-15",
+            "gender": "female",
+            "address": "Hubangon, Mahinog",
+            "contact_number": "09171234567",
+        },
+    )
+    assert reg_resp.status_code == 201
+    token = login(client, "fresh_resident", "ValidPassword123")["token"]
+
+    # Before recording consent: has_recorded_consent must be False
+    res = client.get("/api/consent", headers=bearer(token))
+    assert res.status_code == 200
+    body = res.get_json()
+    assert body["consent_granted"] is False
+    assert body["has_recorded_consent"] is False
+
+    # Citizen explicitly clicks "I Agree"
+    grant_resp = client.post(
+        "/api/consent",
+        json={"consent_granted": True},
+        headers=bearer(token),
+    )
+    assert grant_resp.status_code == 200
+    assert grant_resp.get_json()["has_recorded_consent"] is True
+    assert grant_resp.get_json()["consent_granted"] is True
+
+    # Now GET returns has_recorded_consent=True
+    res2 = client.get("/api/consent", headers=bearer(token))
+    assert res2.status_code == 200
+    body2 = res2.get_json()
+    assert body2["consent_granted"] is True
+    assert body2["has_recorded_consent"] is True
+
+
+def test_staff_statutory_privacy_oath_acknowledgment_and_audit(client):
+    """Verify staff oath endpoint requires staff role and writes to immutable audit trail."""
+    # 1. Unauthenticated rejected
+    unauth = client.post("/api/bhw/acknowledge-oath")
+    assert unauth.status_code in (401, 403)
+
+    # 2. Citizen rejected (must be staff)
+    carl_token = login(client, "carl", "citizen123")["token"]
+    as_citizen = client.post("/api/bhw/acknowledge-oath", headers=bearer(carl_token))
+    assert as_citizen.status_code == 403
+
+    # 3. Staff acknowledged
+    bhw_token = login(client, "bhw1", "bhw12345")["token"]
+    res = client.post("/api/bhw/acknowledge-oath", headers=bearer(bhw_token))
+    assert res.status_code == 200
+    assert res.get_json() == {"ok": True}
+
+    # 4. Verify audit trail has recorded action_type = 'staff_privacy_oath_acknowledged'
+    audit = client.get("/api/bhw/audit-trail?action=staff_privacy_oath_acknowledged", headers=bearer(bhw_token)).get_json()["audit"]
+    assert len(audit) >= 1
+    assert audit[0]["action"] == "staff_privacy_oath_acknowledged"
+    assert audit[0]["status"] == "success"
+    assert "RA 10173" in audit[0]["details"]
+
 
 
 

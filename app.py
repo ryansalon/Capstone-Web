@@ -1165,7 +1165,10 @@ def register_routes(app: Flask):
             with get_db().session() as session:
                 row = latest_consent(session, g.user.id)
             return jsonify(
-                {"consent_granted": bool(row and row.consent_granted == 1)}
+                {
+                    "consent_granted": bool(row and row.consent_granted == 1),
+                    "has_recorded_consent": row is not None,
+                }
             )
 
         data = json_body()
@@ -1181,7 +1184,7 @@ def register_routes(app: Flask):
                     user_agent=(request.headers.get("User-Agent") or "")[:255],
                 )
             )
-        return jsonify({"consent_granted": granted == 1})
+        return jsonify({"consent_granted": granted == 1, "has_recorded_consent": True})
 
     @app.route("/api/citizen/consent-history", methods=["GET"])
     @require_citizen
@@ -1241,6 +1244,20 @@ def register_routes(app: Flask):
         return jsonify({"ok": True})
 
     # -- BHW / admin -------------------------------------------------------
+
+    @app.route("/api/bhw/acknowledge-oath", methods=["POST"])
+    @require_staff
+    def bhw_acknowledge_oath():
+        with get_db().session() as session:
+            write_audit(
+                session,
+                bhw_user_id=g.user.id,
+                citizen_id=None,
+                action_type="staff_privacy_oath_acknowledged",
+                status="success",
+                details="RA 10173 statutory compliance undertaking acknowledged by staff member.",
+            )
+        return jsonify({"ok": True})
 
     @app.route("/api/bhw/dashboard", methods=["GET"])
     @require_staff

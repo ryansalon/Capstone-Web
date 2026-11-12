@@ -8,6 +8,8 @@ env/
 
 # Database
 *.db
+*.db-shm
+*.db-wal
 *.sqlite3
 
 # Python bytecode

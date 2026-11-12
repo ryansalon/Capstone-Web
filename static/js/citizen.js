@@ -451,6 +451,232 @@
     dismissBtn.onclick = closeDialog;
   }
 
+  function showCitizenConsentModal(onConsentChosen) {
+    if (document.getElementById("citizenConsentModalBackdrop")) return;
+
+    var backdrop = U.el("div", {
+      id: "citizenConsentModalBackdrop",
+      class: "modal-backdrop",
+    });
+    var card = U.el("div", {
+      class: "modal-card privacy-consent-modal",
+      style: "max-width: 680px;",
+    });
+
+    var header = U.el("div", { class: "modal-header" });
+    var headerLeft = U.el("div");
+    var badge = U.el(
+      "span",
+      {
+        class: "badge badge-ok",
+        style:
+          "display:inline-block; font-size:0.75rem; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:0.25rem;",
+      },
+      "Data Privacy Act · Republic Act No. 10173"
+    );
+    headerLeft.appendChild(badge);
+    headerLeft.appendChild(
+      U.el(
+        "h3",
+        { style: "margin:0; font-size:1.15rem; color:#fff;" },
+        "Patient Health Privacy & Consent Notice"
+      )
+    );
+    header.appendChild(headerLeft);
+
+    var closeBtn = U.el(
+      "button",
+      { class: "btn btn-ghost", type: "button", "aria-label": "Close" },
+      "✕"
+    );
+    header.appendChild(closeBtn);
+    card.appendChild(header);
+
+    var body = U.el("div", {
+      class: "modal-body",
+      style: "font-size:0.92rem; line-height:1.55;",
+    });
+
+    var introP = U.el("p", { style: "margin-top:0; color:var(--ink-base);" });
+    introP.innerHTML =
+      "Welcome to the <strong>Barangay Health Monitoring System</strong>. " +
+      "Under <strong>Republic Act No. 10173 (Philippine Data Privacy Act of 2012)</strong>, " +
+      "your health vitals (blood pressure, heart rate, oxygen saturation, temperature, height, weight, and BMI) " +
+      "are legally classified as <strong>Sensitive Personal Information (SPI)</strong>.";
+    body.appendChild(introP);
+
+    var calloutBox = U.el("div", {
+      class: "statutory-callout",
+      style:
+        "background:var(--green-050); border-left:4px solid var(--green-600); padding:0.85rem 1rem; border-radius:6px; margin:0.9rem 0;",
+    });
+    calloutBox.appendChild(
+      U.el(
+        "h4",
+        {
+          style:
+            "margin:0 0 0.4rem 0; font-size:0.92rem; color:var(--green-900); font-weight:700;",
+        },
+        "Why We Process Your Health Data"
+      )
+    );
+    var calloutList = U.el("ul", {
+      style: "margin:0; padding-left:1.2rem; font-size:0.88rem; color:var(--ink-soft);",
+    });
+    calloutList.appendChild(
+      U.el(
+        "li",
+        null,
+        "Primary Healthcare Triage: Immediate detection of elevated blood pressure, fever, and triage risks."
+      )
+    );
+    calloutList.appendChild(
+      U.el(
+        "li",
+        null,
+        "Barangay Health Assistance: Clinical guidance, consultation scheduling, and RHU referral coordination."
+      )
+    );
+    calloutList.appendChild(
+      U.el(
+        "li",
+        null,
+        "Community Epidemiology: Anonymous statistics for municipal health planning."
+      )
+    );
+    calloutBox.appendChild(calloutList);
+    body.appendChild(calloutBox);
+
+    var choicesGrid = U.el("div", {
+      style:
+        "display:grid; grid-template-columns:1fr 1fr; gap:0.85rem; margin:1rem 0;",
+    });
+
+    var agreeCard = U.el("div", {
+      style:
+        "border:1.5px solid var(--green-300); background:#f4fbf7; padding:0.85rem; border-radius:8px;",
+    });
+    agreeCard.appendChild(
+      U.el(
+        "div",
+        {
+          style:
+            "font-weight:700; color:var(--green-900); font-size:0.92rem; margin-bottom:0.35rem;",
+        },
+        "Option A: Grant Consent (Recommended)"
+      )
+    );
+    agreeCard.appendChild(
+      U.el(
+        "p",
+        {
+          style:
+            "font-size:0.84rem; color:var(--ink-soft); margin:0; line-height:1.4;",
+        },
+        "Designated Barangay Health Workers can view your past check-in readings and write clinical follow-up advice for your care."
+      )
+    );
+    choicesGrid.appendChild(agreeCard);
+
+    var disagreeCard = U.el("div", {
+      style:
+        "border:1.5px solid var(--line); background:#fafafa; padding:0.85rem; border-radius:8px;",
+    });
+    disagreeCard.appendChild(
+      U.el(
+        "div",
+        {
+          style:
+            "font-weight:700; color:var(--ink-base); font-size:0.92rem; margin-bottom:0.35rem;",
+        },
+        "Option B: Keep Private"
+      )
+    );
+    disagreeCard.appendChild(
+      U.el(
+        "p",
+        {
+          style:
+            "font-size:0.84rem; color:var(--ink-muted); margin:0; line-height:1.4;",
+        },
+        "Health workers will not be able to view your personal readings. Only anonymized numbers count toward barangay health totals."
+      )
+    );
+    choicesGrid.appendChild(disagreeCard);
+    body.appendChild(choicesGrid);
+
+    var rightsP = U.el("p", {
+      style:
+        "font-size:0.82rem; color:var(--ink-muted); margin-bottom:0; line-height:1.4;",
+    });
+    rightsP.innerHTML =
+      "<em>Your Rights under RA 10173:</em> You have the right to access, export, or revoke this decision at any time by visiting the <strong>Consent</strong> page.";
+    body.appendChild(rightsP);
+
+    card.appendChild(body);
+
+    var mFoot = U.el("div", {
+      class: "modal-footer",
+      style: "display:flex; justify-content:space-between; align-items:center;",
+    });
+    var btnGroup = U.el("div", {
+      style: "display:flex; gap:0.65rem; margin-left:auto;",
+    });
+
+    var disagreeBtn = U.el(
+      "button",
+      { class: "btn btn-secondary", type: "button" },
+      "I Disagree (Keep Private)"
+    );
+    var agreeBtn = U.el(
+      "button",
+      { class: "btn btn-primary", type: "button" },
+      "I Agree (Grant Access)"
+    );
+    btnGroup.appendChild(disagreeBtn);
+    btnGroup.appendChild(agreeBtn);
+    mFoot.appendChild(btnGroup);
+    card.appendChild(mFoot);
+
+    backdrop.appendChild(card);
+    document.body.appendChild(backdrop);
+
+    var closeDialog = U.openDialog(backdrop, agreeBtn);
+    closeBtn.onclick = closeDialog;
+
+    async function submitConsent(granted) {
+      agreeBtn.disabled = true;
+      disagreeBtn.disabled = true;
+      try {
+        await API.apiFetch("/api/consent", {
+          method: "POST",
+          body: { consent_granted: granted },
+        });
+        closeDialog();
+        if (typeof onConsentChosen === "function") {
+          onConsentChosen(granted);
+        }
+        U.toast(
+          granted
+            ? "Consent recorded: Barangay Health Workers can view your vitals for health assistance."
+            : "Consent recorded: Your individual records remain strictly confidential.",
+          granted ? "success" : "info"
+        );
+      } catch (err) {
+        agreeBtn.disabled = false;
+        disagreeBtn.disabled = false;
+        U.toast("Failed to record consent: " + err.message, "error");
+      }
+    }
+
+    agreeBtn.onclick = function () {
+      submitConsent(true);
+    };
+    disagreeBtn.onclick = function () {
+      submitConsent(false);
+    };
+  }
+
   function addCard(container, label, value, sub, tone, gauge, delta, spark, pendingSparks, refRange, badge, unit) {
     var card = U.el("div", { class: "card" + (tone ? " " + tone : "") });
     var topRow = U.el("div", { class: "card-top-row" });
@@ -1150,7 +1376,14 @@
         ]);
         U.clear(statusNode);
         var logs = results[0].logs || [];
-        renderConsentChip(Boolean(results[1].consent_granted));
+        var consentInfo = results[1] || {};
+        renderConsentChip(Boolean(consentInfo.consent_granted));
+
+        if (!isAuto && consentInfo.has_recorded_consent === false) {
+          showCitizenConsentModal(function (newGranted) {
+            renderConsentChip(newGranted);
+          });
+        }
 
         if (logs.length === 0) {
           knownTimestamp = null;
