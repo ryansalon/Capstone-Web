@@ -909,12 +909,226 @@
 
   /* ---------------- citizen record ---------------- */
 
+  function bmiCategory(value) {
+    if (value === null || value === undefined) return null;
+    if (value < 18.5) return "Underweight";
+    if (value < 25) return "Normal";
+    if (value < 30) return "Overweight";
+    return "Obese";
+  }
+
+  function bpCategory(systolic, diastolic) {
+    if (systolic === null || systolic === undefined) return null;
+    if (diastolic === null || diastolic === undefined) return null;
+    if (systolic >= 180 || diastolic >= 120) return "Crisis";
+    if (systolic >= 140 || diastolic >= 90) return "Stage 2";
+    if (systolic >= 130 || diastolic >= 80) return "Stage 1";
+    if (systolic >= 120) return "Elevated";
+    return "Normal";
+  }
+
+  function spo2Category(value) {
+    if (value === null || value === undefined) return null;
+    if (value < 90) return "Critical";
+    if (value < 95) return "Low";
+    return "Normal";
+  }
+
+  function isMissing(value) {
+    return value === null || value === undefined;
+  }
+
+  function cellTone(kind, log) {
+    switch (kind) {
+      case "bp": {
+        var c = bpCategory(log.systolic_bp, log.diastolic_bp);
+        if (!c || c === "Normal") return "";
+        return c === "Elevated" || c === "Stage 1" ? "cell-warn" : "cell-bad";
+      }
+      case "spo2": {
+        var s = spo2Category(log.spo2);
+        return s === "Critical" ? "cell-bad" : s === "Low" ? "cell-warn" : "";
+      }
+      case "temp":
+        if (isMissing(log.temperature)) return "";
+        if (Number(log.temperature) >= 37.9) return "cell-bad";
+        return Number(log.temperature) < 35.5 ? "cell-warn" : "";
+      case "pulse":
+        if (isMissing(log.pulse_rate)) return "";
+        return log.pulse_rate < 60 || log.pulse_rate > 100 ? "cell-warn" : "";
+      case "bmi": {
+        var b = bmiCategory(log.bmi);
+        return b && b !== "Normal" ? "cell-warn" : "";
+      }
+      default:
+        return "";
+    }
+  }
+
+  function calculateAge(birthdateStr) {
+    if (!birthdateStr) return null;
+    var birth = new Date(birthdateStr);
+    if (isNaN(birth.getTime())) return null;
+    var today = new Date();
+    var age = today.getFullYear() - birth.getFullYear();
+    var m = today.getMonth() - birth.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
+      age--;
+    }
+    return age >= 0 ? age : null;
+  }
+
   function readingsTable(logs) {
-    var wrap = U.el("div");
-    if (!logs.length) {
-      U.empty(wrap, "No readings recorded for this citizen yet.");
+    var wrap = U.el("div", { class: "readings-dashboard" });
+    if (!logs || !logs.length) {
+      wrap.appendChild(
+        U.el(
+          "div",
+          { class: "status empty", style: "margin:0.5rem 0 1rem;" },
+          "No vital readings recorded for this citizen yet. When the citizen checks in at the Barangay Health Kiosk, their clinical telemetry will appear here automatically."
+        )
+      );
       return wrap;
     }
+
+    // 1. Latest Vitals Snapshot Panel (Clinical Overview)
+    var latest = logs[0];
+    var snapshotPanel = U.el("div", { class: "readings-snapshot-panel" });
+    
+    var snapHead = U.el("div", { class: "readings-snapshot-header" });
+    var snapHeadLeft = U.el("div");
+    snapHeadLeft.appendChild(U.el("span", { class: "readings-snapshot-eyebrow" }, "Most Recent Check-in"));
+    snapHeadLeft.appendChild(U.el("h3", { class: "readings-snapshot-title" }, "Latest Clinical Vitals"));
+    snapHead.appendChild(snapHeadLeft);
+    snapHead.appendChild(
+      U.el("span", { class: "readings-snapshot-time" }, "Recorded " + U.fmtDT(latest.timestamp) + " (" + U.fmtAge(latest.timestamp) + ")")
+    );
+    snapshotPanel.appendChild(snapHead);
+
+    var cardsGrid = U.el("div", { class: "cards readings-vitals-cards" });
+
+    function addSnapshotCard(label, valStr, unitStr, badge, refStr, tone) {
+      var card = U.el("div", { class: "card" + (tone ? " " + tone : "") });
+      var topRow = U.el("div", { class: "card-top-row" });
+      topRow.appendChild(U.el("div", { class: "label" }, label));
+      if (badge) {
+        topRow.appendChild(U.el("span", { class: "vital-badge badge-" + (badge.tone || "neutral") }, badge.text));
+      }
+      card.appendChild(topRow);
+
+      var valRow = U.el("div", { class: "value-row" });
+      valRow.appendChild(U.el("span", { class: "value" }, String(valStr)));
+      if (unitStr) {
+        valRow.appendChild(U.el("span", { class: "unit" }, unitStr));
+      }
+      card.appendChild(valRow);
+
+      if (refStr) {
+        var metaRow = U.el("div", { class: "card-meta" });
+        metaRow.appendChild(U.el("span", { class: "ref-range" }, refStr));
+        card.appendChild(metaRow);
+      }
+      cardsGrid.appendChild(card);
+    }
+
+    // BP
+    var bpCat = bpCategory(latest.systolic_bp, latest.diastolic_bp);
+    var bpBadge = isMissing(latest.systolic_bp) || isMissing(latest.diastolic_bp)
+      ? null
+      : bpCat === "Normal"
+        ? { text: "Normal", tone: "good" }
+        : bpCat === "Elevated"
+          ? { text: "Elevated", tone: "warn" }
+          : { text: bpCat, tone: "danger" };
+    addSnapshotCard(
+      "Blood pressure",
+      isMissing(latest.systolic_bp) || isMissing(latest.diastolic_bp) ? "—" : latest.systolic_bp + "/" + latest.diastolic_bp,
+      "mmHg",
+      bpBadge,
+      "Target: <120/80 mmHg",
+      bpCat && bpCat !== "Normal" ? (bpCat === "Elevated" ? "attention" : "abnormal") : ""
+    );
+
+    // Pulse
+    var pulseBadge = isMissing(latest.pulse_rate)
+      ? null
+      : (latest.pulse_rate >= 60 && latest.pulse_rate <= 100)
+        ? { text: "Normal", tone: "good" }
+        : { text: latest.pulse_rate < 60 ? "Low pulse" : "Elevated", tone: "warn" };
+    addSnapshotCard(
+      "Pulse rate",
+      isMissing(latest.pulse_rate) ? "—" : latest.pulse_rate,
+      "bpm",
+      pulseBadge,
+      "Resting: 60–100 bpm",
+      latest.pulse_rate && (latest.pulse_rate < 60 || latest.pulse_rate > 100) ? "attention" : ""
+    );
+
+    // SpO2
+    var spo2Cat = spo2Category(latest.spo2);
+    var spo2Badge = isMissing(latest.spo2)
+      ? null
+      : spo2Cat === "Normal"
+        ? { text: "Optimal", tone: "good" }
+        : spo2Cat === "Low"
+          ? { text: "Low SpO2", tone: "warn" }
+          : { text: "Critical", tone: "danger" };
+    addSnapshotCard(
+      "SpO2 (Oxygen)",
+      isMissing(latest.spo2) ? "—" : latest.spo2,
+      "%",
+      spo2Badge,
+      "Normal: 95–100%",
+      spo2Cat && spo2Cat !== "Normal" ? (spo2Cat === "Critical" ? "abnormal" : "attention") : ""
+    );
+
+    // Temperature
+    var hasFever = !isMissing(latest.temperature) && Number(latest.temperature) >= 37.9;
+    var tempBadge = isMissing(latest.temperature)
+      ? null
+      : hasFever
+        ? { text: "Fever", tone: "danger" }
+        : { text: "Normal", tone: "good" };
+    addSnapshotCard(
+      "Temperature",
+      isMissing(latest.temperature) ? "—" : U.fmtNum(latest.temperature, 1),
+      "°C",
+      tempBadge,
+      "Normal: 36.5–37.5 °C",
+      hasFever ? "abnormal" : ""
+    );
+
+    // BMI
+    var bmiCat = bmiCategory(latest.bmi);
+    var bmiBadge = isMissing(latest.bmi)
+      ? null
+      : bmiCat === "Normal"
+        ? { text: "Normal", tone: "good" }
+        : { text: bmiCat, tone: "warn" };
+    var heightWeightStr = (!isMissing(latest.height) || !isMissing(latest.weight))
+      ? U.fmtNum(latest.height, 1, "cm") + " · " + U.fmtNum(latest.weight, 1, "kg")
+      : "Normal: 18.5–24.9";
+    addSnapshotCard(
+      "Body mass index",
+      isMissing(latest.bmi) ? "—" : U.fmtNum(latest.bmi, 1),
+      "BMI",
+      bmiBadge,
+      heightWeightStr,
+      bmiCat && bmiCat !== "Normal" ? "attention" : ""
+    );
+
+    snapshotPanel.appendChild(cardsGrid);
+    wrap.appendChild(snapshotPanel);
+
+    // 2. Historical Telemetry Log Table
+    var histPanel = U.el("div", { class: "readings-history-panel" });
+    var histHead = U.el("div", { class: "readings-history-header" });
+    histHead.appendChild(U.el("h3", { class: "readings-history-title" }, "Telemetry Log History"));
+    histHead.appendChild(
+      U.el("span", { class: "readings-count-pill" }, logs.length + (logs.length === 1 ? " check-in recorded" : " check-ins recorded"))
+    );
+    histPanel.appendChild(histHead);
+
     var tableWrap = U.el("div", { class: "table-wrap" });
     var table = U.el("table");
     var thead = U.el("thead");
@@ -929,26 +1143,31 @@
     var rowsFrag = document.createDocumentFragment();
     logs.forEach(function (log) {
       var row = U.el("tr");
-      var tdTime = U.el("td", { class: "cell-time nowrap", style: "font-weight:600; text-align:left;" }, U.fmtDT(log.timestamp));
+      var tdTime = U.el("td", { class: "cell-time nowrap", title: U.fmtUTC(log.timestamp), style: "font-weight:600; text-align:left;" }, U.fmtDT(log.timestamp));
       tdTime.setAttribute("data-sort", log.timestamp || "");
       row.appendChild(tdTime);
       [
-        [U.fmtNum(log.weight, 1), log.weight],
-        [U.fmtNum(log.height, 1), log.height],
-        [U.fmtNum(log.bmi, 1), log.bmi],
-        [U.fmtNum(log.temperature, 1), log.temperature],
-        [U.fmtNum(log.pulse_rate, 0), log.pulse_rate],
-        [U.fmtNum(log.spo2, 0), log.spo2],
+        [U.fmtNum(log.weight, 1), log.weight, ""],
+        [U.fmtNum(log.height, 1), log.height, ""],
+        [U.fmtNum(log.bmi, 1), log.bmi, cellTone("bmi", log)],
+        [U.fmtNum(log.temperature, 1), log.temperature, cellTone("temp", log)],
+        [U.fmtNum(log.pulse_rate, 0), log.pulse_rate, cellTone("pulse", log)],
+        [U.fmtNum(log.spo2, 0), log.spo2, cellTone("spo2", log)],
         [
-          log.systolic_bp === null || log.systolic_bp === undefined ||
-          log.diastolic_bp === null || log.diastolic_bp === undefined
+          isMissing(log.systolic_bp) || isMissing(log.diastolic_bp)
             ? "—"
             : log.systolic_bp + "/" + log.diastolic_bp,
-          log.systolic_bp || ""
+          log.systolic_bp || "",
+          cellTone("bp", log)
         ],
-      ].forEach(function (pair) {
-        var td = U.el("td", { class: "num" }, pair[0]);
-        if (pair[1] !== null && pair[1] !== undefined) td.setAttribute("data-sort", String(pair[1]));
+      ].forEach(function (triple) {
+        var tone = triple[2];
+        var td = U.el("td", { class: "num" + (tone ? " " + tone : "") });
+        td.appendChild(document.createTextNode(triple[0]));
+        if (triple[1] !== null && triple[1] !== undefined) td.setAttribute("data-sort", String(triple[1]));
+        if (tone) {
+          td.appendChild(U.el("span", { class: "sr-only" }, tone === "cell-bad" ? " (needs attention)" : " (outside normal range)"));
+        }
         row.appendChild(td);
       });
       rowsFrag.appendChild(row);
@@ -957,7 +1176,27 @@
     table.appendChild(tbody);
     U.makeSortable(table);
     tableWrap.appendChild(table);
-    wrap.appendChild(tableWrap);
+    histPanel.appendChild(tableWrap);
+
+    // 3. Clinical Telemetry Legend
+    var legend = U.el("div", { class: "cell-legend", style: "margin-top:0.75rem;" });
+    var legNormal = U.el("div", { class: "cell-legend-item" });
+    legNormal.appendChild(U.el("span", { class: "swatch", style: "background:#ffffff; border-color:#dce5e0;" }));
+    legNormal.appendChild(U.el("span", null, "Normal range"));
+    legend.appendChild(legNormal);
+
+    var legWarn = U.el("div", { class: "cell-legend-item" });
+    legWarn.appendChild(U.el("span", { class: "swatch cell-warn" }));
+    legWarn.appendChild(U.el("span", null, "Outside normal limits (warn)"));
+    legend.appendChild(legWarn);
+
+    var legBad = U.el("div", { class: "cell-legend-item" });
+    legBad.appendChild(U.el("span", { class: "swatch cell-bad" }));
+    legBad.appendChild(U.el("span", null, "Clinical attention required (fever / critical)"));
+    legend.appendChild(legBad);
+
+    histPanel.appendChild(legend);
+    wrap.appendChild(histPanel);
     return wrap;
   }
 
@@ -1042,8 +1281,10 @@
 
     var infoDl = U.el("dl", { class: "kv", style: "margin-bottom:0.85rem;" });
     function addInfo(lbl, val) {
-      infoDl.appendChild(U.el("dt", null, lbl));
-      infoDl.appendChild(U.el("dd", null, val || "—"));
+      var item = U.el("div", { class: "kv-item" });
+      item.appendChild(U.el("dt", null, lbl));
+      item.appendChild(U.el("dd", null, val || "—"));
+      infoDl.appendChild(item);
     }
     addInfo("Patient Name", citizen.full_name || "—");
     addInfo("Username / ID", citizen.username || "—");
@@ -1174,26 +1415,83 @@
     var citizen = data.citizen || {};
     document.getElementById("pageTitle").textContent = citizen.full_name || "Citizen record";
 
+    var profileHeading = document.getElementById("profileHeading");
+    if (profileHeading) profileHeading.textContent = citizen.full_name || "Citizen Profile";
+
+    var avatar = document.getElementById("patientAvatar");
+    if (avatar) {
+      var initials = (citizen.full_name || "Citizen")
+        .split(" ")
+        .map(function (n) { return n.charAt(0); })
+        .filter(function (c) { return c && /[a-zA-Z]/.test(c); })
+        .slice(0, 2)
+        .join("")
+        .toUpperCase() || "CR";
+      avatar.textContent = initials;
+    }
+
+    var logs = data.logs || [];
+    var logsCount = logs.length;
+    var age = calculateAge(citizen.birthdate);
+
+    var tagsNode = document.getElementById("patientTags");
+    if (tagsNode) {
+      U.clear(tagsNode);
+      if (citizen.username) {
+        tagsNode.appendChild(U.el("span", { class: "patient-tag" }, "ID: " + citizen.username));
+      }
+      if (citizen.gender) {
+        var gText = citizen.gender.charAt(0).toUpperCase() + citizen.gender.slice(1);
+        tagsNode.appendChild(U.el("span", { class: "patient-tag" }, gText));
+      }
+      if (age !== null) {
+        tagsNode.appendChild(U.el("span", { class: "patient-tag" }, age + " yrs old · Born " + (citizen.birthdate || "—")));
+      } else if (citizen.birthdate) {
+        tagsNode.appendChild(U.el("span", { class: "patient-tag" }, "Born " + citizen.birthdate));
+      }
+      tagsNode.appendChild(
+        U.el("span", { class: "patient-tag patient-tag-highlight" }, logsCount + (logsCount === 1 ? " Check-in on file" : " Check-ins on file"))
+      );
+    }
+
     var kv = document.getElementById("profileKv");
     U.clear(kv);
-    function addPair(term, value) {
-      kv.appendChild(U.el("dt", null, term));
-      kv.appendChild(U.el("dd", null, value || "—"));
+    function addPair(term, value, subtext) {
+      var item = U.el("div", { class: "kv-item" });
+      item.appendChild(U.el("dt", null, term));
+      item.appendChild(U.el("dd", null, value || "—"));
+      if (subtext) {
+        item.appendChild(U.el("span", { class: "kv-sub" }, subtext));
+      }
+      kv.appendChild(item);
     }
     addPair("Full name", citizen.full_name);
-    addPair("Username", citizen.username);
-    addPair("Birthdate", citizen.birthdate);
-    addPair("Gender", citizen.gender);
-    var logsCount = data.logs ? data.logs.length : 0;
-    addPair("Total kiosk visits", logsCount + (logsCount === 1 ? " visit recorded" : " visits recorded"));
+    addPair("Username", citizen.username, "Kiosk Login ID");
+    addPair("Birthdate", citizen.birthdate, age !== null ? (age + " years old") : "");
+    var formattedGender = citizen.gender ? (citizen.gender.charAt(0).toUpperCase() + citizen.gender.slice(1)) : "—";
+    addPair("Gender", formattedGender, "Self-reported");
+    addPair(
+      "Total kiosk visits",
+      logsCount + (logsCount === 1 ? " visit recorded" : " visits recorded"),
+      logsCount > 0 ? ("Latest: " + U.fmtAge(logs[0].timestamp)) : "No check-ins yet"
+    );
+    addPair("Data access", "Authorized", "RA 10173 Protected");
 
     var consent = data.consent || {};
-    document.getElementById("consentLine").textContent =
-      "Consent granted on " + U.fmtDT(consent.timestamp) + ".";
+    var consentLine = document.getElementById("consentLine");
+    if (consentLine) {
+      consentLine.textContent =
+        "Consent authorized on " + U.fmtDT(consent.timestamp) + " · Individual health telemetry accessible by authorized BHW staff.";
+    }
+
+    var countBadge = document.getElementById("readingsCountBadge");
+    if (countBadge) {
+      countBadge.textContent = logsCount + (logsCount === 1 ? " Check-in on record" : " Check-ins on record");
+    }
 
     var readings = document.getElementById("readings");
     U.clear(readings);
-    readings.appendChild(readingsTable(data.logs || []));
+    readings.appendChild(readingsTable(logs));
 
     try {
       await loadNotes(citizenId);

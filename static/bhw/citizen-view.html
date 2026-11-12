@@ -10,7 +10,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="preload" as="image" href="/img/cpsc-logo.png">
   <link rel="preload" as="image" href="/img/rhu-logo.png">
-  <link rel="stylesheet" href="/css/style.css?v=14">
+  <link rel="stylesheet" href="/css/style.css?v=15">
 </head>
 <body data-page="bhw-citizen-view">
   <a class="skip-link" href="#main">Skip to main content</a>
@@ -60,24 +60,53 @@
       <div id="consentBlocked"></div>
 
       <div id="record" hidden>
-        <section class="card-surface" aria-labelledby="profileHeading">
-          <h2 id="profileHeading">Profile</h2>
-          <dl id="profileKv" class="kv"></dl>
-          <p id="consentLine" class="notice consent-line-top"></p>
-          <div class="btn-row">
-            <button id="referBtn" class="btn btn-secondary" type="button">Refer to RHU</button>
-            <button id="printReferralBtn" class="btn btn-primary" type="button" title="Generate printable clinical referral slip for RHU Mahinog">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px; margin-right:4px;" aria-hidden="true"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
-              Print Referral Slip
-            </button>
-            <button id="resetCitizenPwBtn" class="btn btn-secondary" type="button" title="Issue a temporary password for this citizen">
-              Reset Password
-            </button>
+        <!-- Citizen Summary Card / Clinical Patient Header -->
+        <section class="card-surface citizen-summary-card" aria-labelledby="profileHeading">
+          <div class="patient-card-header">
+            <div class="patient-identity-cluster">
+              <div class="patient-avatar" id="patientAvatar" aria-hidden="true">CR</div>
+              <div class="patient-identity-text">
+                <span class="patient-eyebrow">Barangay Resident · Kiosk Record</span>
+                <h2 id="profileHeading" class="patient-name">Citizen Profile</h2>
+                <div class="patient-quick-tags" id="patientTags"></div>
+              </div>
+            </div>
+            <div class="patient-card-actions">
+              <button id="printReferralBtn" class="btn btn-primary" type="button" title="Generate printable clinical referral slip for RHU Mahinog">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+                <span>Print Referral Slip</span>
+              </button>
+              <button id="referBtn" class="btn btn-secondary" type="button">Refer to RHU</button>
+              <button id="resetCitizenPwBtn" class="btn btn-secondary" type="button" title="Issue a temporary password for this citizen">
+                Reset Password
+              </button>
+            </div>
+          </div>
+
+          <dl id="profileKv" class="kv patient-kv-grid"></dl>
+
+          <div class="consent-status-banner" id="consentBanner">
+            <div class="consent-banner-left">
+              <div class="consent-banner-icon" aria-hidden="true">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0f6b53" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+              </div>
+              <div class="consent-banner-text">
+                <span class="consent-status-title">Consent Active &amp; Verified</span>
+                <p id="consentLine" class="consent-line-top"></p>
+              </div>
+            </div>
+            <span class="badge badge-ok consent-badge">RA 10173 Protected</span>
           </div>
         </section>
 
         <section class="section" aria-labelledby="readingsHeading">
-          <h2 id="readingsHeading">Readings</h2>
+          <div class="section-header-row">
+            <div>
+              <h2 id="readingsHeading">Readings &amp; Telemetry</h2>
+              <p class="section-subtext" id="readingsSubtext">Vital measurements recorded from the Barangay Health Kiosk.</p>
+            </div>
+            <div id="readingsCountBadge" class="readings-count-badge"></div>
+          </div>
           <div id="readings"></div>
         </section>
 
@@ -109,7 +138,7 @@
     <footer class="foot">Notes and record views are audited. RA 10173 applies.</footer>
     </div>
   </div>
-  <script src="/js/api.js?v=14"></script>
-  <script src="/js/bhw.js?v=14"></script>
+  <script src="/js/api.js?v=15"></script>
+  <script src="/js/bhw.js?v=15"></script>
 </body>
 </html>

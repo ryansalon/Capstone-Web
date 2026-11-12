@@ -277,8 +277,10 @@
 
     var infoDl = U.el("dl", { class: "kv", style: "margin-bottom:1rem;" });
     function addInfo(lbl, val) {
-      infoDl.appendChild(U.el("dt", null, lbl));
-      infoDl.appendChild(U.el("dd", null, val || "—"));
+      var item = U.el("div", { class: "kv-item" });
+      item.appendChild(U.el("dt", null, lbl));
+      item.appendChild(U.el("dd", null, val || "—"));
+      infoDl.appendChild(item);
     }
     addInfo("Citizen Name", profile.full_name || API.getName());
     addInfo("Username / ID", profile.username || "—");
