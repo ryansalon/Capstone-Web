@@ -2321,18 +2321,6 @@
       )
     );
     header.appendChild(headerLeft);
-
-    var exitBtn = U.el(
-      "button",
-      {
-        class: "btn btn-ghost",
-        type: "button",
-        "aria-label": "Decline and Log Out",
-        title: "Decline and Log Out",
-      },
-      "✕"
-    );
-    header.appendChild(exitBtn);
     card.appendChild(header);
 
     var body = U.el("div", {
@@ -2475,14 +2463,13 @@
     backdrop.appendChild(card);
     document.body.appendChild(backdrop);
 
-    var closeDialog = U.openDialog(backdrop, acceptBtn);
+    var closeDialog = U.openDialog(backdrop, acceptBtn, { persistent: true });
 
     function doDecline() {
       closeDialog();
       API.logout();
     }
 
-    exitBtn.onclick = doDecline;
     declineBtn.onclick = doDecline;
 
     // Enforce logout if closed without acknowledging

@@ -283,11 +283,13 @@
      * minimal Tab trap so keyboard users cannot tab behind the overlay.
      * Returns a close() function (callers should invoke it from their own
      * close buttons). */
-    openDialog: function (backdrop, focusTarget) {
+    openDialog: function (backdrop, focusTarget, options) {
       if (!backdrop) return function () {};
+      options = options || {};
+      var persistent = Boolean(options.persistent || options.preventDismiss);
       var seq = (UI._dialogSeq = (UI._dialogSeq || 0) + 1);
 
-      backdrop.setAttribute("role", "dialog");
+      backdrop.setAttribute("role", persistent ? "alertdialog" : "dialog");
       backdrop.setAttribute("aria-modal", "true");
       if (!backdrop.getAttribute("aria-labelledby")) {
         var heading = backdrop.querySelector("h1, h2, h3");
@@ -324,7 +326,9 @@
       function onKeydown(event) {
         if (event.key === "Escape" || event.key === "Esc") {
           event.preventDefault();
-          close();
+          if (!persistent) {
+            close();
+          }
           return;
         }
         if (event.key === "Tab") {
@@ -344,7 +348,7 @@
       }
 
       backdrop.addEventListener("mousedown", function (event) {
-        if (event.target === backdrop) close();
+        if (event.target === backdrop && !persistent) close();
       });
       document.addEventListener("keydown", onKeydown, true);
 

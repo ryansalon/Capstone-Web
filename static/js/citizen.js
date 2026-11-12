@@ -483,13 +483,6 @@
       )
     );
     header.appendChild(headerLeft);
-
-    var closeBtn = U.el(
-      "button",
-      { class: "btn btn-ghost", type: "button", "aria-label": "Close" },
-      "✕"
-    );
-    header.appendChild(closeBtn);
     card.appendChild(header);
 
     var body = U.el("div", {
@@ -574,18 +567,15 @@
     backdrop.appendChild(card);
     document.body.appendChild(backdrop);
 
-    var closeDialog = U.openDialog(backdrop, understandBtn);
+    var closeDialog = U.openDialog(backdrop, understandBtn, { persistent: true });
 
-    function doDismiss() {
+    understandBtn.onclick = function () {
       sessionStorage.setItem("bhm:citizen_terms_seen", "1");
       closeDialog();
       if (typeof onDismiss === "function") {
         onDismiss();
       }
-    }
-
-    closeBtn.onclick = doDismiss;
-    understandBtn.onclick = doDismiss;
+    };
   }
 
   function addCard(container, label, value, sub, tone, gauge, delta, spark, pendingSparks, refRange, badge, unit) {
