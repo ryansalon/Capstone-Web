@@ -5054,6 +5054,133 @@ mark.match {
   border-radius: 4px;
 }
 
+/* ---------- BHW & Citizen shared guidance notes ---------- */
+
+.badge-neutral {
+  background: #edf2ef;
+  color: var(--ink-muted);
+  border: 1px solid #d5e0db;
+}
+
+.btn-sm {
+  padding: 0.3rem 0.65rem;
+  font-size: 0.78rem;
+  min-height: 30px;
+}
+
+.note-share-row {
+  margin: 0.6rem 0 0.35rem;
+}
+
+.note-share-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.note-share-toggle input[type="checkbox"] {
+  width: 1rem;
+  height: 1rem;
+  accent-color: var(--green-600);
+  cursor: pointer;
+}
+
+.notes-list li.is-staff-only {
+  border-left-color: #93a39d;
+  background: #fafcfb;
+}
+
+.notes-list .note-item-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.45rem;
+}
+
+.notes-list .note-vis-btn {
+  margin-left: auto;
+  color: var(--green-700);
+}
+
+.citizen-notes-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.citizen-note-card {
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--green-600);
+  border-radius: 12px;
+  padding: 0.9rem 1rem;
+  box-shadow: 0 1px 2px rgba(11, 38, 29, 0.04);
+}
+
+.citizen-note-card.is-referral {
+  border-left-color: #c27803;
+  background: #fffdf7;
+}
+
+.citizen-note-ref {
+  display: inline-block;
+  margin-bottom: 0.4rem;
+  padding: 0.16rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.citizen-note-text {
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+  color: var(--ink);
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.citizen-note-meta {
+  margin-top: 0.45rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+
+.lang-switcher-light {
+  background: var(--green-050);
+  border-color: #cfe0d8;
+}
+
+.lang-switcher-light .lang-btn {
+  color: var(--ink-soft);
+}
+
+.lang-switcher-light .lang-btn:hover {
+  color: var(--green-900);
+  background: #e1ede7;
+}
+
+.lang-switcher-light .lang-btn.is-active {
+  background: var(--green-700);
+  color: #ffffff;
+}
+
+.lang-switcher-light .lang-btn:focus-visible {
+  outline-color: var(--green-700);
+}
+
 @media print {
   .checkin-view-bar,
   .table-scroll-cue,

@@ -10,7 +10,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="preload" as="image" href="/img/cpsc-logo.png">
   <link rel="preload" as="image" href="/img/rhu-logo.png">
-  <link rel="stylesheet" href="/css/style.css?v=21">
+  <link rel="stylesheet" href="/css/style.css?v=23">
 </head>
 <body data-page="citizen-consent">
   <a class="skip-link" href="#main">Skip to main content</a>
@@ -54,75 +54,80 @@
     <main id="main" class="page" tabindex="-1">
       <div class="page-head">
         <div class="page-head-title">
-          <span class="page-eyebrow">Privacy &amp; Data Rights</span>
-          <h1>Consent to share my records</h1>
-          <p class="lede">
+          <span class="page-eyebrow" data-i18n="consEyebrow">Privacy &amp; Data Rights</span>
+          <h1 data-i18n="consHeading">Consent to share my records</h1>
+          <p class="lede" data-i18n-html="consLedeHtml">
             Barangay Health Workers can open your individual readings and notes <strong>only while your consent is
             granted</strong>. Without consent the kiosk still saves your readings for your own account, and health
             workers can only see your basic registry entry and anonymous community totals.
           </p>
         </div>
         <div class="page-actions">
-          <a href="/citizen/dashboard.html" class="btn btn-secondary">Dashboard</a>
-          <a href="/citizen/profile.html" class="btn btn-secondary">My profile</a>
+          <div class="lang-switcher lang-switcher-light" role="group" aria-label="Language preference">
+            <button type="button" class="lang-btn is-active" data-lang="en" aria-pressed="true">EN</button>
+            <button type="button" class="lang-btn" data-lang="ceb" aria-pressed="false">Bisaya</button>
+            <button type="button" class="lang-btn" data-lang="tl" aria-pressed="false">Tagalog</button>
+          </div>
+          <a href="/citizen/dashboard.html" class="btn btn-secondary" data-i18n="navDashboard">Dashboard</a>
+          <a href="/citizen/profile.html" class="btn btn-secondary" data-i18n="navMyProfile">My profile</a>
         </div>
       </div>
 
       <div id="status" aria-live="polite"></div>
 
       <section class="card-surface section" aria-live="polite">
-        <h2>Current consent</h2>
+        <h2 data-i18n="consCurrentHeading">Current consent</h2>
         <p id="consentState" class="muted">Checking…</p>
         <div class="btn-row">
-          <button id="grantBtn" class="btn btn-primary" type="button">Grant consent</button>
-          <button id="revokeBtn" class="btn btn-danger" type="button">Revoke consent</button>
+          <button id="grantBtn" class="btn btn-primary" type="button" data-i18n="btnGrantConsent">Grant consent</button>
+          <button id="revokeBtn" class="btn btn-danger" type="button" data-i18n="btnRevokeConsent">Revoke consent</button>
         </div>
-        <p class="hint muted">Every grant or revoke is recorded in the consent history below and cannot be deleted.</p>
+        <p class="hint muted" data-i18n="consAuditHint">Every grant or revoke is recorded in the consent history below and cannot be deleted.</p>
       </section>
 
       <section class="section" aria-labelledby="compareHeading">
-        <h2 id="compareHeading">What health workers can see</h2>
+        <h2 id="compareHeading" data-i18n="consCompareHeading">What health workers can see</h2>
         <div class="consent-compare">
           <div class="consent-col" id="consentColOn">
             <div class="consent-col-head">
-              <span class="consent-col-title">With consent</span>
-              <span class="consent-current-tag">Your current setting</span>
+              <span class="consent-col-title" data-i18n="consWithTitle">With consent</span>
+              <span class="consent-current-tag" data-i18n="consCurrentTag">Your current setting</span>
             </div>
             <ul class="consent-list">
-              <li class="yes">Your name, birthdate and number of kiosk visits</li>
-              <li class="yes">Every reading: BP, SpO2, temperature, pulse, weight, BMI</li>
-              <li class="yes">Private notes written about your health</li>
-              <li class="yes">Referring you to the Rural Health Unit</li>
-              <li class="yes">Your name on alert reports</li>
+              <li class="yes" data-i18n="consOn1">Your name, birthdate and number of kiosk visits</li>
+              <li class="yes" data-i18n="consOn2">Every reading: BP, SpO2, temperature, pulse, weight, BMI</li>
+              <li class="yes" data-i18n="consOn3">Guidance notes &amp; clinical notes written about your health</li>
+              <li class="yes" data-i18n="consOn4">Referring you to the Rural Health Unit</li>
+              <li class="yes" data-i18n="consOn5">Your name on alert reports</li>
             </ul>
           </div>
           <div class="consent-col" id="consentColOff">
             <div class="consent-col-head">
-              <span class="consent-col-title">Without consent</span>
-              <span class="consent-current-tag">Your current setting</span>
+              <span class="consent-col-title" data-i18n="consWithoutTitle">Without consent</span>
+              <span class="consent-current-tag" data-i18n="consCurrentTag">Your current setting</span>
             </div>
             <ul class="consent-list">
-              <li class="yes">Your name, birthdate and number of kiosk visits</li>
-              <li class="no">Your individual readings</li>
-              <li class="no">Private notes</li>
-              <li class="no">Referrals to the Rural Health Unit</li>
-              <li class="no">Your name on alert reports (shown as "Withheld")</li>
+              <li class="yes" data-i18n="consOff1">Your name, birthdate and number of kiosk visits</li>
+              <li class="no" data-i18n="consOff2">Your individual readings</li>
+              <li class="no" data-i18n="consOff3">Writing or opening health worker notes</li>
+              <li class="no" data-i18n="consOff4">Referrals to the Rural Health Unit</li>
+              <li class="no" data-i18n="consOff5">Your name on alert reports (shown as "Withheld")</li>
             </ul>
           </div>
         </div>
-        <p class="hint muted">Either way, your readings are counted in anonymous community totals, and every time a health worker opens your record it is logged.</p>
+        <p class="hint muted" data-i18n="consFooterHint">Either way, your readings are counted in anonymous community totals, and every time a health worker opens your record it is logged.</p>
       </section>
 
       <section class="section">
-        <h2>Consent history</h2>
+        <h2 data-i18n="consHistoryHeading">Consent history</h2>
         <div id="historyWrap"></div>
       </section>
     </main>
 
-    <footer class="foot">Consent changes take effect immediately for all health-worker access.</footer>
+    <footer class="foot" data-i18n="footConsent">Consent changes take effect immediately for all health-worker access.</footer>
     </div>
   </div>
-  <script src="/js/api.js?v=21"></script>
-  <script src="/js/citizen.js?v=21"></script>
+  <script src="/js/api.js?v=23"></script>
+  <script src="/js/citizen.js?v=23"></script>
 </body>
 </html>

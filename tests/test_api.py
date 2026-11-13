@@ -422,6 +422,116 @@ def test_notes_require_consent_validate_and_audit(client):
     assert "add_note" in actions
 
 
+def test_citizen_notes_visibility_and_toggle(client):
+    assert client.get("/api/citizen/notes").status_code == 401
+
+    citizen_id = carl_id(client)
+    bhw = login(client, "bhw1", "bhw12345")["token"]
+    assert client.get("/api/citizen/notes", headers=bearer(bhw)).status_code == 403
+
+    carl_token = login(client, "carl", "citizen123")["token"]
+    grant_consent(client, True)
+    base = f"/api/bhw/citizen/{citizen_id}/notes"
+
+    shared_res = client.post(
+        base, json={"note": "Drink 8 glasses of water daily"}, headers=bearer(bhw)
+    )
+    assert shared_res.status_code == 200
+    assert shared_res.get_json()["notes"][0]["visible_to_citizen"] == 1
+
+    private_res = client.post(
+        base,
+        json={"note": "Internal follow-up flag", "visible_to_citizen": False},
+        headers=bearer(bhw),
+    )
+    assert private_res.status_code == 200
+    all_notes = private_res.get_json()["notes"]
+    assert len(all_notes) == 2
+
+    refer_res = client.post(
+        f"/api/bhw/citizen/{citizen_id}/refer",
+        json={"note": "Check elevated BP"},
+        headers=bearer(bhw),
+    )
+    assert refer_res.status_code == 201
+
+    citizen_notes = client.get("/api/citizen/notes", headers=bearer(carl_token)).get_json()["notes"]
+    citizen_texts = [n["note"] for n in citizen_notes]
+    assert "Drink 8 glasses of water daily" in citizen_texts
+    assert "Referral to RHU: Check elevated BP" in citizen_texts
+    assert "Internal follow-up flag" not in citizen_texts
+
+    staff_notes = client.get(base, headers=bearer(bhw)).get_json()["notes"]
+    private_note = next(n for n in staff_notes if n["note"] == "Internal follow-up flag")
+    shared_note = next(n for n in staff_notes if n["note"] == "Drink 8 glasses of water daily")
+    assert private_note["visible_to_citizen"] == 0
+    assert shared_note["visible_to_citizen"] == 1
+
+    bad_patch = client.patch(
+        f"{base}/{private_note['id']}", json={}, headers=bearer(bhw)
+    )
+    assert bad_patch.status_code == 400
+    missing_patch = client.patch(
+        f"{base}/999999", json={"visible_to_citizen": True}, headers=bearer(bhw)
+    )
+    assert missing_patch.status_code == 404
+
+    toggled_on = client.patch(
+        f"{base}/{private_note['id']}",
+        json={"visible_to_citizen": True},
+        headers=bearer(bhw),
+    )
+    assert toggled_on.status_code == 200
+
+    toggled_off = client.patch(
+        f"{base}/{shared_note['id']}",
+        json={"visible_to_citizen": False},
+        headers=bearer(bhw),
+    )
+    assert toggled_off.status_code == 200
+
+    citizen_after = client.get("/api/citizen/notes", headers=bearer(carl_token)).get_json()["notes"]
+    after_texts = [n["note"] for n in citizen_after]
+    assert "Internal follow-up flag" in after_texts
+    assert "Drink 8 glasses of water daily" not in after_texts
+
+    audit = client.get("/api/bhw/audit-trail", headers=bearer(bhw)).get_json()
+    assert any(row["action"] == "update_note_visibility" for row in audit["audit"])
+
+
+def test_legacy_bhw_notes_migration_defaults_private(tmp_path):
+    import sqlite3
+
+    db_file = tmp_path / "legacy_notes.db"
+    conn = sqlite3.connect(db_file)
+    conn.execute(
+        """
+        CREATE TABLE bhw_notes (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            citizen_id INTEGER NOT NULL,
+            bhw_id INTEGER NOT NULL,
+            note TEXT NOT NULL,
+            timestamp DATETIME
+        )
+        """
+    )
+    conn.execute(
+        "INSERT INTO bhw_notes (citizen_id, bhw_id, note) VALUES (1, 2, 'Legacy private note')"
+    )
+    conn.commit()
+    conn.close()
+
+    database_url = "sqlite:///" + db_file.as_posix()
+    create_app(database_url, seed=False)
+
+    conn = sqlite3.connect(db_file)
+    cols = [row[1] for row in conn.execute("PRAGMA table_info(bhw_notes)").fetchall()]
+    row = conn.execute("SELECT note, visible_to_citizen FROM bhw_notes").fetchone()
+    conn.close()
+    assert "visible_to_citizen" in cols
+    assert row == ("Legacy private note", 0)
+
+
 # ---------------------------------------------------------------------------
 # 7. Referral
 # ---------------------------------------------------------------------------

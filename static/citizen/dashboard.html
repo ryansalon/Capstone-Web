@@ -10,7 +10,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="preload" as="image" href="/img/cpsc-logo.png">
   <link rel="preload" as="image" href="/img/rhu-logo.png">
-  <link rel="stylesheet" href="/css/style.css?v=21">
+  <link rel="stylesheet" href="/css/style.css?v=23">
 </head>
 <body data-page="citizen-dashboard">
   <a class="skip-link" href="#main">Skip to main content</a>
@@ -56,25 +56,25 @@
       <section class="hero hero-patient-banner" id="heroPanel" aria-labelledby="heroGreeting">
         <div class="hero-header-top">
           <div class="hero-patient-info">
-            <span class="hero-eyebrow">Barangay Health Kiosk · Patient Station</span>
+            <span class="hero-eyebrow" data-i18n="heroEyebrow">Barangay Health Kiosk · Patient Station</span>
             <h1 class="hero-greeting" id="heroGreeting">Welcome</h1>
           </div>
           <div class="hero-actions">
             <button id="vitalsGuideBtnDashboard" class="btn btn-secondary" type="button" title="View clinical vitals reference guide">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-              <span>Clinical Guide</span>
+              <span data-i18n="btnClinicalGuide">Clinical Guide</span>
             </button>
             <button id="citizenRefreshBtn" class="btn btn-secondary" type="button" title="Check for fresh kiosk readings">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
-              <span>Refresh</span>
+              <span data-i18n="btnRefresh">Refresh</span>
             </button>
             <a class="btn btn-secondary" href="/citizen/history.html">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-              <span>History</span>
+              <span data-i18n="navHistory">History</span>
             </a>
             <button id="passportBtn" class="btn btn-primary" type="button">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
-              <span>Print Health Passport</span>
+              <span data-i18n="btnPassport">Print Health Passport</span>
             </button>
           </div>
         </div>
@@ -134,13 +134,13 @@
         <h2 id="trendsHeading">Trends at a glance</h2>
         <div class="grid-2">
           <div class="chart-box">
-            <h3>Blood pressure — last 10 readings</h3>
+            <h3 data-i18n="bpTrendHeading">Blood pressure — last 10 readings</h3>
             <canvas id="bpMiniChart" role="img" aria-label="Systolic and diastolic blood pressure trend for your last readings" aria-describedby="bpMiniSummary"></canvas>
             <p id="bpMiniSummary" class="chart-summary"></p>
             <div id="bpMiniNote" class="muted"></div>
           </div>
           <div class="chart-box">
-            <h3>Weight &amp; BMI — last 10 readings</h3>
+            <h3 data-i18n="weightBmiTrendHeading">Weight &amp; BMI — last 10 readings</h3>
             <canvas id="weightMiniChart" role="img" aria-label="Weight and BMI trend for your last readings" aria-describedby="weightMiniSummary"></canvas>
             <p id="weightMiniSummary" class="chart-summary"></p>
             <div id="weightMiniNote" class="muted"></div>
@@ -148,43 +148,53 @@
         </div>
       </section>
 
+      <section class="section" id="bhwNotesSection" aria-labelledby="bhwNotesHeading">
+        <div class="section-header-row">
+          <div>
+            <h2 id="bhwNotesHeading">Health Worker Notes &amp; Guidance</h2>
+            <p class="section-subtext" id="bhwNotesSub">Follow-up reminders and referrals shared by your Barangay Health Worker.</p>
+          </div>
+        </div>
+        <div id="bhwNotesList" aria-live="polite"></div>
+      </section>
+
       <details class="vital-hints" id="vitalHintsBox">
         <summary id="vitalHintsSummary">What do these numbers mean?</summary>
         <dl class="hint-grid" id="vitalHintsGrid">
           <div>
-            <dt>Blood pressure</dt>
-            <dd>Normal below 120/80 mmHg · elevated 120–129/&lt;80 · Stage 1 130–139 or 80–89 · Stage 2 140/90 or above · crisis 180/120 or above.</dd>
+            <dt data-i18n="hintBpDt">Blood pressure</dt>
+            <dd data-i18n="hintBpDd">Normal below 120/80 mmHg · elevated 120–129/&lt;80 · Stage 1 130–139 or 80–89 · Stage 2 140/90 or above · crisis 180/120 or above.</dd>
           </div>
           <div>
-            <dt>SpO₂ (blood oxygen)</dt>
-            <dd>95% and above is normal · 90–94% is low · below 90% is critical — proceed to the health station.</dd>
+            <dt data-i18n="hintSpo2Dt">SpO₂ (blood oxygen)</dt>
+            <dd data-i18n="hintSpo2Dd">95% and above is normal · 90–94% is low · below 90% is critical — proceed to the health station.</dd>
           </div>
           <div>
-            <dt>Temperature</dt>
-            <dd>37.9 °C or above counts as a fever. Rest, hydrate, and report to your health worker if it persists.</dd>
+            <dt data-i18n="hintTempDt">Temperature</dt>
+            <dd data-i18n="hintTempDd">37.9 °C or above counts as a fever. Rest, hydrate, and report to your health worker if it persists.</dd>
           </div>
           <div>
-            <dt>Pulse rate</dt>
-            <dd>A typical resting pulse for adults is 60–100 bpm.</dd>
+            <dt data-i18n="hintPulseDt">Pulse rate</dt>
+            <dd data-i18n="hintPulseDd">A typical resting pulse for adults is 60–100 bpm.</dd>
           </div>
           <div>
-            <dt>BMI</dt>
-            <dd>Underweight below 18.5 · normal 18.5–24.9 · overweight 25–29.9 · obese 30 and above.</dd>
+            <dt data-i18n="hintBmiDt">BMI</dt>
+            <dd data-i18n="hintBmiDd">Underweight below 18.5 · normal 18.5–24.9 · overweight 25–29.9 · obese 30 and above.</dd>
           </div>
           <div>
-            <dt>Weight &amp; height</dt>
-            <dd>Measured at the barangay kiosk and used to work out your BMI.</dd>
+            <dt data-i18n="hintWhDt">Weight &amp; height</dt>
+            <dd data-i18n="hintWhDd">Measured at the barangay kiosk and used to work out your BMI.</dd>
           </div>
         </dl>
       </details>
 
     </main>
 
-    <footer class="foot">All dates and times are shown in Philippine Standard Time (PHT).</footer>
+    <footer class="foot" data-i18n="footPht">All dates and times are shown in Philippine Standard Time (PHT).</footer>
     </div>
   </div>
   <script src="/vendor/chart.umd.min.js"></script>
-  <script src="/js/api.js?v=21"></script>
-  <script src="/js/citizen.js?v=21"></script>
+  <script src="/js/api.js?v=23"></script>
+  <script src="/js/citizen.js?v=23"></script>
 </body>
 </html>

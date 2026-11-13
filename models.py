@@ -84,4 +84,5 @@ class BhwNote(Base):
     citizen_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
     bhw_user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
     note = Column(String(1000), nullable=False)
+    visible_to_citizen = Column(Integer, default=1, nullable=False)
     created_at = Column(DateTime, default=utcnow, index=True)

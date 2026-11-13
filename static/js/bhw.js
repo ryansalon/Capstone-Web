@@ -1205,7 +1205,11 @@
     return wrap;
   }
 
-  function renderNotes(notes) {
+  var activeNotesCitizenId = null;
+
+  function renderNotes(notes, citizenId) {
+    if (citizenId) activeNotesCitizenId = citizenId;
+    var targetCitizenId = citizenId || activeNotesCitizenId;
     var area = document.getElementById("notesArea");
     U.clear(area);
     if (!notes.length) {
@@ -1214,7 +1218,51 @@
     }
     var list = U.el("ul", { class: "notes-list" });
     notes.forEach(function (note) {
-      var item = U.el("li");
+      var isShared = Number(note.visible_to_citizen) === 1;
+      var item = U.el("li", isShared ? null : { class: "is-staff-only" });
+      var head = U.el("div", { class: "note-item-head" });
+      head.appendChild(
+        U.el(
+          "span",
+          { class: "badge " + (isShared ? "badge-ok" : "badge-neutral") },
+          isShared ? "Shared with resident" : "Staff only"
+        )
+      );
+      if (note.id && targetCitizenId) {
+        var visBtn = U.el(
+          "button",
+          {
+            type: "button",
+            class: "btn btn-ghost btn-sm note-vis-btn",
+          },
+          isShared ? "Make staff-only" : "Share with resident"
+        );
+        visBtn.addEventListener("click", async function () {
+          setBusy(visBtn, true, "Updating…");
+          try {
+            var res = await API.apiFetch(
+              "/api/bhw/citizen/" +
+                encodeURIComponent(targetCitizenId) +
+                "/notes/" +
+                encodeURIComponent(note.id),
+              {
+                method: "PATCH",
+                body: { visible_to_citizen: !isShared },
+              }
+            );
+            renderNotes(res.notes || [], targetCitizenId);
+            U.toast(
+              isShared ? "Note set to staff-only" : "Note shared with resident",
+              "success"
+            );
+          } catch (error) {
+            U.toast(error.message, "error");
+            setBusy(visBtn, false);
+          }
+        });
+        head.appendChild(visBtn);
+      }
+      item.appendChild(head);
       item.appendChild(U.el("div", { class: "text" }, note.note));
       item.appendChild(
         U.el(
@@ -1239,7 +1287,7 @@
     var notesData = await API.apiFetch(
       "/api/bhw/citizen/" + encodeURIComponent(citizenId) + "/notes"
     );
-    renderNotes(notesData.notes || []);
+    renderNotes(notesData.notes || [], citizenId);
   }
 
   function showConsentBlocked() {
@@ -1520,6 +1568,19 @@
     }
 
     var noteForm = document.getElementById("noteForm");
+    var noteVisibleToggle = document.getElementById("noteVisibleToggle");
+    var noteHint = document.getElementById("noteHint");
+    function syncNoteHint() {
+      if (!noteHint || !noteVisibleToggle) return;
+      noteHint.textContent = noteVisibleToggle.checked
+        ? "Visible on the resident's dashboard for their reference and follow-up. Uncheck to keep private for BHW staff only."
+        : "Staff only — hidden from the resident's dashboard.";
+    }
+    if (noteVisibleToggle) {
+      noteVisibleToggle.addEventListener("change", syncNoteHint);
+      syncNoteHint();
+    }
+
     noteForm.addEventListener("submit", async function (event) {
       event.preventDefault();
       var errorNode = document.getElementById("noteError");
@@ -1531,16 +1592,26 @@
         errorNode.textContent = "Write a note before saving.";
         return;
       }
+      var visibleToCitizen = noteVisibleToggle ? noteVisibleToggle.checked : true;
       var submit = document.getElementById("noteSubmit");
       setBusy(submit, true, "Saving…");
       try {
         var result = await API.apiFetch(
           "/api/bhw/citizen/" + encodeURIComponent(citizenId) + "/notes",
-          { method: "POST", body: { note: text } }
+          {
+            method: "POST",
+            body: { note: text, visible_to_citizen: visibleToCitizen },
+          }
         );
         document.getElementById("noteText").value = "";
-        renderNotes(result.notes || []);
-        feedback.textContent = "Note saved.";
+        if (noteVisibleToggle) {
+          noteVisibleToggle.checked = true;
+          syncNoteHint();
+        }
+        renderNotes(result.notes || [], citizenId);
+        feedback.textContent = visibleToCitizen
+          ? "Note saved and shared with resident."
+          : "Staff-only note saved.";
         U.toast("Note saved successfully", "success");
       } catch (error) {
         errorNode.textContent = error.message;
@@ -1724,6 +1795,7 @@
     view_health_data: { label: "Viewed health records", cls: "badge-ok" },
     view_notes: { label: "Viewed clinical notes", cls: "badge-admin" },
     add_note: { label: "Added clinical note", cls: "badge-ok" },
+    update_note_visibility: { label: "Updated note visibility", cls: "badge-info" },
     refer_to_rhu: { label: "Referred to RHU", cls: "badge-warn" },
     unauthorized_access: { label: "Blocked: No Consent", cls: "badge-danger" },
     export_report: { label: "Exported Report", cls: "badge-info" },

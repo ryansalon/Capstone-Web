@@ -10,7 +10,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="preload" as="image" href="/img/cpsc-logo.png">
   <link rel="preload" as="image" href="/img/rhu-logo.png">
-  <link rel="stylesheet" href="/css/style.css?v=21">
+  <link rel="stylesheet" href="/css/style.css?v=23">
 </head>
 <body data-page="bhw-citizen-view">
   <a class="skip-link" href="#main">Skip to main content</a>
@@ -111,7 +111,12 @@
         </section>
 
         <section class="section" aria-labelledby="notesHeading">
-          <h2 id="notesHeading">Private notes</h2>
+          <div class="section-header-row">
+            <div>
+              <h2 id="notesHeading">Health Worker Notes &amp; Guidance</h2>
+              <p class="section-subtext">Share follow-up instructions with the resident, or uncheck sharing to keep an entry staff-only.</p>
+            </div>
+          </div>
           <div id="notesArea"></div>
           <form id="noteForm" class="card-surface" novalidate>
             <div class="field">
@@ -125,7 +130,13 @@
                 <button class="chip" type="button" data-chip="Advised immediate rest, hydration, and fever monitoring.">Fever guidance</button>
               </div>
               <textarea id="noteText" name="note" maxlength="1000" placeholder="Follow-up plan, observations, referrals…" aria-describedby="noteHint noteError"></textarea>
-              <p id="noteHint" class="hint">Visible only to health workers. Maximum 1000 characters.</p>
+              <div class="note-share-row">
+                <label class="note-share-toggle" for="noteVisibleToggle">
+                  <input id="noteVisibleToggle" type="checkbox" checked>
+                  <span>Share with resident on their portal</span>
+                </label>
+                <span id="noteHint" class="hint">Visible on the resident's dashboard for their reference. Maximum 1000 characters.</span>
+              </div>
             </div>
             <p id="noteError" class="form-error" role="alert"></p>
             <p id="noteFeedback" class="form-success" role="status"></p>
@@ -138,7 +149,7 @@
     <footer class="foot">Notes and record views are audited. RA 10173 applies.</footer>
     </div>
   </div>
-  <script src="/js/api.js?v=21"></script>
-  <script src="/js/bhw.js?v=21"></script>
+  <script src="/js/api.js?v=23"></script>
+  <script src="/js/bhw.js?v=23"></script>
 </body>
 </html>

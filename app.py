@@ -338,6 +338,27 @@ class Database:
         Base.metadata.create_all(self.engine)
         self._migrate_audit_trail()
         self._migrate_users_table()
+        self._migrate_bhw_notes_table()
+
+    def _migrate_bhw_notes_table(self):
+        """Add visible_to_citizen column to existing bhw_notes tables (legacy notes stay staff-only)."""
+        try:
+            with self.engine.begin() as conn:
+                if self.engine.name == "sqlite":
+                    cols = {
+                        row[1]
+                        for row in conn.exec_driver_sql("PRAGMA table_info(bhw_notes)").fetchall()
+                    }
+                    if cols and "visible_to_citizen" not in cols:
+                        conn.exec_driver_sql(
+                            "ALTER TABLE bhw_notes ADD COLUMN visible_to_citizen INTEGER NOT NULL DEFAULT 0"
+                        )
+                else:
+                    conn.exec_driver_sql(
+                        "ALTER TABLE bhw_notes ADD COLUMN IF NOT EXISTS visible_to_citizen INTEGER NOT NULL DEFAULT 0"
+                    )
+        except Exception as e:
+            print("BhwNotes migration warning:", e)
 
     def _migrate_users_table(self):
         """Add privacy_acknowledged_at column to users if missing."""
@@ -1185,6 +1206,13 @@ def register_routes(app: Flask):
         ]
         return jsonify({"logs": logs})
 
+    @app.route("/api/citizen/notes", methods=["GET"])
+    @require_citizen
+    def citizen_notes_view():
+        with get_db().session() as session:
+            notes = notes_payload(session, g.user, citizen_only=True)
+            return jsonify({"notes": notes})
+
     @app.route("/api/consent", methods=["GET", "POST"])
     @require_citizen
     def consent():
@@ -1481,17 +1509,26 @@ def register_routes(app: Flask):
     def admin_citizen_health(citizen_id):
         return citizen_health_payload(citizen_id)
 
-    def notes_payload(session, citizen):
+    def notes_payload(session, citizen, citizen_only=False):
         bhw_alias = aliased(User)
-        rows = session.execute(
+        stmt = (
             select(BhwNote, bhw_alias.full_name)
             .join(bhw_alias, BhwNote.bhw_user_id == bhw_alias.id)
             .where(BhwNote.citizen_id == citizen.id)
-            .order_by(BhwNote.created_at.desc(), BhwNote.id.desc())
-            .limit(50)
+        )
+        if citizen_only:
+            stmt = stmt.where(BhwNote.visible_to_citizen == 1)
+        rows = session.execute(
+            stmt.order_by(BhwNote.created_at.desc(), BhwNote.id.desc()).limit(50)
         ).all()
         return [
-            {"note": note.note, "bhw": bhw_name, "timestamp": iso(note.created_at)}
+            {
+                "id": note.id,
+                "note": note.note,
+                "bhw": bhw_name,
+                "timestamp": iso(note.created_at),
+                "visible_to_citizen": bool(note.visible_to_citizen),
+            }
             for note, bhw_name in rows
         ]
 
@@ -1531,14 +1568,41 @@ def register_routes(app: Flask):
             note_text = data.get("note")
             if not isinstance(note_text, str) or not note_text.strip():
                 return jsonify({"error": "note is empty"}), 400
+            raw_visible = data.get("visible_to_citizen")
+            is_visible = 1 if (raw_visible is None or bool(raw_visible)) else 0
             session.add(
                 BhwNote(
                     citizen_id=citizen.id,
                     bhw_user_id=g.user.id,
                     note=note_text.strip()[:1000],
+                    visible_to_citizen=is_visible,
                     created_at=utcnow(),
                 )
             )
+            session.flush()
+            notes = notes_payload(session, citizen)
+            return jsonify({"notes": notes})
+
+    @app.route("/api/bhw/citizen/<int:citizen_id>/notes/<int:note_id>", methods=["PATCH"])
+    @require_staff
+    def update_citizen_note_visibility(citizen_id, note_id):
+        with get_db().session() as session:
+            citizen, error = check_consent_and_audit(
+                session, citizen_id, "update_note_visibility"
+            )
+            if error:
+                return error
+            note_row = session.execute(
+                select(BhwNote).where(
+                    BhwNote.id == note_id, BhwNote.citizen_id == citizen.id
+                )
+            ).scalar_one_or_none()
+            if note_row is None:
+                return jsonify({"error": "note not found"}), 404
+            data = json_body()
+            if "visible_to_citizen" not in data:
+                return jsonify({"error": "visible_to_citizen is required"}), 400
+            note_row.visible_to_citizen = 1 if bool(data.get("visible_to_citizen")) else 0
             session.flush()
             notes = notes_payload(session, citizen)
             return jsonify({"notes": notes})
@@ -1553,11 +1617,14 @@ def register_routes(app: Flask):
             data = json_body()
             note_text = data.get("note")
             if isinstance(note_text, str) and note_text.strip():
+                raw_visible = data.get("visible_to_citizen")
+                is_visible = 1 if (raw_visible is None or bool(raw_visible)) else 0
                 session.add(
                     BhwNote(
                         citizen_id=citizen.id,
                         bhw_user_id=g.user.id,
                         note=("Referral to RHU: " + note_text.strip())[:1000],
+                        visible_to_citizen=is_visible,
                         created_at=utcnow(),
                     )
                 )
@@ -1666,7 +1733,7 @@ def register_routes(app: Flask):
     def compute_audit_metrics(rows):
         total = len(rows)
         views = sum(1 for r in rows if r[0].action_type == "view_health_data")
-        notes = sum(1 for r in rows if r[0].action_type in ("add_note", "view_notes"))
+        notes = sum(1 for r in rows if r[0].action_type in ("add_note", "view_notes", "update_note_visibility"))
         referrals = sum(1 for r in rows if r[0].action_type == "refer_to_rhu")
         blocked = sum(
             1

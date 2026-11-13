@@ -641,7 +641,8 @@
     },
 
     /* Compact stacked check-in cards for mobile readability without sideways swiping. */
-    buildCheckinCards: function (logs, cellToneFn) {
+    buildCheckinCards: function (logs, cellToneFn, i18n) {
+      var dict = i18n || {};
       var list = UI.el("div", { class: "checkin-cards-list" });
       var frag = document.createDocumentFragment();
       function missing(v) { return v === null || v === undefined || v === ""; }
@@ -659,21 +660,21 @@
         if (hasBad || hasWarn) {
           head.appendChild(
             UI.el("span", { class: "vital-badge " + (hasBad ? "badge-danger" : "badge-warn") },
-              hasBad ? "Needs attention" : "Monitor")
+              hasBad ? (dict.needsAttention || "Needs attention") : (dict.monitor || "Monitor"))
           );
         } else {
-          head.appendChild(UI.el("span", { class: "vital-badge badge-good" }, "Normal"));
+          head.appendChild(UI.el("span", { class: "vital-badge badge-good" }, dict.normal || "Normal"));
         }
         card.appendChild(head);
 
         var grid = UI.el("div", { class: "checkin-card-grid" });
         var metrics = [
-          ["Blood Pressure", (missing(log.systolic_bp) || missing(log.diastolic_bp)) ? "—" : (log.systolic_bp + "/" + log.diastolic_bp + " mmHg"), cellToneFn ? cellToneFn("bp", log) : ""],
-          ["Temperature", missing(log.temperature) ? "—" : UI.fmtNum(log.temperature, 1, "°C"), cellToneFn ? cellToneFn("temp", log) : ""],
-          ["SpO₂", missing(log.spo2) ? "—" : UI.fmtNum(log.spo2, 0, "%"), cellToneFn ? cellToneFn("spo2", log) : ""],
-          ["Pulse", missing(log.pulse_rate) ? "—" : UI.fmtNum(log.pulse_rate, 0, "bpm"), cellToneFn ? cellToneFn("pulse", log) : ""],
-          ["Weight", missing(log.weight) ? "—" : UI.fmtNum(log.weight, 1, "kg"), ""],
-          ["BMI", missing(log.bmi) ? "—" : UI.fmtNum(log.bmi, 1), cellToneFn ? cellToneFn("bmi", log) : ""],
+          [dict.bp || "Blood Pressure", (missing(log.systolic_bp) || missing(log.diastolic_bp)) ? "—" : (log.systolic_bp + "/" + log.diastolic_bp + " mmHg"), cellToneFn ? cellToneFn("bp", log) : ""],
+          [dict.temp || "Temperature", missing(log.temperature) ? "—" : UI.fmtNum(log.temperature, 1, "°C"), cellToneFn ? cellToneFn("temp", log) : ""],
+          [dict.spo2 || "SpO₂", missing(log.spo2) ? "—" : UI.fmtNum(log.spo2, 0, "%"), cellToneFn ? cellToneFn("spo2", log) : ""],
+          [dict.pulse || "Pulse", missing(log.pulse_rate) ? "—" : UI.fmtNum(log.pulse_rate, 0, "bpm"), cellToneFn ? cellToneFn("pulse", log) : ""],
+          [dict.weight || "Weight", missing(log.weight) ? "—" : UI.fmtNum(log.weight, 1, "kg"), ""],
+          [dict.bmi || "BMI", missing(log.bmi) ? "—" : UI.fmtNum(log.bmi, 1), cellToneFn ? cellToneFn("bmi", log) : ""],
         ];
         metrics.forEach(function (m) {
           var cell = UI.el("div", { class: "checkin-metric" + (m[2] ? " " + m[2] : "") });
@@ -689,21 +690,22 @@
     },
 
     /* Pairs a scrollable table with mobile check-in cards + a Cards/Table switcher. */
-    wrapCheckinViews: function (logs, tableWrap, cellToneFn, savedMode) {
+    wrapCheckinViews: function (logs, tableWrap, cellToneFn, savedMode, i18n) {
+      var dict = i18n || {};
       var mode = savedMode || (window.innerWidth <= 640 ? "cards" : "table");
       var container = UI.el("div", { class: "checkin-views-wrap" });
 
       var bar = UI.el("div", { class: "checkin-view-bar" });
-      var group = UI.el("div", { class: "view-switch", role: "group", "aria-label": "Display format" });
-      var cardsBtn = UI.el("button", { type: "button", class: "view-switch-btn" }, "Cards");
-      var tableBtn = UI.el("button", { type: "button", class: "view-switch-btn" }, "Table");
+      var group = UI.el("div", { class: "view-switch", role: "group", "aria-label": dict.displayFormat || "Display format" });
+      var cardsBtn = UI.el("button", { type: "button", class: "view-switch-btn" }, dict.cardsBtn || "Cards");
+      var tableBtn = UI.el("button", { type: "button", class: "view-switch-btn" }, dict.tableBtn || "Table");
       group.appendChild(cardsBtn);
       group.appendChild(tableBtn);
       bar.appendChild(group);
 
-      var cardsList = UI.buildCheckinCards(logs, cellToneFn);
+      var cardsList = UI.buildCheckinCards(logs, cellToneFn, dict);
       var cue = UI.el("div", { class: "table-scroll-cue", "aria-hidden": "true" },
-        "Swipe table sideways to view all columns →"
+        dict.swipeCue || "Swipe table sideways to view all columns →"
       );
 
       container.appendChild(bar);

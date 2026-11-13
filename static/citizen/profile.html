@@ -10,7 +10,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="preload" as="image" href="/img/cpsc-logo.png">
   <link rel="preload" as="image" href="/img/rhu-logo.png">
-  <link rel="stylesheet" href="/css/style.css?v=21">
+  <link rel="stylesheet" href="/css/style.css?v=23">
 </head>
 <body data-page="citizen-profile">
   <a class="skip-link" href="#main">Skip to main content</a>
@@ -54,13 +54,18 @@
     <main id="main" class="page" tabindex="-1">
       <div class="page-head">
         <div class="page-head-title">
-          <span class="page-eyebrow">Citizen Account</span>
-          <h1>My Profile</h1>
-          <p class="lede">Keep your details up to date. Your username cannot be changed.</p>
+          <span class="page-eyebrow" data-i18n="profEyebrow">Citizen Account</span>
+          <h1 data-i18n="profHeading">My Profile</h1>
+          <p class="lede" data-i18n="profLede">Keep your details up to date. Your username cannot be changed.</p>
         </div>
         <div class="page-actions">
-          <a href="/citizen/dashboard.html" class="btn btn-secondary">Dashboard</a>
-          <a href="/citizen/history.html" class="btn btn-secondary">View history</a>
+          <div class="lang-switcher lang-switcher-light" role="group" aria-label="Language preference">
+            <button type="button" class="lang-btn is-active" data-lang="en" aria-pressed="true">EN</button>
+            <button type="button" class="lang-btn" data-lang="ceb" aria-pressed="false">Bisaya</button>
+            <button type="button" class="lang-btn" data-lang="tl" aria-pressed="false">Tagalog</button>
+          </div>
+          <a href="/citizen/dashboard.html" class="btn btn-secondary" data-i18n="navDashboard">Dashboard</a>
+          <a href="/citizen/history.html" class="btn btn-secondary" data-i18n="btnViewHistory">View history</a>
         </div>
       </div>
 
@@ -68,82 +73,82 @@
 
       <div class="grid-2">
         <section class="card-surface" aria-labelledby="detailsHeading">
-          <h2 id="detailsHeading">Personal details</h2>
+          <h2 id="detailsHeading" data-i18n="profDetailsHeading">Personal details</h2>
           <p id="profileFeedback" class="form-success" role="status"></p>
           <p id="profileError" class="form-error" role="alert"></p>
           <form id="profileForm" novalidate>
             <div class="field">
-              <label for="usernameReadonly">Username</label>
+              <label for="usernameReadonly" data-i18n="lblUsername">Username</label>
               <input id="usernameReadonly" type="text" readonly aria-readonly="true">
             </div>
             <div class="field">
-              <label for="fullName">Full name</label>
+              <label for="fullName" data-i18n="lblFullName">Full name</label>
               <input id="fullName" name="full_name" type="text" autocomplete="name" required aria-required="true" aria-describedby="profileError">
             </div>
             <div class="field">
-              <label for="birthdate">Birthdate</label>
+              <label for="birthdate" data-i18n="lblBirthdate">Birthdate</label>
               <input id="birthdate" name="birthdate" type="date" required aria-required="true" aria-describedby="profileError">
             </div>
             <div class="field">
-              <label for="gender">Gender</label>
+              <label for="gender" data-i18n="lblGender">Gender</label>
               <select id="gender" name="gender">
-                <option value="male">Male</option>
-                <option value="female">Female</option>
-                <option value="other">Other</option>
+                <option value="male" data-i18n="optMale">Male</option>
+                <option value="female" data-i18n="optFemale">Female</option>
+                <option value="other" data-i18n="optOther">Other</option>
               </select>
             </div>
-            <button id="profileSubmit" class="btn btn-primary" type="submit">Save details</button>
+            <button id="profileSubmit" class="btn btn-primary" type="submit" data-i18n="profSaveDetails">Save details</button>
           </form>
         </section>
 
         <section class="card-surface" aria-labelledby="passwordHeading">
-          <h2 id="passwordHeading">Change password</h2>
+          <h2 id="passwordHeading" data-i18n="profPasswordHeading">Change password</h2>
           <p id="passwordFeedback" class="form-success" role="status"></p>
           <p id="passwordError" class="form-error" role="alert"></p>
           <form id="passwordForm" novalidate>
             <div class="field">
-              <label for="currentPassword">Current password</label>
+              <label for="currentPassword" data-i18n="lblCurrentPw">Current password</label>
               <div class="password-wrap">
                 <input id="currentPassword" name="current_password" type="password" autocomplete="current-password" required aria-required="true" aria-describedby="passwordError">
                 <button type="button" class="btn-toggle-pw" aria-label="Show password">Show</button>
               </div>
             </div>
             <div class="field">
-              <label for="newPassword">New password</label>
+              <label for="newPassword" data-i18n="lblNewPw">New password</label>
               <div class="password-wrap">
                 <input id="newPassword" name="new_password" type="password" autocomplete="new-password" minlength="8" required aria-required="true" aria-describedby="passwordHint passwordError">
                 <button type="button" class="btn-toggle-pw" aria-label="Show password">Show</button>
               </div>
-              <p id="passwordHint" class="hint">At least 8 characters.</p>
+              <p id="passwordHint" class="hint" data-i18n="pwHintInitial">At least 8 characters.</p>
             </div>
             <div class="field">
-              <label for="confirmNewPassword">Confirm new password</label>
+              <label for="confirmNewPassword" data-i18n="lblConfirmNewPw">Confirm new password</label>
               <div class="password-wrap">
-                <input id="confirmNewPassword" name="confirm_new_password" type="password" autocomplete="new-password" minlength="8" placeholder="Re-enter your new password" required aria-required="true" aria-describedby="passwordError">
+                <input id="confirmNewPassword" name="confirm_new_password" type="password" autocomplete="new-password" minlength="8" placeholder="Re-enter your new password" data-i18n-placeholder="pwConfirmPlaceholder" required aria-required="true" aria-describedby="passwordError">
                 <button type="button" class="btn-toggle-pw" aria-label="Show password">Show</button>
               </div>
             </div>
             <p class="auth-sub-link">
-              Don't remember your current password?
-              <a href="/citizen/forgot-password.html">Reset it using your birthdate</a>.
+              <span data-i18n="profForgotLead">Don't remember your current password?</span>
+              <a href="/citizen/forgot-password.html" data-i18n="profResetLink">Reset it using your birthdate</a>.
             </p>
-            <button id="passwordSubmit" class="btn btn-primary" type="submit">Update password</button>
+            <button id="passwordSubmit" class="btn btn-primary" type="submit" data-i18n="btnUpdatePw">Update password</button>
           </form>
         </section>
       </div>
 
       <section class="section">
-        <h2>Session</h2>
+        <h2 data-i18n="profSessionHeading">Session</h2>
         <div class="btn-row">
-          <button id="logoutBtnMain" class="btn btn-secondary" type="button">Log out of this device</button>
+          <button id="logoutBtnMain" class="btn btn-secondary" type="button" data-i18n="btnLogoutDevice">Log out of this device</button>
         </div>
       </section>
     </main>
 
-    <footer class="foot">Your password is stored only as a bcrypt hash.</footer>
+    <footer class="foot" data-i18n="footProfile">Your password is stored only as a bcrypt hash.</footer>
     </div>
   </div>
-  <script src="/js/api.js?v=21"></script>
-  <script src="/js/citizen.js?v=21"></script>
+  <script src="/js/api.js?v=23"></script>
+  <script src="/js/citizen.js?v=23"></script>
 </body>
 </html>
