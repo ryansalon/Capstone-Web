@@ -337,6 +337,27 @@ class Database:
     def create_all(self):
         Base.metadata.create_all(self.engine)
         self._migrate_audit_trail()
+        self._migrate_users_table()
+
+    def _migrate_users_table(self):
+        """Add privacy_acknowledged_at column to users if missing."""
+        try:
+            with self.engine.begin() as conn:
+                if self.engine.name == "sqlite":
+                    cols = {
+                        row[1]
+                        for row in conn.exec_driver_sql("PRAGMA table_info(users)").fetchall()
+                    }
+                    if cols and "privacy_acknowledged_at" not in cols:
+                        conn.exec_driver_sql(
+                            "ALTER TABLE users ADD COLUMN privacy_acknowledged_at DATETIME"
+                        )
+                else:
+                    conn.exec_driver_sql(
+                        "ALTER TABLE users ADD COLUMN IF NOT EXISTS privacy_acknowledged_at TIMESTAMP"
+                    )
+        except Exception as e:
+            print("User migration warning:", e)
 
     def _migrate_audit_trail(self):
         """Add status, details, user_agent to access_audit_trail if missing and handle SQLite nullable citizen_id."""
@@ -1012,7 +1033,12 @@ def register_routes(app: Flask):
             algorithm="HS256",
         )
         return jsonify(
-            {"token": token, "role": user.role, "full_name": user.full_name}
+            {
+                "token": token,
+                "role": user.role,
+                "full_name": user.full_name,
+                "privacy_acknowledged": user.privacy_acknowledged_at is not None,
+            }
         )
 
     @app.route("/api/forgot-password", methods=["POST"])
@@ -1075,6 +1101,7 @@ def register_routes(app: Flask):
                 "gender": user.gender,
                 "role": user.role,
                 "visit_count": visit_count,
+                "privacy_acknowledged": user.privacy_acknowledged_at is not None,
                 "created_at": iso(user.created_at),
             }
         )
@@ -1164,10 +1191,13 @@ def register_routes(app: Flask):
         if request.method == "GET":
             with get_db().session() as session:
                 row = latest_consent(session, g.user.id)
+                user = session.get(User, g.user.id)
+                privacy_acknowledged = bool(user and user.privacy_acknowledged_at is not None)
             return jsonify(
                 {
                     "consent_granted": bool(row and row.consent_granted == 1),
                     "has_recorded_consent": row is not None,
+                    "privacy_acknowledged": privacy_acknowledged,
                 }
             )
 
@@ -1243,12 +1273,25 @@ def register_routes(app: Flask):
             user.password_hash = hash_password(new_password)
         return jsonify({"ok": True})
 
+    @app.route("/api/citizen/acknowledge-notice", methods=["POST"])
+    @require_citizen
+    def citizen_acknowledge_notice():
+        with get_db().session() as session:
+            user = session.get(User, g.user.id)
+            if user and user.privacy_acknowledged_at is None:
+                user.privacy_acknowledged_at = utcnow()
+            ack_at = iso(user.privacy_acknowledged_at) if user else None
+        return jsonify({"ok": True, "privacy_acknowledged": True, "acknowledged_at": ack_at})
+
     # -- BHW / admin -------------------------------------------------------
 
     @app.route("/api/bhw/acknowledge-oath", methods=["POST"])
     @require_staff
     def bhw_acknowledge_oath():
         with get_db().session() as session:
+            user = session.get(User, g.user.id)
+            if user and user.privacy_acknowledged_at is None:
+                user.privacy_acknowledged_at = utcnow()
             write_audit(
                 session,
                 bhw_user_id=g.user.id,

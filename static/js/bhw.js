@@ -117,7 +117,7 @@
           setBusy(submit, false);
           return;
         }
-        API.saveSession(data.token, data.role, data.full_name);
+        API.saveSession(data.token, data.role, data.full_name, data.privacy_acknowledged);
         location.href = "/bhw/dashboard.html";
       } catch (error) {
         errorNode.textContent = error.message;
@@ -2477,7 +2477,7 @@
       var observer = new MutationObserver(function () {
         if (!document.body.contains(backdrop)) {
           observer.disconnect();
-          if (sessionStorage.getItem("bhm:staff_privacy_oath") !== "acknowledged") {
+          if (API.getPrivacyAcknowledged() !== true) {
             API.logout();
           }
         }
@@ -2490,7 +2490,7 @@
       declineBtn.disabled = true;
       try {
         await API.apiFetch("/api/bhw/acknowledge-oath", { method: "POST" });
-        sessionStorage.setItem("bhm:staff_privacy_oath", "acknowledged");
+        API.setPrivacyAcknowledged(true);
         closeDialog();
         if (typeof onAcknowledged === "function") {
           onAcknowledged();
@@ -2507,9 +2507,20 @@
     };
   }
 
-  function checkStaffPrivacyOath(callback) {
-    if (sessionStorage.getItem("bhm:staff_privacy_oath") === "acknowledged") {
+  async function checkStaffPrivacyOath(callback) {
+    if (!API.getToken()) return;
+    if (API.getPrivacyAcknowledged() === true) {
       if (typeof callback === "function") callback();
+      return;
+    }
+    try {
+      var me = await API.apiFetch("/api/me");
+      if (me && me.privacy_acknowledged) {
+        API.setPrivacyAcknowledged(true);
+        if (typeof callback === "function") callback();
+        return;
+      }
+    } catch (_) {
       return;
     }
     showStaffPenaltiesModal(callback);

@@ -9,6 +9,7 @@
   var TOKEN_KEY = "hk_token";
   var ROLE_KEY = "hk_role";
   var NAME_KEY = "hk_name";
+  var PRIVACY_ACK_KEY = "hk_privacy_ack";
 
   function getToken() {
     return localStorage.getItem(TOKEN_KEY);
@@ -22,7 +23,18 @@
     return localStorage.getItem(NAME_KEY);
   }
 
-  function saveSession(token, role, fullName) {
+  function getPrivacyAcknowledged() {
+    var val = localStorage.getItem(PRIVACY_ACK_KEY);
+    if (val === "1") return true;
+    if (val === "0") return false;
+    return null;
+  }
+
+  function setPrivacyAcknowledged(acknowledged) {
+    localStorage.setItem(PRIVACY_ACK_KEY, acknowledged ? "1" : "0");
+  }
+
+  function saveSession(token, role, fullName, privacyAck) {
     localStorage.setItem(TOKEN_KEY, token);
     localStorage.setItem(ROLE_KEY, role);
     if (fullName === undefined || fullName === null) {
@@ -30,12 +42,16 @@
     } else {
       localStorage.setItem(NAME_KEY, fullName);
     }
+    if (privacyAck !== undefined) {
+      setPrivacyAcknowledged(Boolean(privacyAck));
+    }
   }
 
   function clearSession() {
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(ROLE_KEY);
     localStorage.removeItem(NAME_KEY);
+    localStorage.removeItem(PRIVACY_ACK_KEY);
     try {
       sessionStorage.removeItem("bhm:staff_privacy_oath");
       sessionStorage.removeItem("bhm:citizen_terms_seen");
@@ -649,6 +665,8 @@
     getToken: getToken,
     getRole: getRole,
     getName: getName,
+    getPrivacyAcknowledged: getPrivacyAcknowledged,
+    setPrivacyAcknowledged: setPrivacyAcknowledged,
     isStaff: isStaff,
     loginPageForRole: loginPageForRole,
     homeForRole: homeForRole,

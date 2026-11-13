@@ -1226,6 +1226,63 @@ def test_staff_statutory_privacy_oath_acknowledgment_and_audit(client):
     assert "RA 10173" in audit[0]["details"]
 
 
+def test_one_time_privacy_acknowledgment_persists_per_account(client):
+    """Citizen and staff privacy modal acknowledgments persist across re-logins per account."""
+    # Register a new citizen
+    reg = client.post(
+        "/api/register",
+        json={
+            "username": "once_citizen",
+            "password": "ValidPassword123",
+            "full_name": "Once Citizen",
+            "birthdate": "1995-02-10",
+            "gender": "male",
+        },
+    )
+    assert reg.status_code == 201
+
+    login_1 = login(client, "once_citizen", "ValidPassword123")
+    assert login_1["privacy_acknowledged"] is False
+    tok_1 = login_1["token"]
+
+    assert client.get("/api/me", headers=bearer(tok_1)).get_json()["privacy_acknowledged"] is False
+    consent_before = client.get("/api/consent", headers=bearer(tok_1)).get_json()
+    assert consent_before["privacy_acknowledged"] is False
+
+    # Citizen clicks "I Understand"
+    ack = client.post("/api/citizen/acknowledge-notice", headers=bearer(tok_1))
+    assert ack.status_code == 200
+    assert ack.get_json()["privacy_acknowledged"] is True
+
+    # Re-logging in persists acknowledgment and leaves ConsentAudit untouched
+    login_2 = login(client, "once_citizen", "ValidPassword123")
+    assert login_2["privacy_acknowledged"] is True
+    tok_2 = login_2["token"]
+    assert client.get("/api/me", headers=bearer(tok_2)).get_json()["privacy_acknowledged"] is True
+    consent_after = client.get("/api/consent", headers=bearer(tok_2)).get_json()
+    assert consent_after["privacy_acknowledged"] is True
+    assert consent_after["has_recorded_consent"] is False
+
+    # Other citizen accounts still start unacknowledged
+    carl_login = login(client, "carl", "citizen123")
+    assert carl_login["privacy_acknowledged"] is False
+
+    # Staff member starts unacknowledged, then persists across re-logins
+    bhw_login_1 = login(client, "bhw1", "bhw12345")
+    assert bhw_login_1["privacy_acknowledged"] is False
+    oath_resp = client.post("/api/bhw/acknowledge-oath", headers=bearer(bhw_login_1["token"]))
+    assert oath_resp.status_code == 200
+
+    bhw_login_2 = login(client, "bhw1", "bhw12345")
+    assert bhw_login_2["privacy_acknowledged"] is True
+    assert client.get("/api/me", headers=bearer(bhw_login_2["token"])).get_json()["privacy_acknowledged"] is True
+
+    # Staff endpoint rejects citizens; citizen endpoint rejects staff
+    assert client.post("/api/citizen/acknowledge-notice", headers=bearer(bhw_login_1["token"])).status_code == 403
+    assert client.post("/api/bhw/acknowledge-oath", headers=bearer(tok_1)).status_code == 403
+
+
+
 
 
 

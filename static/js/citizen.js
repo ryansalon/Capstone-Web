@@ -122,12 +122,12 @@
             setBusy(submit, false);
             return;
           }
-          API.saveSession(data.token, data.role, data.full_name);
+          API.saveSession(data.token, data.role, data.full_name, data.privacy_acknowledged);
           location.href = "/bhw/dashboard.html";
           return;
         }
 
-        API.saveSession(data.token, data.role, data.full_name);
+        API.saveSession(data.token, data.role, data.full_name, data.privacy_acknowledged);
         location.href = API.homeForRole(data.role);
       } catch (error) {
         showFormError(errorNode, error.message);
@@ -569,11 +569,20 @@
 
     var closeDialog = U.openDialog(backdrop, understandBtn, { persistent: true });
 
-    understandBtn.onclick = function () {
-      sessionStorage.setItem("bhm:citizen_terms_seen", "1");
-      closeDialog();
-      if (typeof onDismiss === "function") {
-        onDismiss();
+    understandBtn.onclick = async function () {
+      understandBtn.disabled = true;
+      understandBtn.textContent = "Saving…";
+      try {
+        await API.apiFetch("/api/citizen/acknowledge-notice", { method: "POST" });
+        API.setPrivacyAcknowledged(true);
+        closeDialog();
+        if (typeof onDismiss === "function") {
+          onDismiss();
+        }
+      } catch (err) {
+        understandBtn.disabled = false;
+        understandBtn.textContent = "I Understand";
+        U.toast("Failed to save acknowledgment: " + (err.message || "Please try again."), "error");
       }
     };
   }
@@ -1256,6 +1265,7 @@
     var knownTimestamp = null;
     var latestLog = null;
     var loaded = false;
+    var noticeDismissedInPage = false;
 
     function setVitalsVisible(visible) {
       [headlineSection, supportSection, trendsSection].forEach(function (node) {
@@ -1282,11 +1292,16 @@
 
         var shouldShowConsentModal =
           !isAuto &&
-          (consentInfo.has_recorded_consent === false ||
-            !sessionStorage.getItem("bhm:citizen_terms_seen"));
+          consentInfo.privacy_acknowledged === false &&
+          !noticeDismissedInPage &&
+          API.getPrivacyAcknowledged() !== true;
 
         if (shouldShowConsentModal) {
-          showCitizenConsentModal();
+          showCitizenConsentModal(function () {
+            noticeDismissedInPage = true;
+          });
+        } else if (consentInfo.privacy_acknowledged) {
+          API.setPrivacyAcknowledged(true);
         }
 
         if (logs.length === 0) {

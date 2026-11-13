@@ -24,6 +24,7 @@ class User(Base):
     birthdate = Column(String(10), nullable=False)
     gender = Column(String(10), nullable=False)
     role = Column(String(10), default="citizen")
+    privacy_acknowledged_at = Column(DateTime, nullable=True)
     created_at = Column(DateTime, default=utcnow)
 
 
