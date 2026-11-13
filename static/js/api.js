@@ -532,6 +532,16 @@
       return suffix ? text + " " + suffix : text;
     },
 
+    fmtHeightFtIn: function (cm) {
+      if (cm === null || cm === undefined || cm === "") return "";
+      var number = Number(cm);
+      if (isNaN(number) || number <= 0) return "";
+      var totalInches = Math.round(number / 2.54);
+      var feet = Math.floor(totalInches / 12);
+      var inches = totalInches % 12;
+      return feet + "'" + inches + '"';
+    },
+
     toast: function (message, type) {
       var container = document.getElementById("toastContainer");
       if (!container) {

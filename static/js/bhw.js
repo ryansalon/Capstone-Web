@@ -1109,8 +1109,10 @@
       : bmiCat === "Normal"
         ? { text: "Normal", tone: "good" }
         : { text: bmiCat, tone: "warn" };
+    var heightFt = U.fmtHeightFtIn(latest.height);
+    var heightDisplay = U.fmtNum(latest.height, 1, "cm") + (heightFt ? " (" + heightFt + ")" : "");
     var heightWeightStr = (!isMissing(latest.height) || !isMissing(latest.weight))
-      ? U.fmtNum(latest.height, 1, "cm") + " · " + U.fmtNum(latest.weight, 1, "kg")
+      ? heightDisplay + " · " + U.fmtNum(latest.weight, 1, "kg")
       : "Normal: 18.5–24.9";
     addSnapshotCard(
       "Body mass index",
@@ -1367,7 +1369,14 @@
       var bpVal = hasBp ? (log.systolic_bp + "/" + log.diastolic_bp + " mmHg") : "—";
       var bpSub = (log.systolic_bp >= 140 || log.diastolic_bp >= 90) ? "Stage 2 HTN Alert" : (log.systolic_bp >= 130 || log.diastolic_bp >= 80 ? "Stage 1 HTN" : "Normal BP");
       addStat("Blood Pressure", bpVal, bpSub);
-      addStat("Body Mass Index", U.fmtNum(log.bmi, 1), log.weight ? (U.fmtNum(log.weight, 1, "kg") + " / " + U.fmtNum(log.height, 1, "cm")) : "");
+      var refHeightFt = U.fmtHeightFtIn(log.height);
+      addStat(
+        "Body Mass Index",
+        U.fmtNum(log.bmi, 1),
+        log.weight
+          ? (U.fmtNum(log.weight, 1, "kg") + " / " + U.fmtNum(log.height, 1, "cm") + (refHeightFt ? " (" + refHeightFt + ")" : ""))
+          : ""
+      );
       addStat("Blood Oxygen (SpO2)", U.fmtNum(log.spo2, 0, "%"), (log.spo2 && log.spo2 < 95) ? "Attention required" : "Normal");
       addStat("Body Temperature", U.fmtNum(log.temperature, 1, "°C"), (log.temperature >= 37.9) ? "Fever alert" : "Normothermic");
       addStat("Pulse / Heart Rate", U.fmtNum(log.pulse_rate, 0, "bpm"), "Resting pulse");

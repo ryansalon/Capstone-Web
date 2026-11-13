@@ -1430,7 +1430,12 @@
 
       addStat(t("passportStatBp"), (!isMissing(log.systolic_bp) && !isMissing(log.diastolic_bp)) ? (log.systolic_bp + "/" + log.diastolic_bp + " mmHg") : "—", bpCat ? tCat(bpCat) : "");
       addStat(t("passportStatBmi"), U.fmtNum(log.bmi, 1), bmiCat ? t("passportBmiCat", { cat: tCat(bmiCat) }) : "");
-      addStat(t("passportStatWh"), U.fmtNum(log.weight, 1, "kg") + " / " + U.fmtNum(log.height, 1, "cm"), "");
+      var passHeightFt = U.fmtHeightFtIn(log.height);
+      addStat(
+        t("passportStatWh"),
+        U.fmtNum(log.weight, 1, "kg") + " / " + U.fmtNum(log.height, 1, "cm"),
+        passHeightFt ? ("≈ " + passHeightFt) : ""
+      );
       addStat(t("passportStatSpo2"), U.fmtNum(log.spo2, 0, "%"), spo2Cat ? tCat(spo2Cat) : "");
       addStat(t("passportStatTemp"), U.fmtNum(log.temperature, 1, "°C"), Number(log.temperature) >= 37.9 ? t("passportElevFever") : t("catNormal"));
       addStat(t("passportStatPulse"), U.fmtNum(log.pulse_rate, 0, "bpm"), t("passportRestPulse"));
@@ -2323,11 +2328,12 @@
       "kg"
     );
 
+    var heightFt = U.fmtHeightFtIn(log.height);
     addCard(
       fragSupport,
       "Height",
       U.fmtNum(log.height, 1),
-      null,
+      heightFt ? ("≈ " + heightFt) : null,
       isMissing(log.height) ? "missing" : null,
       null,
       null,
