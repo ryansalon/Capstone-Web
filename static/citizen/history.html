@@ -10,7 +10,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="preload" as="image" href="/img/cpsc-logo.png">
   <link rel="preload" as="image" href="/img/rhu-logo.png">
-  <link rel="stylesheet" href="/css/style.css?v=20">
+  <link rel="stylesheet" href="/css/style.css?v=21">
 </head>
 <body data-page="citizen-history">
   <a class="skip-link" href="#main">Skip to main content</a>
@@ -67,35 +67,44 @@
             <svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
             Export CSV
           </button>
-          <button id="passportBtnHistory" class="btn btn-primary" type="button">Print health passport</button>
+          <button id="passportBtnHistory" class="btn btn-primary" type="button">Print Health Passport</button>
           <a href="/citizen/dashboard.html" class="btn btn-secondary">Dashboard</a>
         </div>
       </div>
 
       <div id="status" aria-live="polite"></div>
 
+      <div id="historyChartTabs" class="chart-filter-bar" role="group" aria-label="Filter charts by measurement" hidden>
+        <button type="button" class="chart-filter-btn" data-chart-group="key" aria-pressed="false">Key vitals</button>
+        <button type="button" class="chart-filter-btn" data-chart-group="all" aria-pressed="false">All charts</button>
+        <button type="button" class="chart-filter-btn" data-chart-group="bp" aria-pressed="false">Blood pressure</button>
+        <button type="button" class="chart-filter-btn" data-chart-group="temp" aria-pressed="false">Temperature</button>
+        <button type="button" class="chart-filter-btn" data-chart-group="spo2" aria-pressed="false">SpO₂</button>
+        <button type="button" class="chart-filter-btn" data-chart-group="body" aria-pressed="false">Weight &amp; BMI</button>
+      </div>
+
       <section class="grid-2 section" id="chartsSection">
-        <div class="chart-box">
+        <div class="chart-box" data-chart-metric="temp">
           <h2>Temperature (°C)</h2>
           <canvas id="temperatureChart" aria-describedby="temperatureSummary" height="180" aria-label="Body temperature over time chart" role="img"></canvas>
           <p id="temperatureSummary" class="chart-summary"></p>
         </div>
-        <div class="chart-box">
+        <div class="chart-box" data-chart-metric="weight">
           <h2>Weight (kg)</h2>
           <canvas id="weightChart" aria-describedby="weightSummary" height="180" aria-label="Weight over time chart" role="img"></canvas>
           <p id="weightSummary" class="chart-summary"></p>
         </div>
-        <div class="chart-box">
+        <div class="chart-box" data-chart-metric="bmi">
           <h2>BMI</h2>
           <canvas id="bmiChart" aria-describedby="bmiSummary" height="180" aria-label="BMI over time chart" role="img"></canvas>
           <p id="bmiSummary" class="chart-summary"></p>
         </div>
-        <div class="chart-box">
+        <div class="chart-box" data-chart-metric="bp">
           <h2>Blood pressure (mmHg)</h2>
           <canvas id="bpChart" aria-describedby="bpSummary" height="180" aria-label="Systolic and diastolic blood pressure chart" role="img"></canvas>
           <p id="bpSummary" class="chart-summary"></p>
         </div>
-        <div class="chart-box">
+        <div class="chart-box" data-chart-metric="spo2">
           <h2>SpO2 (%)</h2>
           <canvas id="spo2Chart" aria-describedby="spo2Summary" height="180" aria-label="Blood oxygen over time chart" role="img"></canvas>
           <p id="spo2Summary" class="chart-summary"></p>
@@ -117,11 +126,11 @@
       </section>
     </main>
 
-    <footer class="foot">Timestamps are shown in Philippine time (PHT); hover a timestamp for the UTC original.</footer>
+    <footer class="foot">All dates and times are shown in Philippine Standard Time (PHT).</footer>
     </div>
   </div>
   <script src="/vendor/chart.umd.min.js"></script>
-  <script src="/js/api.js?v=20"></script>
-  <script src="/js/citizen.js?v=20"></script>
+  <script src="/js/api.js?v=21"></script>
+  <script src="/js/citizen.js?v=21"></script>
 </body>
 </html>

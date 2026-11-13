@@ -10,7 +10,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="preload" as="image" href="/img/cpsc-logo.png">
   <link rel="preload" as="image" href="/img/rhu-logo.png">
-  <link rel="stylesheet" href="/css/style.css?v=20">
+  <link rel="stylesheet" href="/css/style.css?v=21">
 </head>
 <body data-page="citizen-dashboard">
   <a class="skip-link" href="#main">Skip to main content</a>
@@ -90,6 +90,11 @@
         <div class="hero-meta-bar">
           <div id="latestMeta" class="latest-checkin-meta"></div>
           <div class="hero-meta-right">
+            <div class="lang-switcher" role="group" aria-label="Language preference">
+              <button type="button" class="lang-btn is-active" data-lang="en" aria-pressed="true">EN</button>
+              <button type="button" class="lang-btn" data-lang="ceb" aria-pressed="false">Bisaya</button>
+              <button type="button" class="lang-btn" data-lang="tl" aria-pressed="false">Tagalog</button>
+            </div>
             <a id="consentChip" class="status-chip" href="/citizen/consent.html" title="Consent status — open the Consent page to change it.">Consent status</a>
           </div>
         </div>
@@ -143,9 +148,9 @@
         </div>
       </section>
 
-      <details class="vital-hints">
-        <summary>What do these numbers mean?</summary>
-        <dl class="hint-grid">
+      <details class="vital-hints" id="vitalHintsBox">
+        <summary id="vitalHintsSummary">What do these numbers mean?</summary>
+        <dl class="hint-grid" id="vitalHintsGrid">
           <div>
             <dt>Blood pressure</dt>
             <dd>Normal below 120/80 mmHg · elevated 120–129/&lt;80 · Stage 1 130–139 or 80–89 · Stage 2 140/90 or above · crisis 180/120 or above.</dd>
@@ -173,21 +178,13 @@
         </dl>
       </details>
 
-      <section class="section">
-        <h2>Quick actions</h2>
-        <div class="btn-row">
-          <a class="btn btn-secondary" href="/citizen/history.html">View history &amp; charts</a>
-          <a class="btn btn-secondary" href="/citizen/consent.html">Manage consent</a>
-          <a class="btn btn-secondary" href="/citizen/profile.html">My profile</a>
-        </div>
-      </section>
     </main>
 
-    <footer class="foot">Readings are shown in Philippine time (PHT); hover a timestamp for the UTC original.</footer>
+    <footer class="foot">All dates and times are shown in Philippine Standard Time (PHT).</footer>
     </div>
   </div>
   <script src="/vendor/chart.umd.min.js"></script>
-  <script src="/js/api.js?v=20"></script>
-  <script src="/js/citizen.js?v=20"></script>
+  <script src="/js/api.js?v=21"></script>
+  <script src="/js/citizen.js?v=21"></script>
 </body>
 </html>

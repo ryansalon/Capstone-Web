@@ -10,7 +10,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="preload" as="image" href="/img/cpsc-logo.png">
   <link rel="preload" as="image" href="/img/rhu-logo.png">
-  <link rel="stylesheet" href="/css/style.css?v=20">
+  <link rel="stylesheet" href="/css/style.css?v=21">
 </head>
 <body data-page="citizen-profile">
   <a class="skip-link" href="#main">Skip to main content</a>
@@ -103,12 +103,25 @@
           <form id="passwordForm" novalidate>
             <div class="field">
               <label for="currentPassword">Current password</label>
-              <input id="currentPassword" name="current_password" type="password" autocomplete="current-password" required aria-required="true" aria-describedby="passwordError">
+              <div class="password-wrap">
+                <input id="currentPassword" name="current_password" type="password" autocomplete="current-password" required aria-required="true" aria-describedby="passwordError">
+                <button type="button" class="btn-toggle-pw" aria-label="Show password">Show</button>
+              </div>
             </div>
             <div class="field">
               <label for="newPassword">New password</label>
-              <input id="newPassword" name="new_password" type="password" autocomplete="new-password" minlength="8" required aria-required="true" aria-describedby="passwordHint passwordError">
+              <div class="password-wrap">
+                <input id="newPassword" name="new_password" type="password" autocomplete="new-password" minlength="8" required aria-required="true" aria-describedby="passwordHint passwordError">
+                <button type="button" class="btn-toggle-pw" aria-label="Show password">Show</button>
+              </div>
               <p id="passwordHint" class="hint">At least 8 characters.</p>
+            </div>
+            <div class="field">
+              <label for="confirmNewPassword">Confirm new password</label>
+              <div class="password-wrap">
+                <input id="confirmNewPassword" name="confirm_new_password" type="password" autocomplete="new-password" minlength="8" placeholder="Re-enter your new password" required aria-required="true" aria-describedby="passwordError">
+                <button type="button" class="btn-toggle-pw" aria-label="Show password">Show</button>
+              </div>
             </div>
             <p class="auth-sub-link">
               Don't remember your current password?
@@ -130,7 +143,7 @@
     <footer class="foot">Your password is stored only as a bcrypt hash.</footer>
     </div>
   </div>
-  <script src="/js/api.js?v=20"></script>
-  <script src="/js/citizen.js?v=20"></script>
+  <script src="/js/api.js?v=21"></script>
+  <script src="/js/citizen.js?v=21"></script>
 </body>
 </html>

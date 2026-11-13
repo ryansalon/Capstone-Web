@@ -34,6 +34,149 @@
   };
   var thresholdRegistered = false;
 
+  /* Lightweight plain-language localization for Citizen Dashboard (EN / Bisaya / Tagalog). */
+  var CITIZEN_I18N = {
+    en: {
+      headlineHeading: "Key vitals",
+      supportHeading: "Your other measurements",
+      trendsHeading: "Trends at a glance",
+      hintsSummary: "What do these numbers mean?",
+      greetingMorning: "Good morning",
+      greetingAfternoon: "Good afternoon",
+      greetingEvening: "Good evening",
+      notRecorded: "Not recorded",
+      notTaken: "Not taken at kiosk",
+      statusNormal: "Normal",
+      statusMonitor: "Monitor",
+      statusAction: "Action required",
+      normalSentence: "Your latest readings are all within the healthy range.",
+      normalNext: "Next step: keep it up — take your next reading at the kiosk as usual.",
+      attentionNext: "Next step: mention this at your next visit, and recheck at the kiosk in a few days.",
+      actionNext: "Next step: contact your Barangay Health Worker or visit the health station today.",
+      noReadingsPill: "No readings",
+      noReadingsSentence: "No vital sign measurements are recorded yet for your account.",
+      noReadingsNext: "Visit the barangay health kiosk to take your measurements. Your readings will appear here.",
+      unavailPill: "Unavailable",
+      unavailSentence: "We couldn't load your health data right now.",
+      unavailNext: "Use Retry below, or check your connection and try again.",
+      consentGranted: "Consent: Granted",
+      consentNotGranted: "Consent: Not granted",
+      consentExplainYes: "Barangay Health Workers can open your individual records — this is what you agreed to. ",
+      consentExplainNo: "Barangay Health Workers only see anonymous totals; they cannot open your individual records. ",
+      consentLink: "Change this on the Consent page",
+      labels: {
+        "Blood pressure": "Blood pressure",
+        "SpO2 (Oxygen)": "SpO2 (Oxygen)",
+        "Body temperature": "Body temperature",
+        "Pulse rate": "Pulse rate",
+        "Body mass index": "Body mass index",
+        "Weight": "Weight",
+        "Height": "Height",
+      },
+    },
+    ceb: {
+      headlineHeading: "Mga Importanteng Sukod",
+      supportHeading: "Ubang mga Sukod",
+      trendsHeading: "Lakbit nga Kausaban",
+      hintsSummary: "Unsay pasabot niining mga numero?",
+      greetingMorning: "Maayong buntag",
+      greetingAfternoon: "Maayong hapon",
+      greetingEvening: "Maayong gabii",
+      notRecorded: "Walay sukod",
+      notTaken: "Wala makuha sa kiosk",
+      statusNormal: "Normal",
+      statusMonitor: "Bantayan",
+      statusAction: "Kinahanglan og pagtagad",
+      normalSentence: "Ang imong pinakabag-ong mga sukod anaa tanan sa maayong kahimtang.",
+      normalNext: "Sunod nga lakang: padayona kini — pagpasukod pag-usab sa kiosk sa naandan.",
+      attentionNext: "Sunod nga lakang: isulti kini sa imong BHW sa sunod bisita, ug pagpasukod pag-usab sulod sa pipila ka adlaw.",
+      actionNext: "Sunod nga lakang: kontaka ang imong Barangay Health Worker o adto sa health station karon dayon.",
+      noReadingsPill: "Walay sukod",
+      noReadingsSentence: "Wala pay narekord nga vital signs alang sa imong account.",
+      noReadingsNext: "Bisitaha ang barangay health kiosk aron masukod ang imong lawas. Makita nimo dinhi ang resulta.",
+      unavailPill: "Dili ma-access",
+      unavailSentence: "Dili pa nato ma-load ang imong health data karon.",
+      unavailNext: "Gamita ang Retry sa ubos o susiha ang imong koneksyon.",
+      consentGranted: "Pagtugot: Gisugtan",
+      consentNotGranted: "Pagtugot: Wala gisugti",
+      consentExplainYes: "Makaabli ang mga BHW sa imong indibidwal nga rekord sumala sa imong pagtugot. ",
+      consentExplainNo: "Mga anonimo nga total ra ang makita sa mga BHW; dili nila maabli ang imong indibidwal nga rekord. ",
+      consentLink: "Usba kini sa Consent page",
+      labels: {
+        "Blood pressure": "Presyon sa dugo (BP)",
+        "SpO2 (Oxygen)": "Oksiheno sa dugo (SpO₂)",
+        "Body temperature": "Temperatura sa lawas",
+        "Pulse rate": "Pinitik sa pulso",
+        "Body mass index": "Body Mass Index (BMI)",
+        "Weight": "Timbang",
+        "Height": "Gitas-on",
+      },
+    },
+    tl: {
+      headlineHeading: "Mga Pangunahing Vital Signs",
+      supportHeading: "Iba pang Sukat",
+      trendsHeading: "Takbo ng Resulta",
+      hintsSummary: "Ano ang ibig sabihin ng mga numerong ito?",
+      greetingMorning: "Magandang umaga",
+      greetingAfternoon: "Magandang hapon",
+      greetingEvening: "Magandang gabi",
+      notRecorded: "Walang tala",
+      notTaken: "Hindi nakuha sa kiosk",
+      statusNormal: "Normal",
+      statusMonitor: "Bantayan",
+      statusAction: "Kailangan ng atensyon",
+      normalSentence: "Nasa malusog at normal na antas ang iyong pinakahuling mga sukat.",
+      normalNext: "Susunod na hakbang: ipagpatuloy ito — magpasukat muli sa kiosk ayon sa nakagawian.",
+      attentionNext: "Susunod na hakbang: sabihin ito sa iyong BHW sa susunod na pagbisita at magpasukat muli pagkalipas ng ilang araw.",
+      actionNext: "Susunod na hakbang: makipag-ugnayan sa iyong Barangay Health Worker o pumunta sa health station ngayon.",
+      noReadingsPill: "Walang sukat",
+      noReadingsSentence: "Wala pang naitalang vital signs para sa iyong account.",
+      noReadingsNext: "Pumunta sa barangay health kiosk upang magpasukat. Lalabas dito ang iyong mga resulta.",
+      unavailPill: "Hindi ma-load",
+      unavailSentence: "Hindi ma-load ang iyong health data sa ngayon.",
+      unavailNext: "Gamitin ang Retry sa ibaba o suriin ang iyong koneksyon.",
+      consentGranted: "Pahintulot: Pinayagan",
+      consentNotGranted: "Pahintulot: Hindi pinayagan",
+      consentExplainYes: "Maaaring buksan ng mga BHW ang iyong indibidwal na rekord ayon sa iyong pahintulot. ",
+      consentExplainNo: "Mga anonimong kabuuan lamang ang nakikita ng mga BHW; hindi nila mabubuksan ang iyong rekord. ",
+      consentLink: "Baguhin ito sa Consent page",
+      labels: {
+        "Blood pressure": "Presyon ng dugo (BP)",
+        "SpO2 (Oxygen)": "Antas ng oxygen (SpO₂)",
+        "Body temperature": "Temperatura ng katawan",
+        "Pulse rate": "Bilis ng pulso",
+        "Body mass index": "Body Mass Index (BMI)",
+        "Weight": "Timbang",
+        "Height": "Taas",
+      },
+    },
+  };
+
+  function getCitizenLang() {
+    try {
+      var saved = window.localStorage.getItem("hk_lang");
+      return (saved && CITIZEN_I18N[saved]) ? saved : "en";
+    } catch (e) {
+      return "en";
+    }
+  }
+
+  function setCitizenLang(lang) {
+    if (!CITIZEN_I18N[lang]) lang = "en";
+    try { window.localStorage.setItem("hk_lang", lang); } catch (e) {}
+    return lang;
+  }
+
+  function t(key) {
+    var dict = CITIZEN_I18N[getCitizenLang()] || CITIZEN_I18N.en;
+    return dict[key] !== undefined ? dict[key] : CITIZEN_I18N.en[key];
+  }
+
+  function tLabel(label) {
+    var dict = CITIZEN_I18N[getCitizenLang()] || CITIZEN_I18N.en;
+    return (dict.labels && dict.labels[label]) || label;
+  }
+
   /* ---------------- classification (display only) ---------------- */
 
   function bmiCategory(value) {
@@ -588,19 +731,21 @@
   }
 
   function addCard(container, label, value, sub, tone, gauge, delta, spark, pendingSparks, refRange, badge, unit) {
+    var isMissingCard = tone === "missing";
     var card = U.el("div", { class: "card" + (tone ? " " + tone : "") });
     var topRow = U.el("div", { class: "card-top-row" });
-    topRow.appendChild(U.el("div", { class: "label" }, label));
-    if (badge) {
-      topRow.appendChild(U.el("span", { class: "vital-badge badge-" + (badge.tone || "neutral") }, badge.text));
+    topRow.appendChild(U.el("div", { class: "label" }, tLabel(label)));
+    var effectiveBadge = badge || (isMissingCard ? { text: t("notRecorded"), tone: "neutral" } : null);
+    if (effectiveBadge) {
+      topRow.appendChild(U.el("span", { class: "vital-badge badge-" + (effectiveBadge.tone || "neutral") }, effectiveBadge.text));
     }
     card.appendChild(topRow);
 
     var valRow = U.el("div", { class: "value-row" });
     var valStr = String(value === null || value === undefined ? "—" : value);
-    var valUnit = unit || "";
+    var valUnit = isMissingCard ? "" : (unit || "");
 
-    if (!valUnit && typeof valStr === "string") {
+    if (!valUnit && !isMissingCard && typeof valStr === "string") {
       var match = valStr.match(/^([0-9./—-]+)\s*([a-zA-Z°%]+.*)$/);
       if (match) {
         valStr = match[1];
@@ -614,9 +759,13 @@
     }
     card.appendChild(valRow);
 
-    if (refRange || delta) {
+    if (refRange || delta || isMissingCard) {
       var metaRow = U.el("div", { class: "card-meta" });
-      if (refRange) metaRow.appendChild(U.el("span", { class: "ref-range" }, refRange));
+      if (isMissingCard) {
+        metaRow.appendChild(U.el("span", { class: "ref-range" }, t("notTaken")));
+      } else if (refRange) {
+        metaRow.appendChild(U.el("span", { class: "ref-range" }, refRange));
+      }
       if (delta) metaRow.appendChild(delta);
       card.appendChild(metaRow);
     }
@@ -776,7 +925,7 @@
 
     var sentence;
     if (level === "normal") {
-      sentence = "Your latest readings are all within the healthy range.";
+      sentence = t("normalSentence");
     } else {
       var texts = findings.map(function (f) { return f.text; });
       var joined =
@@ -788,16 +937,16 @@
 
     var next;
     if (level === "action") {
-      next = "Next step: contact your Barangay Health Worker or visit the health station today.";
+      next = t("actionNext");
     } else if (level === "attention") {
-      next = "Next step: mention this at your next visit, and recheck at the kiosk in a few days.";
+      next = t("attentionNext");
     } else {
-      next = "Next step: keep it up — take your next reading at the kiosk as usual.";
+      next = t("normalNext");
     }
 
     return {
       level: level,
-      label: level === "action" ? "Action required" : level === "attention" ? "Monitor" : "Normal",
+      label: level === "action" ? t("statusAction") : level === "attention" ? t("statusMonitor") : t("statusNormal"),
       tone: level === "action" ? "bad" : level === "attention" ? "warn" : "ok",
       sentence: sentence,
       next: next,
@@ -816,9 +965,22 @@
       }).format(new Date())
     );
     hour = hour % 24; // some locales format midnight as "24"
-    var part = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
+    var part = hour < 12 ? t("greetingMorning") : hour < 18 ? t("greetingAfternoon") : t("greetingEvening");
     var first = (API.getName() || "").trim().split(/\s+/)[0];
     node.textContent = first ? part + ", " + first : part;
+  }
+
+  function applyDashboardHeadings() {
+    var map = [
+      ["headlineHeading", "headlineHeading"],
+      ["supportHeading", "supportHeading"],
+      ["trendsHeading", "trendsHeading"],
+      ["vitalHintsSummary", "hintsSummary"],
+    ];
+    map.forEach(function (pair) {
+      var el = document.getElementById(pair[0]);
+      if (el) el.textContent = t(pair[1]);
+    });
   }
 
   function renderHero(log) {
@@ -840,11 +1002,9 @@
     var next = document.getElementById("heroNext");
     if (!pill || !sentence || !next) return;
     pill.className = "hero-pill muted";
-    pill.textContent = "No readings";
-    sentence.textContent =
-      "No vital sign measurements are recorded yet for your account.";
-    next.textContent =
-      "Visit the barangay health kiosk to take your measurements. Your readings will appear here.";
+    pill.textContent = t("noReadingsPill");
+    sentence.textContent = t("noReadingsSentence");
+    next.textContent = t("noReadingsNext");
   }
 
   /* Hero on a failed first load, so it never sits on "Checking…". */
@@ -854,9 +1014,9 @@
     var next = document.getElementById("heroNext");
     if (!pill || !sentence || !next) return;
     pill.className = "hero-pill muted";
-    pill.textContent = "Unavailable";
-    sentence.textContent = "We couldn't load your health data right now.";
-    next.textContent = "Use Retry below, or check your connection and try again.";
+    pill.textContent = t("unavailPill");
+    sentence.textContent = t("unavailSentence");
+    next.textContent = t("unavailNext");
   }
 
   /* ---------------- mini trends (dashboard at a glance) ---------------- */
@@ -1229,7 +1389,7 @@
     var chip = document.getElementById("consentChip");
     if (chip) {
       chip.className = "status-chip " + (granted ? "granted" : "not-granted");
-      chip.textContent = granted ? "Consent: Granted" : "Consent: Not granted";
+      chip.textContent = granted ? t("consentGranted") : t("consentNotGranted");
       chip.title = granted
         ? "Barangay Health Workers can open your individual records. Change this on the Consent page."
         : "Barangay Health Workers only see anonymous totals. Change this on the Consent page.";
@@ -1240,12 +1400,10 @@
       U.clear(explain);
       explain.appendChild(
         document.createTextNode(
-          granted
-            ? "Barangay Health Workers can open your individual records — this is what you agreed to. "
-            : "Barangay Health Workers only see anonymous totals; they cannot open your individual records. "
+          granted ? t("consentExplainYes") : t("consentExplainNo")
         )
       );
-      explain.appendChild(U.el("a", { href: "/citizen/consent.html" }, "Change this on the Consent page"));
+      explain.appendChild(U.el("a", { href: "/citizen/consent.html" }, t("consentLink")));
       explain.appendChild(document.createTextNode("."));
     }
   }
@@ -1264,6 +1422,8 @@
 
     var knownTimestamp = null;
     var latestLog = null;
+    var cachedLogs = [];
+    var cachedConsent = null;
     var loaded = false;
     var noticeDismissedInPage = false;
 
@@ -1273,7 +1433,30 @@
       });
     }
 
-    renderGreeting();
+    function syncLangUI() {
+      var active = getCitizenLang();
+      document.querySelectorAll(".lang-btn").forEach(function (btn) {
+        var on = btn.dataset.lang === active;
+        btn.classList.toggle("is-active", on);
+        btn.setAttribute("aria-pressed", on ? "true" : "false");
+      });
+      renderGreeting();
+      applyDashboardHeadings();
+      if (cachedConsent !== null) renderConsentChip(cachedConsent);
+      if (loaded) {
+        if (cachedLogs.length) renderLatest(cachedLogs);
+        else renderHeroOnboarding();
+      }
+    }
+
+    document.querySelectorAll(".lang-btn").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        setCitizenLang(btn.dataset.lang);
+        syncLangUI();
+      });
+    });
+
+    syncLangUI();
 
     async function load(options) {
       var isAuto = Boolean(options && options.auto);
@@ -1288,7 +1471,9 @@
         U.clear(statusNode);
         var logs = results[0].logs || [];
         var consentInfo = results[1] || {};
-        renderConsentChip(Boolean(consentInfo.consent_granted));
+        cachedLogs = logs;
+        cachedConsent = Boolean(consentInfo.consent_granted);
+        renderConsentChip(cachedConsent);
 
         var shouldShowConsentModal =
           !isAuto &&
@@ -1415,6 +1600,8 @@
     range: "all",
     page: 1,
     pageSize: 10,
+    viewMode: null,
+    chartGroup: window.innerWidth <= 640 ? "key" : "all",
   };
 
   var HISTORY_RANGES = [
@@ -1599,7 +1786,14 @@
     tbody.appendChild(rowsFrag);
     table.appendChild(tbody);
     tableWrap.appendChild(table);
-    wrap.appendChild(tableWrap);
+
+    var views = U.wrapCheckinViews(pageSlice, tableWrap, cellTone, historyState.viewMode);
+    var origSetMode = views.setMode;
+    views.setMode = function (next) {
+      historyState.viewMode = next;
+      origSetMode(next);
+    };
+    wrap.appendChild(views.container);
 
     // Pagination
     if (paginationWrap && totalPages > 1) {
@@ -1641,6 +1835,8 @@
 
     if (!window.Chart) {
       section.hidden = true;
+      var chartTabsHidden = document.getElementById("historyChartTabs");
+      if (chartTabsHidden) chartTabsHidden.hidden = true;
       U.empty(
         note,
         "Charts could not load (the Chart.js CDN is unreachable). The table below still lists every reading."
@@ -1648,6 +1844,8 @@
       return;
     }
     section.hidden = false;
+    var chartTabs = document.getElementById("historyChartTabs");
+    if (chartTabs) chartTabs.hidden = false;
     if (!thresholdRegistered) {
       window.Chart.register(feverThresholdPlugin);
       thresholdRegistered = true;
@@ -1852,6 +2050,44 @@
     var tableWrap = document.getElementById("tableWrap");
     var section = document.getElementById("chartsSection");
     var passportBtn = document.getElementById("passportBtnHistory");
+    var chartTabs = document.getElementById("historyChartTabs");
+
+    function applyChartFilter(group) {
+      historyState.chartGroup = group;
+      var allowed = {
+        key: ["bp", "temp"],
+        all: ["temp", "weight", "bmi", "bp", "spo2"],
+        bp: ["bp"],
+        temp: ["temp"],
+        spo2: ["spo2"],
+        body: ["weight", "bmi"],
+      }[group] || ["temp", "weight", "bmi", "bp", "spo2"];
+      if (chartTabs) {
+        chartTabs.querySelectorAll(".chart-filter-btn").forEach(function (btn) {
+          var active = btn.dataset.chartGroup === group;
+          btn.classList.toggle("is-active", active);
+          btn.setAttribute("aria-pressed", active ? "true" : "false");
+        });
+      }
+      if (section) {
+        section.querySelectorAll(".chart-box[data-chart-metric]").forEach(function (box) {
+          box.hidden = allowed.indexOf(box.dataset.chartMetric) === -1;
+        });
+      }
+      Object.keys(charts).forEach(function (k) {
+        if (charts[k] && typeof charts[k].resize === "function") {
+          requestAnimationFrame(function () { charts[k].resize(); });
+        }
+      });
+    }
+
+    if (chartTabs) {
+      chartTabs.querySelectorAll(".chart-filter-btn").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          applyChartFilter(btn.dataset.chartGroup);
+        });
+      });
+    }
 
     if (passportBtn) {
       passportBtn.onclick = async function () {
@@ -1949,6 +2185,7 @@
       }
       renderLogTable(logs);
       renderCharts(logs);
+      applyChartFilter(historyState.chartGroup);
 
       API.initRealtimeSync({
         onReading: function () {
@@ -2088,12 +2325,25 @@
     }
 
     grantBtn.addEventListener("click", function () {
-      if (!window.confirm("Grant Barangay Health Workers access to your health records?")) return;
-      changeConsent(true);
+      U.confirmDialog({
+        title: "Grant Health Worker Access",
+        message: "Allow authorized Barangay Health Workers to view your vital readings, notes, and create Rural Health Unit referrals?",
+        note: "Every access to your record is logged in the audit trail per RA 10173, and you can revoke access anytime.",
+        confirmLabel: "Grant consent",
+        cancelLabel: "Keep private",
+        onConfirm: function () { changeConsent(true); },
+      });
     });
     revokeBtn.addEventListener("click", function () {
-      if (!window.confirm("Are you sure? Revoking consent means Barangay Health Workers will no longer be able to open your individual records.")) return;
-      changeConsent(false);
+      U.confirmDialog({
+        title: "Revoke Health Worker Access?",
+        message: "Barangay Health Workers will no longer be able to open your individual vitals, clinical notes, or submit RHU referrals.",
+        note: "Your readings remain saved for your own account and are still included only in anonymous community totals.",
+        confirmLabel: "Revoke consent",
+        cancelLabel: "Cancel",
+        danger: true,
+        onConfirm: function () { changeConsent(false); },
+      });
     });
   }
 
@@ -2248,6 +2498,7 @@
       }
     });
 
+    var confirmPwInput = document.getElementById("confirmNewPassword");
     function updatePwHint() {
       var len = newPwInput.value.length;
       pwHint.classList.toggle("hint-ok", len >= 8);
@@ -2260,7 +2511,17 @@
     newPwInput.addEventListener("input", function () {
       updatePwHint();
       if (newPwInput.getAttribute("aria-invalid") === "true" && newPwInput.value.length >= 8) setFieldError(newPwInput, "");
+      if (confirmPwInput && confirmPwInput.getAttribute("aria-invalid") === "true" && confirmPwInput.value === newPwInput.value) {
+        setFieldError(confirmPwInput, "");
+      }
     });
+    if (confirmPwInput) {
+      confirmPwInput.addEventListener("input", function () {
+        if (confirmPwInput.getAttribute("aria-invalid") === "true" && confirmPwInput.value === newPwInput.value) {
+          setFieldError(confirmPwInput, "");
+        }
+      });
+    }
 
     passwordForm.addEventListener("submit", async function (event) {
       event.preventDefault();
@@ -2270,10 +2531,18 @@
       var currentInput = document.getElementById("currentPassword");
       var current = currentInput.value;
       var next = newPwInput.value;
+      var confirmVal = confirmPwInput ? confirmPwInput.value : next;
       setFieldError(currentInput, current ? "" : "Enter your current password.");
       setFieldError(newPwInput, next.length >= 8 ? "" : "New password must be at least 8 characters.");
+      if (confirmPwInput) {
+        setFieldError(
+          confirmPwInput,
+          !confirmVal ? "Please confirm your new password." : confirmVal !== next ? "New passwords do not match." : ""
+        );
+      }
       if (!current) { currentInput.focus(); return; }
       if (next.length < 8) { newPwInput.focus(); return; }
+      if (confirmPwInput && confirmVal !== next) { confirmPwInput.focus(); return; }
       if (next === current) {
         setFieldError(newPwInput, "New password must be different from your current one.");
         newPwInput.focus();

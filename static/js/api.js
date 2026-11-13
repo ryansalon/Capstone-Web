@@ -565,6 +565,190 @@
         }, dismissAfter);
       }
     },
+
+    /* Accessible in-app confirmation modal replacing native window.confirm. */
+    confirmDialog: function (opts) {
+      opts = opts || {};
+      var backdrop = UI.el("div", { class: "modal-backdrop" });
+      var card = UI.el("div", {
+        class: "modal-card modal-card-narrow",
+        role: "alertdialog",
+        "aria-modal": "true",
+        "aria-labelledby": "confirmDialogTitle",
+        "aria-describedby": "confirmDialogDesc",
+      });
+      var head = UI.el("div", { class: "modal-header" });
+      head.appendChild(UI.el("h3", { id: "confirmDialogTitle" }, opts.title || "Confirm action"));
+      var closeX = UI.el("button", { class: "btn btn-ghost btn-sm", type: "button", "aria-label": "Close" }, "×");
+      head.appendChild(closeX);
+      card.appendChild(head);
+
+      var body = UI.el("div", { class: "modal-body" });
+      body.appendChild(UI.el("p", { id: "confirmDialogDesc", class: "confirm-dialog-msg" }, opts.message || ""));
+      if (opts.note) {
+        body.appendChild(UI.el("p", { class: "hint muted", style: "margin-top:0.5rem;" }, opts.note));
+      }
+      card.appendChild(body);
+
+      var footer = UI.el("div", { class: "modal-footer" });
+      var cancelBtn = UI.el("button", { class: "btn btn-secondary", type: "button" }, opts.cancelLabel || "Cancel");
+      var confirmBtn = UI.el("button", {
+        class: "btn " + (opts.danger ? "btn-danger" : "btn-primary"),
+        type: "button",
+      }, opts.confirmLabel || "Confirm");
+      footer.appendChild(cancelBtn);
+      footer.appendChild(confirmBtn);
+      card.appendChild(footer);
+      backdrop.appendChild(card);
+      document.body.appendChild(backdrop);
+
+      var close = UI.openDialog(backdrop, cancelBtn);
+      function cleanup() {
+        close();
+        if (backdrop.parentNode) backdrop.parentNode.removeChild(backdrop);
+      }
+      closeX.onclick = cleanup;
+      cancelBtn.onclick = cleanup;
+      confirmBtn.onclick = function () {
+        cleanup();
+        if (opts.onConfirm) opts.onConfirm();
+      };
+    },
+
+    /* Shows an unobtrusive horizontal scroll cue when a wide table overflows on mobile. */
+    addScrollCue: function (tableWrap, label) {
+      if (!tableWrap || !tableWrap.parentNode) return;
+      var existing = tableWrap.previousElementSibling;
+      if (existing && existing.classList.contains("table-scroll-cue")) existing.remove();
+      var cue = UI.el("div", { class: "table-scroll-cue", "aria-hidden": "true" },
+        label || "Swipe table sideways to view all columns →"
+      );
+      tableWrap.parentNode.insertBefore(cue, tableWrap);
+
+      function sync() {
+        if (!document.body.contains(tableWrap)) return;
+        var visible = tableWrap.offsetParent !== null;
+        var overflows = visible && tableWrap.scrollWidth > tableWrap.clientWidth + 6;
+        cue.hidden = !overflows;
+        tableWrap.classList.toggle("is-scrollable-x", overflows);
+        var atEnd = overflows && (tableWrap.scrollLeft + tableWrap.clientWidth >= tableWrap.scrollWidth - 6);
+        cue.classList.toggle("is-at-end", atEnd);
+      }
+      requestAnimationFrame(sync);
+      tableWrap.addEventListener("scroll", sync, { passive: true });
+      window.addEventListener("resize", sync, { passive: true });
+      return sync;
+    },
+
+    /* Compact stacked check-in cards for mobile readability without sideways swiping. */
+    buildCheckinCards: function (logs, cellToneFn) {
+      var list = UI.el("div", { class: "checkin-cards-list" });
+      var frag = document.createDocumentFragment();
+      function missing(v) { return v === null || v === undefined || v === ""; }
+      logs.forEach(function (log) {
+        var tones = ["bp", "temp", "spo2", "pulse", "bmi"].map(function (k) {
+          return cellToneFn ? cellToneFn(k, log) : "";
+        });
+        var hasBad = tones.indexOf("cell-bad") >= 0;
+        var hasWarn = tones.indexOf("cell-warn") >= 0;
+        var cardCls = "checkin-card" + (hasBad ? " is-bad" : hasWarn ? " is-warn" : "");
+        var card = UI.el("article", { class: cardCls });
+
+        var head = UI.el("div", { class: "checkin-card-head" });
+        head.appendChild(UI.el("span", { class: "checkin-card-time" }, UI.fmtDT(log.timestamp)));
+        if (hasBad || hasWarn) {
+          head.appendChild(
+            UI.el("span", { class: "vital-badge " + (hasBad ? "badge-danger" : "badge-warn") },
+              hasBad ? "Needs attention" : "Monitor")
+          );
+        } else {
+          head.appendChild(UI.el("span", { class: "vital-badge badge-good" }, "Normal"));
+        }
+        card.appendChild(head);
+
+        var grid = UI.el("div", { class: "checkin-card-grid" });
+        var metrics = [
+          ["Blood Pressure", (missing(log.systolic_bp) || missing(log.diastolic_bp)) ? "—" : (log.systolic_bp + "/" + log.diastolic_bp + " mmHg"), cellToneFn ? cellToneFn("bp", log) : ""],
+          ["Temperature", missing(log.temperature) ? "—" : UI.fmtNum(log.temperature, 1, "°C"), cellToneFn ? cellToneFn("temp", log) : ""],
+          ["SpO₂", missing(log.spo2) ? "—" : UI.fmtNum(log.spo2, 0, "%"), cellToneFn ? cellToneFn("spo2", log) : ""],
+          ["Pulse", missing(log.pulse_rate) ? "—" : UI.fmtNum(log.pulse_rate, 0, "bpm"), cellToneFn ? cellToneFn("pulse", log) : ""],
+          ["Weight", missing(log.weight) ? "—" : UI.fmtNum(log.weight, 1, "kg"), ""],
+          ["BMI", missing(log.bmi) ? "—" : UI.fmtNum(log.bmi, 1), cellToneFn ? cellToneFn("bmi", log) : ""],
+        ];
+        metrics.forEach(function (m) {
+          var cell = UI.el("div", { class: "checkin-metric" + (m[2] ? " " + m[2] : "") });
+          cell.appendChild(UI.el("span", { class: "checkin-metric-label" }, m[0]));
+          cell.appendChild(UI.el("span", { class: "checkin-metric-val" + (m[1] === "—" ? " is-missing" : "") }, m[1]));
+          grid.appendChild(cell);
+        });
+        card.appendChild(grid);
+        frag.appendChild(card);
+      });
+      list.appendChild(frag);
+      return list;
+    },
+
+    /* Pairs a scrollable table with mobile check-in cards + a Cards/Table switcher. */
+    wrapCheckinViews: function (logs, tableWrap, cellToneFn, savedMode) {
+      var mode = savedMode || (window.innerWidth <= 640 ? "cards" : "table");
+      var container = UI.el("div", { class: "checkin-views-wrap" });
+
+      var bar = UI.el("div", { class: "checkin-view-bar" });
+      var group = UI.el("div", { class: "view-switch", role: "group", "aria-label": "Display format" });
+      var cardsBtn = UI.el("button", { type: "button", class: "view-switch-btn" }, "Cards");
+      var tableBtn = UI.el("button", { type: "button", class: "view-switch-btn" }, "Table");
+      group.appendChild(cardsBtn);
+      group.appendChild(tableBtn);
+      bar.appendChild(group);
+
+      var cardsList = UI.buildCheckinCards(logs, cellToneFn);
+      var cue = UI.el("div", { class: "table-scroll-cue", "aria-hidden": "true" },
+        "Swipe table sideways to view all columns →"
+      );
+
+      container.appendChild(bar);
+      container.appendChild(cardsList);
+      container.appendChild(cue);
+      container.appendChild(tableWrap);
+
+      function syncCue() {
+        if (!document.body.contains(tableWrap) || tableWrap.hidden) {
+          cue.hidden = true;
+          return;
+        }
+        var overflows = tableWrap.scrollWidth > tableWrap.clientWidth + 6;
+        cue.hidden = !overflows;
+        tableWrap.classList.toggle("is-scrollable-x", overflows);
+        cue.classList.toggle(
+          "is-at-end",
+          overflows && (tableWrap.scrollLeft + tableWrap.clientWidth >= tableWrap.scrollWidth - 6)
+        );
+      }
+
+      function setMode(next) {
+        mode = next;
+        var isCards = mode === "cards";
+        cardsList.hidden = !isCards;
+        tableWrap.hidden = isCards;
+        cardsBtn.classList.toggle("is-active", isCards);
+        cardsBtn.setAttribute("aria-pressed", isCards ? "true" : "false");
+        tableBtn.classList.toggle("is-active", !isCards);
+        tableBtn.setAttribute("aria-pressed", !isCards ? "true" : "false");
+        requestAnimationFrame(syncCue);
+      }
+
+      cardsBtn.addEventListener("click", function () { setMode("cards"); });
+      tableBtn.addEventListener("click", function () { setMode("table"); });
+      tableWrap.addEventListener("scroll", syncCue, { passive: true });
+      window.addEventListener("resize", syncCue, { passive: true });
+
+      setMode(mode);
+      return {
+        container: container,
+        getMode: function () { return mode; },
+        setMode: setMode,
+      };
+    },
   };
 
   /* Real-time synchronization engine:
@@ -711,7 +895,29 @@
     initMobileNav();
     initMobileBottomDock();
     initOfflineIndicator();
+    initPasswordToggles();
   });
+
+  /* Shared accessible Show/Hide password toggle for auth and profile forms. */
+  function initPasswordToggles() {
+    document.querySelectorAll(".btn-toggle-pw").forEach(function (btn) {
+      if (btn.dataset.pwBound === "1") return;
+      btn.dataset.pwBound = "1";
+      btn.removeAttribute("tabindex");
+      btn.setAttribute("aria-pressed", "false");
+      btn.addEventListener("click", function () {
+        var wrap = btn.closest(".password-wrap");
+        var input = (wrap && wrap.querySelector("input")) || btn.previousElementSibling;
+        if (!input) return;
+        var show = input.type === "password";
+        input.type = show ? "text" : "password";
+        btn.textContent = show ? "Hide" : "Show";
+        btn.setAttribute("aria-label", show ? "Hide password" : "Show password");
+        btn.setAttribute("aria-pressed", show ? "true" : "false");
+      });
+    });
+  }
+  window.API.initPasswordToggles = initPasswordToggles;
 
   /* Phones/tablets: collapse the sidebar into a top bar with a menu button.
    * Opens a panel with the nav + account; closes on Esc, tap outside,
@@ -780,7 +986,8 @@
     var dock = UI.el("nav", { class: "mobile-bottom-dock", "aria-label": "Mobile navigation dock" });
     var items = [];
 
-    if (page.startsWith("citizen-") && page !== "citizen-login" && page !== "citizen-register") {
+    var authPages = ["citizen-login", "citizen-register", "citizen-forgot-password"];
+    if (page.startsWith("citizen-") && authPages.indexOf(page) === -1) {
       items = [
         {
           href: "/citizen/dashboard.html",

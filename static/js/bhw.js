@@ -857,6 +857,7 @@
     U.makeSortable(table, { skip: [6] });
     tableWrap.appendChild(table);
     results.appendChild(tableWrap);
+    U.addScrollCue(tableWrap);
   }
 
   async function searchCitizens() {
@@ -1008,24 +1009,27 @@
     var cardsGrid = U.el("div", { class: "cards readings-vitals-cards" });
 
     function addSnapshotCard(label, valStr, unitStr, badge, refStr, tone) {
-      var card = U.el("div", { class: "card" + (tone ? " " + tone : "") });
+      var missingVal = String(valStr) === "—";
+      var cardCls = "card" + (tone ? " " + tone : missingVal ? " missing" : "");
+      var card = U.el("div", { class: cardCls });
       var topRow = U.el("div", { class: "card-top-row" });
       topRow.appendChild(U.el("div", { class: "label" }, label));
-      if (badge) {
-        topRow.appendChild(U.el("span", { class: "vital-badge badge-" + (badge.tone || "neutral") }, badge.text));
+      var effectiveBadge = badge || (missingVal ? { text: "Not recorded", tone: "neutral" } : null);
+      if (effectiveBadge) {
+        topRow.appendChild(U.el("span", { class: "vital-badge badge-" + (effectiveBadge.tone || "neutral") }, effectiveBadge.text));
       }
       card.appendChild(topRow);
 
       var valRow = U.el("div", { class: "value-row" });
       valRow.appendChild(U.el("span", { class: "value" }, String(valStr)));
-      if (unitStr) {
+      if (unitStr && !missingVal) {
         valRow.appendChild(U.el("span", { class: "unit" }, unitStr));
       }
       card.appendChild(valRow);
 
-      if (refStr) {
+      if (refStr || missingVal) {
         var metaRow = U.el("div", { class: "card-meta" });
-        metaRow.appendChild(U.el("span", { class: "ref-range" }, refStr));
+        metaRow.appendChild(U.el("span", { class: "ref-range" }, missingVal ? "Not taken at kiosk" : refStr));
         card.appendChild(metaRow);
       }
       cardsGrid.appendChild(card);
@@ -1176,7 +1180,8 @@
     table.appendChild(tbody);
     U.makeSortable(table);
     tableWrap.appendChild(table);
-    histPanel.appendChild(tableWrap);
+    var views = U.wrapCheckinViews(logs, tableWrap, cellTone);
+    histPanel.appendChild(views.container);
 
     // 3. Clinical Telemetry Legend
     var legend = U.el("div", { class: "cell-legend", style: "margin-top:0.75rem;" });
@@ -2047,6 +2052,7 @@
     U.makeSortable(table);
     tableWrap.appendChild(table);
     results.appendChild(tableWrap);
+    U.addScrollCue(tableWrap);
   }
 
   async function loadAudit() {
