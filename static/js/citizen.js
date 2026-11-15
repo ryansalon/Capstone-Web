@@ -1339,6 +1339,9 @@
       btn.classList.toggle("is-active", on);
       btn.setAttribute("aria-pressed", on ? "true" : "false");
     });
+    document.querySelectorAll(".lang-select").forEach(function (sel) {
+      if (sel.value !== active) sel.value = active;
+    });
     document.querySelectorAll("[data-i18n]").forEach(function (el) {
       el.textContent = t(el.getAttribute("data-i18n"));
     });
@@ -1370,6 +1373,15 @@
       btn.dataset.langBound = "1";
       btn.addEventListener("click", function () {
         setCitizenLang(btn.dataset.lang);
+        applyCitizenI18n();
+        if (typeof onChange === "function") onChange();
+      });
+    });
+    document.querySelectorAll(".lang-select").forEach(function (sel) {
+      if (sel.dataset.langBound === "1") return;
+      sel.dataset.langBound = "1";
+      sel.addEventListener("change", function () {
+        setCitizenLang(sel.value);
         applyCitizenI18n();
         if (typeof onChange === "function") onChange();
       });
