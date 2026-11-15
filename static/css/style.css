@@ -5190,18 +5190,25 @@ mark.match {
   }
 }
 
-/* Auth header language row & collapsible elder sign-in helper */
-.auth-card-head-row {
+/* Auth header language bar (outside login/register card) & collapsible elder guide */
+.auth-lang-bar {
+  width: 100%;
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem;
-  flex-wrap: wrap;
-  margin-bottom: 0.35rem;
+  justify-content: center;
 }
 
-.auth-card-head-row h2 {
-  margin: 0;
+.auth-lang-switcher {
+  background: #ffffff;
+  border-color: #cfe0d8;
+  box-shadow: 0 2px 8px rgba(13, 56, 43, 0.06);
+  padding: 4px;
+  gap: 4px;
+}
+
+.auth-lang-switcher .lang-btn {
+  min-height: 36px;
+  padding: 0.35rem 0.85rem;
+  font-size: 0.85rem;
 }
 
 .elder-guide {
