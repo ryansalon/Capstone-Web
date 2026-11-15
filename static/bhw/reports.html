@@ -7,10 +7,10 @@
   <link rel="icon" href="data:,">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Public+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="preload" as="image" href="/img/cpsc-logo.png">
   <link rel="preload" as="image" href="/img/rhu-logo.png">
-  <link rel="stylesheet" href="/css/style.css?v=31">
+  <link rel="stylesheet" href="/css/style.css?v=30">
 </head>
 <body data-page="bhw-reports">
   <a class="skip-link" href="#main">Skip to main content</a>
@@ -47,15 +47,10 @@
       <div class="sidebar-foot">
         <span id="whoami" class="whoami"></span>
         <button id="logoutBtn" class="btn btn-ghost" type="button">Log out</button>
-        <div class="rail-status">Local-First · PHT (UTC+8)</div>
       </div>
     </aside>
     <div class="workspace">
       <div class="workspace-lang-bar">
-        <div class="workspace-context">
-          <span class="workspace-context-dot" aria-hidden="true"></span>
-          <span>RHU Mahinog Operations · RA 10173 Protected</span>
-        </div>
         <div class="auth-lang-dropdown">
           <svg class="auth-lang-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
           <select id="workspaceLangSelect" class="lang-select" aria-label="Language">
@@ -66,74 +61,58 @@
         </div>
       </div>
 
-      <main id="main" class="page portal-staff" tabindex="-1">
-        <div class="page-head">
-          <div class="page-head-title">
-            <h1 data-i18n="repTitle">Reports</h1>
-            <p class="lede" data-i18n="repLede">Download CSV files for record keeping, or open a printable page for the Rural Health Unit.</p>
+    <main id="main" class="page" tabindex="-1">
+      <div class="page-head">
+        <div class="page-head-title">
+          <span class="page-eyebrow" data-i18n="repEyebrow">Epidemiology &amp; Exports</span>
+          <h1 data-i18n="repTitle">Reports</h1>
+          <p class="lede" data-i18n="repLede">Download CSV files for record keeping, or open a printable page for the Rural Health Unit.</p>
+        </div>
+        <div class="page-actions">
+          <a href="/bhw/dashboard.html" class="btn btn-secondary" data-i18n="navDashboard">Dashboard</a>
+          <a href="/bhw/search.html" class="btn btn-secondary" data-i18n="navFindCitizens">Find citizens</a>
+        </div>
+      </div>
+
+      <form id="reportForm" class="filters" novalidate>
+        <div class="field">
+          <label for="reportType" data-i18n="repLblType">Report</label>
+          <select id="reportType" name="type">
+            <option value="summary" data-i18n="repOptSummary">Summary</option>
+            <option value="consent" data-i18n="repOptConsent">Consent</option>
+            <option value="audit" data-i18n="repOptAudit">Audit</option>
+            <option value="alerts" data-i18n="repOptAlerts">Alerts</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="fromDate" data-i18n="auditLblFrom">From</label>
+          <input id="fromDate" name="from" type="date">
+        </div>
+        <div class="field">
+          <label for="toDate" data-i18n="auditLblTo">To</label>
+          <input id="toDate" name="to" type="date">
+        </div>
+        <div class="field date-presets-field">
+          <span class="label" data-i18n="repPresets">Presets</span>
+          <div class="date-presets" role="group" aria-label="Date range presets">
+            <button type="button" class="date-preset-btn" data-range="today" data-i18n="repPresetToday">Today</button>
+            <button type="button" class="date-preset-btn" data-range="7d" data-i18n="repPreset7d">Last 7d</button>
+            <button type="button" class="date-preset-btn" data-range="30d" data-i18n="repPreset30d">Last 30d</button>
+            <button type="button" class="date-preset-btn" data-range="all" data-i18n="repPresetAll">All time</button>
           </div>
         </div>
+        <button id="csvBtn" class="btn btn-primary" type="button" data-i18n="repBtnCsv">Download CSV</button>
+        <button id="printBtn" class="btn btn-secondary" type="button" data-i18n="repBtnPrint">Open printable report</button>
+      </form>
 
-        <form id="reportForm" class="filters" novalidate>
-          <div class="field">
-            <label for="reportType" data-i18n="repLblType">Report</label>
-            <select id="reportType" name="type">
-              <option value="summary" data-i18n="repOptSummary">Summary</option>
-              <option value="consent" data-i18n="repOptConsent">Consent</option>
-              <option value="audit" data-i18n="repOptAudit">Audit</option>
-              <option value="alerts" data-i18n="repOptAlerts">Alerts</option>
-            </select>
-          </div>
-          <div class="field">
-            <label for="fromDate" data-i18n="auditLblFrom">From</label>
-            <input id="fromDate" name="from" type="date">
-          </div>
-          <div class="field">
-            <label for="toDate" data-i18n="auditLblTo">To</label>
-            <input id="toDate" name="to" type="date">
-          </div>
-          <div class="field date-presets-field">
-            <span class="label" data-i18n="repPresets">Presets</span>
-            <div class="date-presets" role="group" aria-label="Date range presets">
-              <button type="button" class="date-preset-btn" data-range="today" data-i18n="repPresetToday">Today</button>
-              <button type="button" class="date-preset-btn" data-range="7d" data-i18n="repPreset7d">Last 7d</button>
-              <button type="button" class="date-preset-btn" data-range="30d" data-i18n="repPreset30d">Last 30d</button>
-              <button type="button" class="date-preset-btn" data-range="all" data-i18n="repPresetAll">All time</button>
-            </div>
-          </div>
-          <div class="filters-actions">
-            <button id="csvBtn" class="btn btn-primary" type="button" data-i18n="repBtnCsv">Download CSV</button>
-            <button id="printBtn" class="btn btn-secondary" type="button" data-i18n="repBtnPrint">Open printable report</button>
-          </div>
-        </form>
+      <div id="status" aria-live="polite"></div>
+      <p class="muted" data-i18n="repHintEmpty">Leave the dates empty to include all recorded data.</p>
+    </main>
 
-        <div id="status" aria-live="polite"></div>
-        <p class="muted" data-i18n="repHintEmpty">Leave the dates empty to include all recorded data.</p>
-
-        <section class="report-guide-grid" aria-label="Available RHU report templates">
-          <article class="report-guide-card">
-            <h2>Summary</h2>
-            <p>Aggregate blood pressure, SpO2, temperature, pulse, and BMI distribution across kiosk check-ins without exposing personal names.</p>
-          </article>
-          <article class="report-guide-card">
-            <h2>Consent</h2>
-            <p>Timestamped RA 10173 citizen consent grants and revocations showing current authorization coverage across registered residents.</p>
-          </article>
-          <article class="report-guide-card">
-            <h2>Audit</h2>
-            <p>Chronological staff access ledger capturing authorized views, clinical interventions, exports, and blocked no-consent attempts.</p>
-          </article>
-          <article class="report-guide-card">
-            <h2>Alerts</h2>
-            <p>Flagged abnormal kiosk readings filtered by date range, automatically labelling non-consented residents as Withheld.</p>
-          </article>
-        </section>
-      </main>
-
-      <footer class="foot" data-i18n="repFoot">Citizens without consent are labelled “Withheld (no consent)” in alert reports.</footer>
+    <footer class="foot" data-i18n="repFoot">Citizens without consent are labelled “Withheld (no consent)” in alert reports.</footer>
     </div>
   </div>
-  <script src="/js/api.js?v=31"></script>
-  <script src="/js/bhw.js?v=31"></script>
+  <script src="/js/api.js?v=29"></script>
+  <script src="/js/bhw.js?v=29"></script>
 </body>
 </html>

@@ -17,20 +17,18 @@
       var y = yAxis.getPixelForValue(37.9);
       if (y === null || y === undefined) return;
       ctx.save();
-      ctx.strokeStyle = "#B91C1C";
+      ctx.strokeStyle = "#a5271d";
       ctx.lineDash = [6, 4];
       ctx.lineWidth = 1.5;
-      ctx.font = "11px 'Public Sans', sans-serif";
-      ctx.fillStyle = "#B91C1C";
+      ctx.font = "11px var(--font, sans-serif)";
+      ctx.fillStyle = "#a5271d";
       ctx.textAlign = "right";
       ctx.textBaseline = "bottom";
-      var plotLeft = chart.chartArea ? chart.chartArea.left : yAxis.right;
-      var plotRight = chart.chartArea ? chart.chartArea.right : yAxis.right;
       ctx.beginPath();
-      ctx.moveTo(plotLeft, y);
-      ctx.lineTo(plotRight, y);
+      ctx.moveTo(yAxis.left, y);
+      ctx.lineTo(yAxis.right, y);
       ctx.stroke();
-      ctx.fillText(t("feverThresholdLabel"), plotRight - 8, y - 6);
+      ctx.fillText(t("feverThresholdLabel"), yAxis.right - 8, y - 6);
       ctx.restore();
     },
   };
@@ -1594,9 +1592,9 @@
     pLogos.appendChild(U.el("img", { src: "/img/cpsc-logo.png", alt: "CPSC", width: "48", height: "48", style: "object-fit:contain;" }));
     pLogos.appendChild(U.el("img", { src: "/img/rhu-logo.png", alt: "RHU Mahinog", width: "48", height: "48", style: "object-fit:contain;" }));
     pHead.appendChild(pLogos);
-    pHead.appendChild(U.el("div", { style: "font-size:0.78rem; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:#0B6B68;" }, t("passportRep")));
+    pHead.appendChild(U.el("div", { style: "font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:#0b3d30;" }, t("passportRep")));
     pHead.appendChild(U.el("h2", { style: "margin:0.25rem 0; font-size:1.35rem;" }, t("passportTitle")));
-    pHead.appendChild(U.el("p", { style: "margin:0; font-size:0.84rem; color:#465E64;" }, t("passportSub")));
+    pHead.appendChild(U.el("p", { style: "margin:0; font-size:0.82rem; color:#4a655a;" }, t("passportSub")));
     passport.appendChild(pHead);
 
     var infoDl = U.el("dl", { class: "kv", style: "margin-bottom:1rem;" });
@@ -1622,7 +1620,7 @@
       var box = U.el("div", { class: "passport-stat" });
       box.appendChild(U.el("div", { class: "lbl" }, lbl));
       box.appendChild(U.el("div", { class: "val" }, val));
-      if (sub) box.appendChild(U.el("div", { class: "sub", style: "font-size:0.78rem; color:#465E64;" }, sub));
+      if (sub) box.appendChild(U.el("div", { class: "sub", style: "font-size:0.75rem; color:#4b6b62;" }, sub));
       grid.appendChild(box);
     }
 
@@ -1649,7 +1647,7 @@
 
     var foot = U.el("div", { class: "passport-footer" });
     foot.appendChild(U.el("span", null, t("passportRecorded", { dt: log ? U.fmtDT(log.timestamp) : "—" })));
-    foot.appendChild(U.el("span", { style: "font-weight:700; color:#0B6B68;" }, t("passportOfficialRec")));
+    foot.appendChild(U.el("span", { style: "font-weight:700; color:#0b3d30;" }, t("passportOfficialRec")));
     passport.appendChild(foot);
 
     var sigBlock = U.el("div", { class: "official-signature-block print-only" });
@@ -1828,7 +1826,7 @@
     var calloutBox = U.el("div", {
       class: "statutory-callout",
       style:
-        "background:var(--surface-tint); border:1px solid var(--border-strong); padding:0.9rem 1.05rem; border-radius:10px; margin:0.9rem 0;",
+        "background:var(--green-050); border-left:4px solid var(--green-600); padding:0.85rem 1rem; border-radius:6px; margin:0.9rem 0;",
     });
     calloutBox.appendChild(
       U.el(
@@ -1851,7 +1849,7 @@
 
     var rightsP = U.el("p", {
       style:
-        "font-size:0.86rem; color:var(--ink-muted); background:var(--surface-tint); border:1px solid var(--border-subtle); border-radius:8px; padding:0.75rem 0.9rem; margin-bottom:0; line-height:1.45;",
+        "font-size:0.86rem; color:var(--ink-soft); background:#f9fafb; border:1px solid var(--line); border-radius:6px; padding:0.75rem 0.9rem; margin-bottom:0; line-height:1.45;",
     });
     rightsP.innerHTML = t("privRightsHtml");
     body.appendChild(rightsP);
@@ -2000,7 +1998,7 @@
     card.appendChild(wrap);
     var ascendingVals = values.slice().reverse();
     var ctx = canvas.getContext("2d");
-    var strokeColor = color || "#0B6B68";
+    var strokeColor = color || "#0f6b53";
     sparkCharts.push(new window.Chart(ctx, {
       type: "line",
       data: {
@@ -2008,9 +2006,9 @@
         datasets: [{
           data: ascendingVals,
           borderColor: strokeColor,
-          backgroundColor: strokeColor === "#B91C1C" || strokeColor === "#a5271d" || strokeColor === "#c0392b"
-            ? "rgba(185, 28, 28, 0.08)"
-            : "rgba(11, 107, 104, 0.08)",
+          backgroundColor: strokeColor === "#a5271d" || strokeColor === "#c0392b"
+            ? "rgba(165, 39, 29, 0.08)"
+            : "rgba(15, 107, 83, 0.07)",
           fill: true,
           spanGaps: true,
           tension: 0.35,
@@ -2271,7 +2269,7 @@
             {
               label: t("chartSystolic"),
               data: sys,
-              borderColor: "#1D4ED8",
+              borderColor: "#1565c0",
               spanGaps: true,
               tension: 0.25,
               pointRadius: 2.5,
@@ -2279,7 +2277,7 @@
             {
               label: t("chartDiastolic"),
               data: dia,
-              borderColor: "#B45309",
+              borderColor: "#b9761b",
               spanGaps: true,
               tension: 0.25,
               pointRadius: 2.5,
@@ -2317,8 +2315,8 @@
             {
               label: t("chartWeightKg"),
               data: weight,
-              borderColor: "#0B6B68",
-              backgroundColor: "rgba(11, 107, 104, 0.12)",
+              borderColor: "#0f6b53",
+              backgroundColor: "rgba(15, 107, 83, 0.12)",
               fill: true,
               spanGaps: true,
               tension: 0.25,
@@ -2328,7 +2326,7 @@
             {
               label: t("chartBmi"),
               data: bmi,
-              borderColor: "#B45309",
+              borderColor: "#8a5a00",
               spanGaps: true,
               tension: 0.25,
               pointRadius: 2.5,
@@ -2418,7 +2416,7 @@
           : "abnormal",
       bpGauge,
       bpDelta,
-      spark(logs, "systolic_bp", "#0B6B68"),
+      spark(logs, "systolic_bp", "#0f6b53"),
       pendingSparks,
       t("targetBp"),
       bpBadge,
@@ -2443,7 +2441,7 @@
       isMissing(log.spo2) ? "missing" : spo2Cat === "Normal" ? null : "abnormal",
       spo2Gauge,
       spo2Delta,
-      spark(logs, "spo2", "#0B6B68"),
+      spark(logs, "spo2", "#0f6b53"),
       pendingSparks,
       t("targetSpo2"),
       spo2Badge,
@@ -2466,7 +2464,7 @@
       isMissing(log.temperature) ? "missing" : hasFever ? "abnormal" : null,
       tempGauge,
       tempDelta,
-      spark(logs, "temperature", hasFever ? "#B91C1C" : "#0B6B68"),
+      spark(logs, "temperature", hasFever ? "#c0392b" : "#0f6b53"),
       pendingSparks,
       t("targetTemp"),
       tempBadge,
@@ -2486,7 +2484,7 @@
       isMissing(log.pulse_rate) ? "missing" : null,
       null,
       pulseDelta,
-      spark(logs, "pulse_rate", "#0B6B68"),
+      spark(logs, "pulse_rate", "#0f6b53"),
       pendingSparks,
       t("targetPulse"),
       pulseBadge,
@@ -2509,7 +2507,7 @@
       isMissing(log.bmi) ? "missing" : bmiCat === "Normal" ? null : "abnormal",
       bmiGauge,
       bmiDelta,
-      spark(logs, "bmi", "#0B6B68"),
+      spark(logs, "bmi", "#0f6b53"),
       pendingSparks,
       t("targetBmi"),
       bmiBadge,
@@ -2524,7 +2522,7 @@
       isMissing(log.weight) ? "missing" : null,
       null,
       weightDelta,
-      spark(logs, "weight", "#0B6B68"),
+      spark(logs, "weight", "#0f6b53"),
       pendingSparks,
       t("targetWeight"),
       null,
@@ -3078,8 +3076,8 @@
       trendSentence(series("diastolic_bp"), t("chartDiastolic"), "mmHg"),
     ]);
     setChartSummary("spo2Summary", [trendSentence(series("spo2"), t("chartSpo2Pct"), "%")]);
-    var green = "#0B6B68";
-    var red = "#B91C1C";
+    var green = "#0f6b53";
+    var red = "#a5271d";
     var baseOptions = {
       responsive: true,
       maintainAspectRatio: true,
@@ -3102,7 +3100,7 @@
               return log.weight;
             }),
             borderColor: green,
-            backgroundColor: "rgba(11, 107, 104, 0.12)",
+            backgroundColor: "rgba(15, 107, 83, 0.12)",
             fill: true,
             spanGaps: true,
             tension: 0.25,
@@ -3123,8 +3121,8 @@
             data: ascending.map(function (log) {
               return log.bmi;
             }),
-            borderColor: "#B45309",
-            backgroundColor: "rgba(180, 83, 9, 0.12)",
+            borderColor: "#8a5a00",
+            backgroundColor: "rgba(138, 90, 0, 0.12)",
             fill: true,
             spanGaps: true,
             tension: 0.25,
@@ -3145,8 +3143,8 @@
             data: ascending.map(function (log) {
               return log.systolic_bp;
             }),
-            borderColor: "#1D4ED8",
-            backgroundColor: "rgba(29, 78, 216, 0.10)",
+            borderColor: "#1565c0",
+            backgroundColor: "rgba(21, 101, 192, 0.10)",
             spanGaps: true,
             tension: 0.25,
             pointRadius: 3,
@@ -3157,8 +3155,8 @@
             data: ascending.map(function (log) {
               return log.diastolic_bp;
             }),
-            borderColor: "#B45309",
-            backgroundColor: "rgba(180, 83, 9, 0.10)",
+            borderColor: "#b9761b",
+            backgroundColor: "rgba(185, 118, 27, 0.10)",
             spanGaps: true,
             tension: 0.25,
             pointRadius: 3,
@@ -3188,8 +3186,8 @@
             data: ascending.map(function (log) {
               return log.spo2;
             }),
-            borderColor: "#0B6B68",
-            backgroundColor: "rgba(11, 107, 104, 0.12)",
+            borderColor: "#0b3d30",
+            backgroundColor: "rgba(11, 61, 48, 0.12)",
             fill: true,
             spanGaps: true,
             tension: 0.25,
@@ -3226,8 +3224,8 @@
           {
             label: t("chartTempC"),
             data: temps,
-            borderColor: "#B91C1C",
-            backgroundColor: "rgba(185, 28, 28, 0.12)",
+            borderColor: "#a5271d",
+            backgroundColor: "rgba(165, 39, 29, 0.12)",
             fill: true,
             spanGaps: true,
             tension: 0.25,

@@ -7,65 +7,54 @@
   <link rel="icon" href="data:,">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Public+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="preload" as="image" href="/img/cpsc-logo.png">
   <link rel="preload" as="image" href="/img/rhu-logo.png">
-  <link rel="stylesheet" href="/css/style.css?v=31">
+  <link rel="stylesheet" href="/css/style.css?v=30">
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to main content</a>
   <div class="auth-wrap">
-    <aside class="auth-showcase" aria-label="Program provenance">
-      <div class="auth-showcase-top">
-        <div class="auth-gov-bar">
-          <span>Republic of the Philippines · Province of Camiguin</span>
-          <span class="auth-gov-badge">Municipality of Mahinog</span>
-        </div>
-        <div class="auth-brand">
-          <div class="auth-logos">
-            <img src="/img/cpsc-logo.png" alt="Camiguin Polytechnic State College" class="auth-partner-logo" width="64" height="64" loading="eager" decoding="sync">
-            <img src="/img/rhu-logo.png" alt="Rural Health Unit - Mahinog" class="auth-partner-logo" width="64" height="64" loading="eager" decoding="sync">
-          </div>
-          <div class="auth-brand-copy">
-            <h1 class="auth-brand-name">Barangay Health Monitor</h1>
-            <p class="auth-brand-sub">Camiguin Polytechnic State College &amp; Rural Health Unit of Mahinog</p>
-          </div>
-        </div>
+    <div class="auth-top-bar">
+      <div class="auth-gov-bar">
+        <span>Republic of the Philippines · Province of Camiguin</span>
+        <span class="auth-gov-badge">Municipality of Mahinog</span>
       </div>
-      <div class="auth-pillars">
-        <div class="auth-pillar">
-          <strong>Barangay Kiosk Sync</strong>
-          <span>Vital signs from the barangay station synced directly to your personal health ledger.</span>
-        </div>
-        <div class="auth-pillar">
-          <strong>Philippine Data Privacy Act (RA 10173)</strong>
-          <span>Your individual records stay private unless you explicitly grant access.</span>
-        </div>
-      </div>
-    </aside>
+    </div>
 
     <main id="main" class="auth-main" tabindex="-1">
       <div class="auth-container">
+        <!-- Unified Civic Brand Header -->
+        <header class="auth-brand">
+          <div class="auth-logos">
+            <img src="/img/cpsc-logo.png" alt="Camiguin Polytechnic State College" class="auth-partner-logo" width="76" height="76" loading="eager" decoding="sync" title="Camiguin Polytechnic State College">
+            <img src="/img/rhu-logo.png" alt="Rural Health Unit - Mahinog" class="auth-partner-logo" width="76" height="76" loading="eager" decoding="sync" title="Rural Health Unit - Mahinog, Camiguin">
+          </div>
+          <h1 class="auth-brand-name">Barangay Health Monitor</h1>
+          <p class="auth-brand-sub">Camiguin Polytechnic State College &amp; Rural Health Unit of Mahinog</p>
+        </header>
+
         <div class="auth-card">
-          <div class="auth-card-body auth-session-body">
+          <div class="auth-card-body" style="text-align: center; padding: 2.5rem 2rem;">
             <h2>Checking your session…</h2>
             <p class="auth-card-lede">Directing you to your health portal.</p>
             <noscript>
               <p class="form-error">JavaScript is required to use this portal.</p>
             </noscript>
-            <div class="auth-session-cta">
-              <a href="/citizen/login.html" class="btn btn-primary">Continue to sign in</a>
+            <div style="margin-top: 1.5rem;">
+              <a href="/citizen/login.html" class="btn btn-secondary">Continue to sign in</a>
             </div>
           </div>
         </div>
-        <footer class="auth-page-footer">
-          <p>Data is securely managed under the Philippine Data Privacy Act (RA 10173).</p>
-        </footer>
       </div>
     </main>
+
+    <footer class="auth-page-footer">
+      <p>Data is securely managed under the Philippine Data Privacy Act (RA 10173).</p>
+    </footer>
   </div>
 
-  <script src="/js/api.js?v=31"></script>
+  <script src="/js/api.js?v=29"></script>
   <script>
     (function () {
       var token = API.getToken();
