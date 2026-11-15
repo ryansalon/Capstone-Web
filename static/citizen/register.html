@@ -10,7 +10,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="preload" as="image" href="/img/cpsc-logo.png">
   <link rel="preload" as="image" href="/img/rhu-logo.png">
-  <link rel="stylesheet" href="/css/style.css?v=24">
+  <link rel="stylesheet" href="/css/style.css?v=25">
 </head>
 <body data-page="citizen-register">
   <a class="skip-link" href="#main">Skip to main content</a>
@@ -36,56 +36,63 @@
 
         <div class="auth-card">
           <div class="auth-card-body">
-            <h2>Create Citizen Account</h2>
-            <p class="auth-card-lede">Register to access your kiosk vital measurements and download your health passport.</p>
+            <div class="auth-card-head-row">
+              <h2 data-i18n="regHeading">Create Citizen Account</h2>
+              <div class="lang-switcher lang-switcher-light" role="group" aria-label="Language">
+                <button type="button" class="lang-btn is-active" data-lang="en" aria-pressed="true">EN</button>
+                <button type="button" class="lang-btn" data-lang="ceb" aria-pressed="false">Bisaya</button>
+                <button type="button" class="lang-btn" data-lang="tl" aria-pressed="false">Tagalog</button>
+              </div>
+            </div>
+            <p class="auth-card-lede" data-i18n="regLede">Register to access your kiosk vital measurements and download your health passport.</p>
 
             <p id="registerError" class="form-error" role="alert"></p>
             <p id="registerSuccess" class="form-success" role="status"></p>
 
             <form id="registerForm" novalidate>
               <div class="field">
-                <label for="fullName">Full name</label>
-                <input id="fullName" name="full_name" type="text" autocomplete="name" placeholder="e.g. Juan dela Cruz" required aria-required="true" aria-describedby="registerError">
+                <label for="fullName" data-i18n="lblFullName">Full name</label>
+                <input id="fullName" name="full_name" type="text" autocomplete="name" placeholder="e.g. Juan dela Cruz" data-i18n-placeholder="phFullName" required aria-required="true" aria-describedby="registerError">
               </div>
               <div class="field">
-                <label for="username">Username</label>
-                <input id="username" name="username" type="text" autocomplete="username" placeholder="Choose a username" required aria-required="true" aria-describedby="registerError">
+                <label for="username" data-i18n="lblUsername">Username</label>
+                <input id="username" name="username" type="text" autocomplete="username" placeholder="Choose a username" data-i18n-placeholder="phUsernameReg" required aria-required="true" aria-describedby="registerError">
               </div>
               <div class="field">
-                <label for="password">Password</label>
+                <label for="password" data-i18n="lblPassword">Password</label>
                 <div class="password-wrap">
-                  <input id="password" name="password" type="password" autocomplete="new-password" minlength="8" placeholder="At least 8 characters" required aria-required="true" aria-describedby="registerPasswordHint registerError">
+                  <input id="password" name="password" type="password" autocomplete="new-password" minlength="8" placeholder="At least 8 characters" data-i18n-placeholder="phPasswordReg" required aria-required="true" aria-describedby="registerPasswordHint registerError">
                   <button type="button" class="btn-toggle-pw" aria-label="Show password">Show</button>
                 </div>
-                <p id="registerPasswordHint" class="hint">Must be at least 8 characters.</p>
+                <p id="registerPasswordHint" class="hint" data-i18n="regPwHint">Must be at least 8 characters.</p>
               </div>
               <div class="field">
-                <label for="confirmPassword">Confirm password</label>
+                <label for="confirmPassword" data-i18n="lblConfirmPw">Confirm password</label>
                 <div class="password-wrap">
-                  <input id="confirmPassword" name="confirm_password" type="password" autocomplete="new-password" placeholder="Re-enter your password" required aria-required="true" aria-describedby="registerError">
+                  <input id="confirmPassword" name="confirm_password" type="password" autocomplete="new-password" placeholder="Re-enter your password" data-i18n-placeholder="phConfirmPw" required aria-required="true" aria-describedby="registerError">
                   <button type="button" class="btn-toggle-pw" aria-label="Show password">Show</button>
                 </div>
               </div>
               <div class="field-row">
                 <div class="field">
-                  <label for="birthdate">Birthdate</label>
+                  <label for="birthdate" data-i18n="lblBirthdate">Birthdate</label>
                   <input id="birthdate" name="birthdate" type="date" required aria-required="true" aria-describedby="registerError">
                 </div>
                 <div class="field">
-                  <label for="gender">Gender</label>
+                  <label for="gender" data-i18n="lblGender">Gender</label>
                   <select id="gender" name="gender" required aria-required="true" aria-describedby="registerError">
-                    <option value="male">Male</option>
-                    <option value="female">Female</option>
-                    <option value="other">Other</option>
+                    <option value="male" data-i18n="optMale">Male</option>
+                    <option value="female" data-i18n="optFemale">Female</option>
+                    <option value="other" data-i18n="optOther">Other</option>
                   </select>
                 </div>
               </div>
-              <button id="registerSubmit" class="btn btn-primary btn-auth-submit" type="submit">Create account</button>
+              <button id="registerSubmit" class="btn btn-primary btn-auth-submit" type="submit" data-i18n="btnCreateAcct">Create account</button>
             </form>
 
             <div class="auth-footer-links">
-              <span>Already registered?</span>
-              <a href="/citizen/login.html">Sign in to your account</a>
+              <span data-i18n="regAlready">Already registered?</span>
+              <a href="/citizen/login.html" data-i18n="regSignInLink">Sign in to your account</a>
             </div>
           </div>
         </div>
@@ -93,11 +100,11 @@
     </main>
 
     <footer class="auth-page-footer">
-      <p>Data is securely managed under the Philippine Data Privacy Act (RA 10173).</p>
+      <p data-i18n="authFooterRa">Data is securely managed under the Philippine Data Privacy Act (RA 10173).</p>
     </footer>
   </div>
 
-  <script src="/js/api.js?v=24"></script>
-  <script src="/js/citizen.js?v=24"></script>
+  <script src="/js/api.js?v=25"></script>
+  <script src="/js/citizen.js?v=25"></script>
 </body>
 </html>

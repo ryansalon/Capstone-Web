@@ -5189,3 +5189,66 @@ mark.match {
     display: none !important;
   }
 }
+
+/* Auth header language row & collapsible elder sign-in helper */
+.auth-card-head-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.35rem;
+}
+
+.auth-card-head-row h2 {
+  margin: 0;
+}
+
+.elder-guide {
+  margin-top: 1rem;
+  border: 1px solid #d5e3dc;
+  border-radius: 10px;
+  background: var(--green-050);
+  padding: 0.65rem 0.9rem;
+}
+
+.elder-guide-summary {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  cursor: pointer;
+  list-style: none;
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--green-800);
+  min-height: 36px;
+}
+
+.elder-guide-summary::-webkit-details-marker {
+  display: none;
+}
+
+.elder-guide-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  background: var(--green-700);
+  color: #ffffff;
+  font-size: 0.78rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.elder-guide-steps {
+  margin: 0.65rem 0 0.2rem;
+  padding-left: 0;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: var(--ink);
+  display: grid;
+  gap: 0.45rem;
+  list-style: none;
+}

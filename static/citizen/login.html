@@ -10,7 +10,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="preload" as="image" href="/img/cpsc-logo.png">
   <link rel="preload" as="image" href="/img/rhu-logo.png">
-  <link rel="stylesheet" href="/css/style.css?v=24">
+  <link rel="stylesheet" href="/css/style.css?v=25">
 </head>
 <body data-page="citizen-login">
   <a class="skip-link" href="#main">Skip to main content</a>
@@ -38,43 +38,62 @@
           <!-- Segmented Portal Switcher -->
           <nav class="auth-role-tabs" aria-label="Portal selection">
             <a href="/citizen/login.html" class="auth-role-tab active" aria-current="page">
-              <span class="auth-role-title">Citizen</span>
-              <span class="auth-role-desc">Residents &amp; Patients</span>
+              <span class="auth-role-title" data-i18n="authRoleCitTitle">Citizen</span>
+              <span class="auth-role-desc" data-i18n="authRoleCitDesc">Residents &amp; Patients</span>
             </a>
             <a href="/bhw/login.html" class="auth-role-tab">
-              <span class="auth-role-title">Health Worker</span>
-              <span class="auth-role-desc">BHW &amp; Clinic Staff</span>
+              <span class="auth-role-title" data-i18n="authRoleBhwTitle">Health Worker</span>
+              <span class="auth-role-desc" data-i18n="authRoleBhwDesc">BHW &amp; Clinic Staff</span>
             </a>
           </nav>
 
           <div class="auth-card-body">
-            <h2>Citizen Sign In</h2>
-            <p class="auth-card-lede">Sign in with your kiosk account to view your vital readings and health records.</p>
+            <div class="auth-card-head-row">
+              <h2 data-i18n="loginHeading">Citizen Sign In</h2>
+              <div class="lang-switcher lang-switcher-light" role="group" aria-label="Language">
+                <button type="button" class="lang-btn is-active" data-lang="en" aria-pressed="true">EN</button>
+                <button type="button" class="lang-btn" data-lang="ceb" aria-pressed="false">Bisaya</button>
+                <button type="button" class="lang-btn" data-lang="tl" aria-pressed="false">Tagalog</button>
+              </div>
+            </div>
+            <p class="auth-card-lede" data-i18n="loginLede">Sign in with your kiosk account to view your vital readings and health records.</p>
 
-            <p id="sessionExpired" class="form-success" role="status" style="display:none;">Your session expired — please sign in again.</p>
+            <p id="sessionExpired" class="form-success" role="status" style="display:none;" data-i18n="loginExpired">Your session expired — please sign in again.</p>
             <p id="loginError" class="form-error" role="alert" aria-live="assertive"></p>
 
             <form id="loginForm" novalidate>
               <div class="field">
-                <label for="username">Username</label>
-                <input id="username" name="username" type="text" autocomplete="username" placeholder="e.g. maria.santos" required aria-required="true" aria-describedby="loginError">
+                <label for="username" data-i18n="lblUsername">Username</label>
+                <input id="username" name="username" type="text" autocomplete="username" placeholder="e.g. maria.santos" data-i18n-placeholder="phUsernameLogin" required aria-required="true" aria-describedby="loginError">
               </div>
               <div class="field">
-                <label for="password">Password</label>
+                <label for="password" data-i18n="lblPassword">Password</label>
                 <div class="password-wrap">
-                  <input id="password" name="password" type="password" autocomplete="current-password" placeholder="Enter your password" required aria-required="true" aria-describedby="loginError">
+                  <input id="password" name="password" type="password" autocomplete="current-password" placeholder="Enter your password" data-i18n-placeholder="phPasswordLogin" required aria-required="true" aria-describedby="loginError">
                   <button type="button" class="btn-toggle-pw" aria-label="Show password">Show</button>
                 </div>
               </div>
               <div class="auth-helper-row">
-                <a href="/citizen/forgot-password.html" class="auth-forgot-link">Forgot password?</a>
+                <a href="/citizen/forgot-password.html" class="auth-forgot-link" data-i18n="linkForgotPw">Forgot password?</a>
               </div>
-              <button id="loginSubmit" class="btn btn-primary btn-auth-submit" type="submit">Sign in</button>
+              <button id="loginSubmit" class="btn btn-primary btn-auth-submit" type="submit" data-i18n="btnSignIn">Sign in</button>
             </form>
 
+            <details class="elder-guide">
+              <summary class="elder-guide-summary">
+                <span class="elder-guide-icon" aria-hidden="true">?</span>
+                <span data-i18n="elderHelpToggle">Need help signing in? (Step-by-step guide)</span>
+              </summary>
+              <ol class="elder-guide-steps">
+                <li data-i18n-html="elderStep1Html"><strong>1. Get your account:</strong> Use the username and password from the Barangay Health Kiosk, or tap <em>Create a citizen account</em> below.</li>
+                <li data-i18n-html="elderStep2Html"><strong>2. Check your typing:</strong> Tap <strong>Show</strong> inside the password box to see the letters you type clearly.</li>
+                <li data-i18n-html="elderStep3Html"><strong>3. Forgot password?</strong> Tap <em>Forgot password?</em> above, or ask your Barangay Health Worker (BHW) at the health station for help.</li>
+              </ol>
+            </details>
+
             <div class="auth-footer-links">
-              <span>New resident?</span>
-              <a href="/citizen/register.html">Create a citizen account</a>
+              <span data-i18n="loginNewResident">New resident?</span>
+              <a href="/citizen/register.html" data-i18n="loginCreateAcct">Create a citizen account</a>
             </div>
           </div>
         </div>
@@ -82,12 +101,12 @@
     </main>
 
     <footer class="auth-page-footer">
-      <p>Data is securely managed under the Philippine Data Privacy Act (RA 10173).</p>
+      <p data-i18n="authFooterRa">Data is securely managed under the Philippine Data Privacy Act (RA 10173).</p>
     </footer>
   </div>
 
-  <script src="/js/api.js?v=24"></script>
-  <script src="/js/citizen.js?v=24"></script>
+  <script src="/js/api.js?v=25"></script>
+  <script src="/js/citizen.js?v=25"></script>
   <script>
     (function () {
       var params = new URLSearchParams(location.search);

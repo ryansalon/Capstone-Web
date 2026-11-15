@@ -1392,6 +1392,134 @@ def test_one_time_privacy_acknowledgment_persists_per_account(client):
     assert client.post("/api/bhw/acknowledge-oath", headers=bearer(tok_1)).status_code == 403
 
 
+def test_kiosk_two_way_user_sync_and_online_login(client):
+    """Web-registered citizens can be pulled via GET /api/kiosk/users and verified via POST /api/kiosk/login."""
+    # Requires X-API-Key
+    assert client.get("/api/kiosk/users").status_code == 401
+    assert client.post("/api/kiosk/login", json={"username": "carl", "password": "citizen123"}).status_code == 401
+
+    reg = client.post(
+        "/api/register",
+        json={
+            "username": "WebFirst.User",
+            "password": "WebPassword123!",
+            "full_name": "Web First Resident",
+            "birthdate": "1964-08-20",
+            "gender": "female",
+        },
+    )
+    assert reg.status_code == 201
+
+    # Incremental export lists website citizen (and never exposes staff)
+    sync_all = client.get("/api/kiosk/users", headers=KIOSK_HEADERS)
+    assert sync_all.status_code == 200
+    body = sync_all.get_json()
+    assert "server_time" in body
+    usernames = [u["username"] for u in body["users"]]
+    assert "WebFirst.User" in usernames
+    assert "bhw1" not in usernames
+    assert "admin" not in usernames
+
+    # Case-insensitive lookup by username
+    by_name = client.get("/api/kiosk/users?username=webfirst.user", headers=KIOSK_HEADERS)
+    assert by_name.status_code == 200
+    found = by_name.get_json()["users"]
+    assert len(found) == 1
+    assert found[0]["full_name"] == "Web First Resident"
+    assert found[0]["password_hash"].startswith("$2")
+    assert found[0]["updated_at"]
+
+    # Invalid since timestamp -> 400
+    bad_since = client.get("/api/kiosk/users?since=not-a-timestamp", headers=KIOSK_HEADERS)
+    assert bad_since.status_code == 400
+
+    # Future since timestamp returns empty delta
+    empty_since = client.get("/api/kiosk/users?since=2099-01-01T00:00:00", headers=KIOSK_HEADERS)
+    assert empty_since.status_code == 200
+    assert empty_since.get_json()["users"] == []
+
+    # Kiosk online login works case-insensitively and returns user payload for local caching
+    k_ok = client.post(
+        "/api/kiosk/login",
+        json={"username": "webfirst.user", "password": "WebPassword123!"},
+        headers=KIOSK_HEADERS,
+    )
+    assert k_ok.status_code == 200
+    k_data = k_ok.get_json()
+    assert k_data["ok"] is True
+    assert k_data["user"]["username"] == "WebFirst.User"
+
+    # Staff credentials and wrong passwords are rejected on kiosk citizen login
+    assert (
+        client.post(
+            "/api/kiosk/login",
+            json={"username": "bhw1", "password": "bhw12345"},
+            headers=KIOSK_HEADERS,
+        ).status_code
+        == 401
+    )
+    assert (
+        client.post(
+            "/api/kiosk/login",
+            json={"username": "WebFirst.User", "password": "wrong"},
+            headers=KIOSK_HEADERS,
+        ).status_code
+        == 401
+    )
+
+
+def test_register_validations_case_insensitivity_and_security_headers(client):
+    """Case-insensitive usernames, strict demographic checks, and HTTP security headers."""
+    # Case-insensitive duplicate registration is blocked
+    dup = client.post(
+        "/api/register",
+        json={
+            "username": "CARL",
+            "password": "ValidPassword123",
+            "full_name": "Duplicate Carl",
+            "birthdate": "1992-11-03",
+            "gender": "male",
+        },
+    )
+    assert dup.status_code == 409
+
+    # Case-insensitive web login works
+    assert login(client, "CARL", "citizen123")["role"] == "citizen"
+
+    # Invalid / future birthdate and invalid gender rejected on register
+    bad_date = client.post(
+        "/api/register",
+        json={
+            "username": "bad_date_user",
+            "password": "ValidPassword123",
+            "full_name": "Bad Date",
+            "birthdate": "2099-01-01",
+            "gender": "male",
+        },
+    )
+    assert bad_date.status_code == 400
+
+    bad_gender = client.post(
+        "/api/register",
+        json={
+            "username": "bad_gender_user",
+            "password": "ValidPassword123",
+            "full_name": "Bad Gender",
+            "birthdate": "1990-01-01",
+            "gender": "unknown_val",
+        },
+    )
+    assert bad_gender.status_code == 400
+
+    # Security headers present on responses
+    ping = client.get("/healthz")
+    assert ping.status_code == 200
+    assert ping.headers.get("X-Content-Type-Options") == "nosniff"
+    assert ping.headers.get("X-Frame-Options") == "SAMEORIGIN"
+    assert ping.headers.get("Referrer-Policy") == "strict-origin-when-cross-origin"
+
+
+
 
 
 

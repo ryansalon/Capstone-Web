@@ -1769,7 +1769,9 @@
 
             var resBody = U.el("div", { class: "modal-body", style: "padding: 1.5rem 1rem;" });
             var p1 = U.el("p", { style: "margin-bottom:0.75rem;" });
-            p1.innerHTML = "Temporary password generated for <strong>" + citizenName + "</strong>:";
+            p1.appendChild(document.createTextNode("Temporary password generated for "));
+            p1.appendChild(U.el("strong", null, citizenName));
+            p1.appendChild(document.createTextNode(":"));
             resBody.appendChild(p1);
             var codeBox = U.el("div", { style: "font-size:1.35rem; font-family:monospace; font-weight:700; color:#0f6b53; background:#eaf4f0; padding:0.75rem; border-radius:8px; border:1px solid #b0c4bc; margin-bottom:1rem; user-select:all;" }, res.temporary_password);
             resBody.appendChild(codeBox);
@@ -1866,11 +1868,12 @@
       style: isBlocked ? "background: #7f1d1d;" : "",
     });
     var headerTitle = U.el("div");
-    headerTitle.innerHTML =
-      '<h3 style="margin:0; font-size:1.15rem; color:#fff;">Audit Log Inspector #' +
-      (entry.id || "—") +
-      "</h3>" +
-      '<small style="color: rgba(255,255,255,0.85); font-weight: 500;">RA 10173 Compliance Verification</small>';
+    headerTitle.appendChild(
+      U.el("h3", { style: "margin:0; font-size:1.15rem; color:#fff;" }, "Audit Log Inspector #" + (entry.id || "—"))
+    );
+    headerTitle.appendChild(
+      U.el("small", { style: "color: rgba(255,255,255,0.85); font-weight: 500;" }, "RA 10173 Compliance Verification")
+    );
     header.appendChild(headerTitle);
 
     var closeBtn = U.el(
@@ -1886,48 +1889,52 @@
       style: "padding: 1.25rem; font-size: 0.92rem; max-height: 70vh; overflow-y: auto;",
     });
 
-    var statusBadge = isBlocked
-      ? '<span class="badge badge-danger">Blocked / Security Flag</span>'
-      : '<span class="badge badge-ok">Authorized / Verified</span>';
-
     var dl = U.el("dl", { class: "audit-detail-list" });
-    dl.innerHTML =
-      '<div class="audit-detail-item"><dt>Event Status</dt><dd>' +
-      statusBadge +
-      "</dd></div>" +
-      '<div class="audit-detail-item"><dt>Action Performed</dt><dd><strong>' +
-      (entry.action || "—").replace(/_/g, " ") +
-      "</strong></dd></div>" +
-      '<div class="audit-detail-item"><dt>Health Worker / Actor</dt><dd>' +
-      (entry.bhw_name || "—") +
-      ' <span style="color:var(--ink-soft); font-size:0.8rem;">(ID: ' +
-      (entry.bhw || "—") +
-      ")</span></dd></div>" +
-      '<div class="audit-detail-item"><dt>Citizen Subject</dt><dd>' +
-      (entry.citizen_name || "All Citizens / System") +
-      (entry.citizen
-        ? ' <span style="color:var(--ink-soft); font-size:0.8rem;">(ID: ' +
-          entry.citizen +
-          ")</span>"
-        : "") +
-      "</dd></div>" +
-      '<div class="audit-detail-item"><dt>Timestamp (PHT)</dt><dd>' +
-      U.fmtDT(entry.time) +
-      ' <span style="color:var(--ink-soft); font-size:0.8rem;">(' +
-      U.fmtAge(entry.time) +
-      ")</span></dd></div>" +
-      '<div class="audit-detail-item"><dt>Timestamp (UTC)</dt><dd><code>' +
-      (entry.time || "—") +
-      "Z</code></dd></div>" +
-      '<div class="audit-detail-item"><dt>Event Details</dt><dd>' +
-      (entry.details || "Standard operational record access") +
-      "</dd></div>" +
-      '<div class="audit-detail-item"><dt>Origin IP Address</dt><dd><code>' +
-      (entry.ip || "—") +
-      "</code></dd></div>" +
-      '<div class="audit-detail-item"><dt>Client User Agent</dt><dd><span style="font-size:0.82rem; word-break:break-all; color:var(--ink-soft); font-family:monospace;">' +
-      (entry.user_agent || "Standard Browser Client") +
-      "</span></dd></div>";
+    function addDetailItem(label, valueNode) {
+      var row = U.el("div", { class: "audit-detail-item" });
+      row.appendChild(U.el("dt", null, label));
+      var dd = U.el("dd");
+      if (typeof valueNode === "string") dd.textContent = valueNode;
+      else dd.appendChild(valueNode);
+      row.appendChild(dd);
+      dl.appendChild(row);
+    }
+
+    addDetailItem(
+      "Event Status",
+      U.el(
+        "span",
+        { class: isBlocked ? "badge badge-danger" : "badge badge-ok" },
+        isBlocked ? "Blocked / Security Flag" : "Authorized / Verified"
+      )
+    );
+    addDetailItem("Action Performed", U.el("strong", null, (entry.action || "—").replace(/_/g, " ")));
+
+    var actorFrag = document.createDocumentFragment();
+    actorFrag.appendChild(document.createTextNode((entry.bhw_name || "—") + " "));
+    actorFrag.appendChild(U.el("span", { style: "color:var(--ink-soft); font-size:0.8rem;" }, "(ID: " + (entry.bhw || "—") + ")"));
+    addDetailItem("Health Worker / Actor", actorFrag);
+
+    var citFrag = document.createDocumentFragment();
+    citFrag.appendChild(document.createTextNode(entry.citizen_name || "All Citizens / System"));
+    if (entry.citizen) {
+      citFrag.appendChild(document.createTextNode(" "));
+      citFrag.appendChild(U.el("span", { style: "color:var(--ink-soft); font-size:0.8rem;" }, "(ID: " + entry.citizen + ")"));
+    }
+    addDetailItem("Citizen Subject", citFrag);
+
+    var phtFrag = document.createDocumentFragment();
+    phtFrag.appendChild(document.createTextNode(U.fmtDT(entry.time) + " "));
+    phtFrag.appendChild(U.el("span", { style: "color:var(--ink-soft); font-size:0.8rem;" }, "(" + U.fmtAge(entry.time) + ")"));
+    addDetailItem("Timestamp (PHT)", phtFrag);
+
+    addDetailItem("Timestamp (UTC)", U.el("code", null, (entry.time || "—") + "Z"));
+    addDetailItem("Event Details", entry.details || "Standard operational record access");
+    addDetailItem("Origin IP Address", U.el("code", null, entry.ip || "—"));
+    addDetailItem(
+      "Client User Agent",
+      U.el("span", { style: "font-size:0.82rem; word-break:break-all; color:var(--ink-soft); font-family:monospace;" }, entry.user_agent || "Standard Browser Client")
+    );
 
     body.appendChild(dl);
 

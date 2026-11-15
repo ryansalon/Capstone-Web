@@ -16,6 +16,7 @@ import json
 import os
 import queue
 import re
+import secrets
 import threading
 from contextlib import contextmanager
 from datetime import datetime, time, timedelta, timezone
@@ -361,7 +362,7 @@ class Database:
             print("BhwNotes migration warning:", e)
 
     def _migrate_users_table(self):
-        """Add privacy_acknowledged_at column to users if missing."""
+        """Add privacy_acknowledged_at and updated_at columns to users if missing."""
         try:
             with self.engine.begin() as conn:
                 if self.engine.name == "sqlite":
@@ -373,9 +374,22 @@ class Database:
                         conn.exec_driver_sql(
                             "ALTER TABLE users ADD COLUMN privacy_acknowledged_at DATETIME"
                         )
+                    if cols and "updated_at" not in cols:
+                        conn.exec_driver_sql(
+                            "ALTER TABLE users ADD COLUMN updated_at DATETIME"
+                        )
+                        conn.exec_driver_sql(
+                            "UPDATE users SET updated_at = COALESCE(created_at, CURRENT_TIMESTAMP) WHERE updated_at IS NULL"
+                        )
                 else:
                     conn.exec_driver_sql(
                         "ALTER TABLE users ADD COLUMN IF NOT EXISTS privacy_acknowledged_at TIMESTAMP"
+                    )
+                    conn.exec_driver_sql(
+                        "ALTER TABLE users ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP"
+                    )
+                    conn.exec_driver_sql(
+                        "UPDATE users SET updated_at = COALESCE(created_at, CURRENT_TIMESTAMP) WHERE updated_at IS NULL"
                     )
         except Exception as e:
             print("User migration warning:", e)
@@ -753,6 +767,13 @@ def create_app(database_url: str | None = None, seed: bool = True) -> Flask:
     register_routes(app)
     register_error_handlers(app)
 
+    @app.after_request
+    def add_security_headers(response):
+        response.headers.setdefault("X-Content-Type-Options", "nosniff")
+        response.headers.setdefault("X-Frame-Options", "SAMEORIGIN")
+        response.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
+        return response
+
     if not app.config.get("TESTING") and not app.config.get("PING_STARTED"):
         start_keep_alive_pinger()
         app.config["PING_STARTED"] = True
@@ -840,17 +861,47 @@ def register_routes(app: Flask):
 
     # -- kiosk ingest ------------------------------------------------------
 
+    def find_user_by_username(session, raw_username: str | None) -> User | None:
+        if not isinstance(raw_username, str) or not raw_username.strip():
+            return None
+        clean = raw_username.strip().lower()
+        return session.execute(
+            select(User)
+            .where(func.lower(User.username) == clean)
+            .order_by(User.id.asc())
+        ).scalars().first()
+
+    def kiosk_user_payload(user: User) -> dict:
+        return {
+            "username": user.username,
+            "password_hash": user.password_hash,
+            "full_name": user.full_name,
+            "birthdate": user.birthdate,
+            "gender": user.gender,
+            "updated_at": iso(user.updated_at or user.created_at),
+        }
+
+    def parse_strict_iso(raw: str) -> datetime | None:
+        text = raw.strip()
+        if not text:
+            return None
+        if text.endswith("Z"):
+            text = text[:-1]
+        try:
+            parsed = datetime.fromisoformat(text)
+            if parsed.tzinfo is not None:
+                parsed = parsed.astimezone(timezone.utc).replace(tzinfo=None)
+            return parsed
+        except ValueError:
+            return None
+
     @app.route("/api/kiosk/health-data", methods=["POST"])
     @kiosk_only
     def kiosk_health_data():
         data = json_body()
         username = data.get("username")
         with get_db().session() as session:
-            user = None
-            if isinstance(username, str) and username.strip():
-                user = session.execute(
-                    select(User).where(User.username == username.strip())
-                ).scalar_one_or_none()
+            user = find_user_by_username(session, username)
             if user is None:
                 return jsonify({"error": "unknown user"}), 404
 
@@ -910,14 +961,13 @@ def register_routes(app: Flask):
         username = username.strip()
 
         with get_db().session() as session:
-            existing = session.execute(
-                select(User).where(User.username == username)
-            ).scalar_one_or_none()
+            existing = find_user_by_username(session, username)
             if existing is not None:
                 return jsonify({"ok": True, "existed": True}), 200
 
             birthdate = data.get("birthdate")
             gender = data.get("gender")
+            now = utcnow()
             user = User(
                 username=username,
                 # Stored exactly as received: it is already a bcrypt hash.
@@ -926,6 +976,7 @@ def register_routes(app: Flask):
                 birthdate=(str(birthdate)[:10] if birthdate else ""),
                 gender=(str(gender)[:10] if gender else ""),
                 role="citizen",
+                updated_at=now,
             )
             session.add(user)
             try:
@@ -934,6 +985,50 @@ def register_routes(app: Flask):
                 session.rollback()
                 return jsonify({"ok": True, "existed": True}), 200
             return jsonify({"ok": True, "existed": False, "id": user.id}), 201
+
+    @app.route("/api/kiosk/users", methods=["GET"])
+    @kiosk_only
+    def kiosk_users():
+        """Export citizen credentials (bcrypt hashes) for Raspberry Pi local cache sync."""
+        username_q = request.args.get("username")
+        since_raw = request.args.get("since")
+        server_now = iso(utcnow())
+
+        with get_db().session() as session:
+            if isinstance(username_q, str) and username_q.strip():
+                user = find_user_by_username(session, username_q)
+                users = [user] if (user is not None and user.role == "citizen") else []
+            else:
+                stmt = select(User).where(User.role == "citizen")
+                if isinstance(since_raw, str) and since_raw.strip():
+                    since_dt = parse_strict_iso(since_raw)
+                    if since_dt is None:
+                        return jsonify({"error": "invalid since timestamp"}), 400
+                    stmt = stmt.where(func.coalesce(User.updated_at, User.created_at) >= since_dt)
+                stmt = stmt.order_by(func.coalesce(User.updated_at, User.created_at).asc(), User.id.asc())
+                users = list(session.execute(stmt).scalars())
+
+            return jsonify({"server_time": server_now, "users": [kiosk_user_payload(u) for u in users]})
+
+    @app.route("/api/kiosk/login", methods=["POST"])
+    @kiosk_only
+    def kiosk_login():
+        """Online credential fallback when a citizen registered on the website steps up to a kiosk."""
+        data = json_body()
+        username = data.get("username")
+        password = data.get("password")
+        if not isinstance(username, str) or not isinstance(password, str):
+            return jsonify({"error": "invalid credentials"}), 401
+
+        with get_db().session() as session:
+            user = find_user_by_username(session, username)
+            if (
+                user is None
+                or user.role != "citizen"
+                or not check_password(user.password_hash, password)
+            ):
+                return jsonify({"error": "invalid credentials"}), 401
+            return jsonify({"ok": True, "user": kiosk_user_payload(user)}), 200
 
     @app.route("/api/kiosk/guest-data", methods=["POST"])
     @kiosk_only
@@ -999,20 +1094,27 @@ def register_routes(app: Flask):
             return jsonify({"error": "password too short (min 8)"}), 400
 
         username = str(data["username"]).strip()
+        birthdate = str(data["birthdate"]).strip()
+        gender = str(data["gender"]).strip().lower()
+        if not valid_date(birthdate) or birthdate > iso(utcnow())[:10]:
+            return jsonify({"error": "birthdate must be YYYY-MM-DD and not in the future"}), 400
+        if gender not in ALLOWED_GENDERS:
+            return jsonify({"error": "invalid gender"}), 400
+
         with get_db().session() as session:
-            existing = session.execute(
-                select(User).where(User.username == username)
-            ).scalar_one_or_none()
+            existing = find_user_by_username(session, username)
             if existing is not None:
                 return jsonify({"error": "username taken"}), 409
+            now = utcnow()
             session.add(
                 User(
                     username=username,
                     password_hash=hash_password(password),
                     full_name=str(data["full_name"]).strip()[:100],
-                    birthdate=str(data["birthdate"]).strip()[:10],
-                    gender=str(data["gender"]).strip()[:10],
+                    birthdate=birthdate[:10],
+                    gender=gender[:10],
                     role="citizen",
+                    updated_at=now,
                 )
             )
         return jsonify({"ok": True}), 201
@@ -1030,9 +1132,7 @@ def register_routes(app: Flask):
             return jsonify({"error": "invalid credentials"}), 401
 
         with get_db().session() as session:
-            user = session.execute(
-                select(User).where(User.username == username.strip())
-            ).scalar_one_or_none()
+            user = find_user_by_username(session, username)
         if user is None or not check_password(user.password_hash, password):
             return jsonify({"error": "invalid credentials"}), 401
 
@@ -1081,9 +1181,7 @@ def register_routes(app: Flask):
             return jsonify({"error": "New password must be at least 8 characters long."}), 400
 
         with get_db().session() as session:
-            user = session.execute(
-                select(User).where(func.lower(User.username) == username.lower())
-            ).scalar_one_or_none()
+            user = find_user_by_username(session, username)
 
             if user is None or user.role != "citizen":
                 return jsonify({"error": "Account not found or not eligible for self-service reset."}), 404
@@ -1092,6 +1190,7 @@ def register_routes(app: Flask):
                 return jsonify({"error": "Provided birthdate or full name does not match our records."}), 403
 
             user.password_hash = hash_password(new_password)
+            user.updated_at = utcnow()
             write_audit(
                 session,
                 user.id,
@@ -1284,6 +1383,7 @@ def register_routes(app: Flask):
             gender = data.get("gender")
             if gender in ALLOWED_GENDERS:
                 user.gender = gender
+            user.updated_at = utcnow()
         return jsonify({"ok": True})
 
     @app.route("/api/citizen/password", methods=["PUT"])
@@ -1299,6 +1399,7 @@ def register_routes(app: Flask):
             if not isinstance(new_password, str) or len(new_password) < 8:
                 return jsonify({"error": "new password too short (min 8)"}), 400
             user.password_hash = hash_password(new_password)
+            user.updated_at = utcnow()
         return jsonify({"ok": True})
 
     @app.route("/api/citizen/acknowledge-notice", methods=["POST"])
@@ -1643,10 +1744,10 @@ def register_routes(app: Flask):
             if custom_pw and isinstance(custom_pw, str) and len(custom_pw.strip()) >= 8:
                 temp_pw = custom_pw.strip()
             else:
-                import random
-                temp_pw = f"Citizen@{random.randint(100000, 999999)}"
+                temp_pw = f"Citizen@{secrets.randbelow(900000) + 100000}"
 
             citizen.password_hash = hash_password(temp_pw)
+            citizen.updated_at = utcnow()
             write_audit(
                 session,
                 g.user.id,

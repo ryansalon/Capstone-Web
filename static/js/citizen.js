@@ -369,6 +369,80 @@
       pwToastUpdated: "Password updated",
       profSessionHeading: "Session",
       btnLogoutDevice: "Log out of this device",
+      authRoleCitTitle: "Citizen",
+      authRoleCitDesc: "Residents & Patients",
+      authRoleBhwTitle: "Health Worker",
+      authRoleBhwDesc: "BHW & Clinic Staff",
+      loginHeading: "Citizen Sign In",
+      loginLede: "Sign in with your kiosk account to view your vital readings and health records.",
+      loginExpired: "Your session expired — please sign in again.",
+      lblUsername: "Username",
+      phUsernameLogin: "e.g. maria.santos",
+      lblPassword: "Password",
+      phPasswordLogin: "Enter your password",
+      linkForgotPw: "Forgot password?",
+      btnSignIn: "Sign in",
+      btnSigningIn: "Signing in…",
+      loginErrRequired: "Enter your username and password.",
+      loginNewResident: "New resident?",
+      loginCreateAcct: "Create a citizen account",
+      authFooterRa: "Data is securely managed under the Philippine Data Privacy Act (RA 10173).",
+      elderHelpToggle: "Need help signing in? (Step-by-step guide)",
+      elderStep1Html: "<strong>1. Get your account:</strong> Use the username and password from the Barangay Health Kiosk, or tap <em>Create a citizen account</em> below.",
+      elderStep2Html: "<strong>2. Check your typing:</strong> Tap <strong>Show</strong> inside the password box to see the letters you type clearly.",
+      elderStep3Html: "<strong>3. Forgot password?</strong> Tap <em>Forgot password?</em> above, or ask your Barangay Health Worker (BHW) at the health station for help.",
+      regHeading: "Create Citizen Account",
+      regLede: "Register to access your kiosk vital measurements and download your health passport.",
+      lblFullName: "Full name",
+      phFullName: "e.g. Juan dela Cruz",
+      phUsernameReg: "Choose a username",
+      phPasswordReg: "At least 8 characters",
+      regPwHint: "Must be at least 8 characters.",
+      lblConfirmPw: "Confirm password",
+      phConfirmPw: "Re-enter your password",
+      lblBirthdate: "Birthdate",
+      lblGender: "Gender",
+      optMale: "Male",
+      optFemale: "Female",
+      optOther: "Other",
+      btnCreateAcct: "Create account",
+      btnCreatingAcct: "Creating account…",
+      regAlready: "Already registered?",
+      regSignInLink: "Sign in to your account",
+      regErrFullName: "Full name is required.",
+      regErrUsername: "Username is required.",
+      regErrPwReq: "Password is required.",
+      regErrPwLen: "Password must be at least 8 characters.",
+      regErrConfirmReq: "Please confirm your password.",
+      regErrPwMismatch: "Passwords do not match.",
+      regErrBirthReq: "Birthdate is required.",
+      regErrBirthFuture: "Birthdate cannot be in the future.",
+      regErrGender: "Please select a gender.",
+      regSuccessPrefix: "Account created. ",
+      regSuccessLink: "Sign in with your new account",
+      fpHeading: "Reset Citizen Password",
+      fpLede: "Verify your registered resident details to securely set a new password.",
+      fpDoneHeading: "Password Reset Complete",
+      fpDoneBody: "Your password has been updated. You can now sign in with your new credentials.",
+      fpDoneBtn: "Continue to Sign In",
+      fpFullNameHint: "Must match your registered name on record.",
+      fpBirthHint: "Your birthdate acts as your identity security key.",
+      fpNewPwLabel: "New Password",
+      fpConfirmNewPwLabel: "Confirm New Password",
+      fpPhConfirmNewPw: "Re-enter your new password",
+      fpBtnReset: "Reset Password",
+      fpBtnVerifying: "Verifying details…",
+      fpHelpTitle: "Forgot your username or need help?",
+      fpHelpBody: "Visit the Barangay Health Station. Your Barangay Health Worker can verify your identification in person and reset your account credentials.",
+      fpBackLink: "← Back to citizen sign in",
+      fpErrUsername: "Please enter your username.",
+      fpErrFullName: "Please enter your full name as registered.",
+      fpErrBirthdate: "Please select your registered birthdate.",
+      fpErrBirthFuture: "Birthdate cannot be in the future.",
+      fpErrPwLen: "New password must be at least 8 characters long.",
+      fpErrMismatch: "Passwords do not match. Please verify both fields.",
+      fpToastOk: "Password reset complete. You can now sign in.",
+      fpErrFallback: "Failed to reset password. Please check your details.",
     },
     ceb: {
       skipToMain: "Laktaw ngadto sa nag-unang sulod",
@@ -699,6 +773,80 @@
       pwToastUpdated: "Na-update na ang password",
       profSessionHeading: "Sesyon",
       btnLogoutDevice: "Log out sa kini nga device",
+      authRoleCitTitle: "Lumulupyo",
+      authRoleCitDesc: "Mga Residente ug Pasyente",
+      authRoleBhwTitle: "Health Worker",
+      authRoleBhwDesc: "BHW ug Staff sa Klinika",
+      loginHeading: "Sign In sa Lumulupyo",
+      loginLede: "Pag-sign in gamit ang imong kiosk account aron makita ang imong sukod sa panglawas ug rekord.",
+      loginExpired: "Na-expire ang imong sesyon — palihug pag-sign in pag-usab.",
+      lblUsername: "Username",
+      phUsernameLogin: "pananglitan maria.santos",
+      lblPassword: "Password",
+      phPasswordLogin: "Isulat ang imong password",
+      linkForgotPw: "Nakalimot sa password?",
+      btnSignIn: "Sign in",
+      btnSigningIn: "Nag-sign in…",
+      loginErrRequired: "Isulat ang imong username ug password.",
+      loginNewResident: "Bag-ong residente?",
+      loginCreateAcct: "Paghimo og citizen account",
+      authFooterRa: "Luwas ang pagdumala sa datos ubos sa Philippine Data Privacy Act (RA 10173).",
+      elderHelpToggle: "Nagkinahanglan og tabang pag-sign in? (Giya)",
+      elderStep1Html: "<strong>1. Kuhaa ang account:</strong> Gamita ang username ug password gikan sa Barangay Health Kiosk, o pindota ang <em>Paghimo og citizen account</em> sa ubos.",
+      elderStep2Html: "<strong>2. Tan-awa ang gi-type:</strong> Pindota ang <strong>Show</strong> sa kahon sa password aron makita nimo og klaro ang imong gisulat.",
+      elderStep3Html: "<strong>3. Nakalimot sa password?</strong> Pindota ang <em>Nakalimot sa password?</em> sa ibabaw, o pangayo og tabang sa imong Barangay Health Worker (BHW) sa health center.",
+      regHeading: "Paghimo og Citizen Account",
+      regLede: "Magparehistro aron makita ang imong mga sukod gikan sa kiosk ug ma-download ang health passport.",
+      lblFullName: "Tibuok ngalan",
+      phFullName: "pananglitan Juan dela Cruz",
+      phUsernameReg: "Pagpili og username",
+      phPasswordReg: "Labing menos 8 ka karakter",
+      regPwHint: "Kinahanglan labing menos 8 ka karakter.",
+      lblConfirmPw: "Kumpirmaha ang password",
+      phConfirmPw: "Isulat pag-usab ang password",
+      lblBirthdate: "Petsa sa pagkatawo",
+      lblGender: "Sekso",
+      optMale: "Lalaki",
+      optFemale: "Babaye",
+      optOther: "Uban pa",
+      btnCreateAcct: "Paghimo og account",
+      btnCreatingAcct: "Naghimo og account…",
+      regAlready: "Nakarehistro na?",
+      regSignInLink: "Sign in sa imong account",
+      regErrFullName: "Gikinahanglan ang tibuok ngalan.",
+      regErrUsername: "Gikinahanglan ang username.",
+      regErrPwReq: "Gikinahanglan ang password.",
+      regErrPwLen: "Ang password kinahanglan labing menos 8 ka karakter.",
+      regErrConfirmReq: "Palihug kumpirmaha ang imong password.",
+      regErrPwMismatch: "Wala magtugma ang mga password.",
+      regErrBirthReq: "Gikinahanglan ang petsa sa pagkatawo.",
+      regErrBirthFuture: "Dili mahimong umaabot ang petsa sa pagkatawo.",
+      regErrGender: "Palihug pagpili og sekso.",
+      regSuccessPrefix: "Nahimo na ang account. ",
+      regSuccessLink: "Pag-sign in gamit ang bag-ong account",
+      fpHeading: "I-reset ang Password",
+      fpLede: "Kumpirmaha ang imong nakarehistro nga detalye aron luwas nga makahimo og bag-ong password.",
+      fpDoneHeading: "Nahuman na ang Pag-reset sa Password",
+      fpDoneBody: "Na-update na ang imong password. Mahimo ka nang mag-sign in gamit ang bag-ong kredensyal.",
+      fpDoneBtn: "Padayon sa Sign In",
+      fpFullNameHint: "Kinahanglan pareho sa nakarehistro nga ngalan sa rekord.",
+      fpBirthHint: "Ang imong adlawng natawhan mao ang yawe sa pag-ila kanimo.",
+      fpNewPwLabel: "Bag-ong Password",
+      fpConfirmNewPwLabel: "Kumpirmaha ang Bag-ong Password",
+      fpPhConfirmNewPw: "Isulat pag-usab ang bag-ong password",
+      fpBtnReset: "I-reset ang Password",
+      fpBtnVerifying: "Gisusi ang mga detalye…",
+      fpHelpTitle: "Nakalimot sa username o nagkinahanglan og tabang?",
+      fpHelpBody: "Adto sa Barangay Health Station. Ang imong Barangay Health Worker makasusi sa imong ID sa personal ug maka-reset sa imong account.",
+      fpBackLink: "← Balik sa citizen sign in",
+      fpErrUsername: "Palihug isulat ang imong username.",
+      fpErrFullName: "Palihug isulat ang imong tibuok ngalan sama sa pagkarehistro.",
+      fpErrBirthdate: "Palihug pilia ang imong petsa sa pagkatawo.",
+      fpErrBirthFuture: "Dili mahimong umaabot ang petsa sa pagkatawo.",
+      fpErrPwLen: "Ang bag-ong password kinahanglan labing menos 8 ka karakter.",
+      fpErrMismatch: "Wala magtugma ang mga password. Palihug susiha.",
+      fpToastOk: "Nahuman na ang pag-reset. Mahimo ka nang mag-sign in.",
+      fpErrFallback: "Napakyas ang pag-reset sa password. Palihug susiha ang imong detalye.",
     },
     tl: {
       skipToMain: "Lumaktaw sa pangunahing nilalaman",
@@ -1029,6 +1177,80 @@
       pwToastUpdated: "Na-update na ang password",
       profSessionHeading: "Sesyon",
       btnLogoutDevice: "Mag-log out sa device na ito",
+      authRoleCitTitle: "Mamamayan",
+      authRoleCitDesc: "Mga Residente at Pasyente",
+      authRoleBhwTitle: "Health Worker",
+      authRoleBhwDesc: "BHW at Staff ng Klinika",
+      loginHeading: "Mag-sign In",
+      loginLede: "Mag-sign in gamit ang iyong kiosk account upang makita ang iyong mga sukat at rekord sa kalusugan.",
+      loginExpired: "Nag-expire ang iyong sesyon — pakisubukan mag-sign in muli.",
+      lblUsername: "Username",
+      phUsernameLogin: "hal. maria.santos",
+      lblPassword: "Password",
+      phPasswordLogin: "Ilagay ang iyong password",
+      linkForgotPw: "Nakalimutan ang password?",
+      btnSignIn: "Mag-sign in",
+      btnSigningIn: "Nag-si-sign in…",
+      loginErrRequired: "Ilagay ang iyong username at password.",
+      loginNewResident: "Bagong residente?",
+      loginCreateAcct: "Gumawa ng citizen account",
+      authFooterRa: "Ligtas na pinapangalagaan ang datos sa ilalim ng Philippine Data Privacy Act (RA 10173).",
+      elderHelpToggle: "Kailangan ng tulong sa pag-sign in? (Gabay)",
+      elderStep1Html: "<strong>1. Kunin ang account:</strong> Gamitin ang username at password mula sa Barangay Health Kiosk, o pindutin ang <em>Gumawa ng citizen account</em> sa ibaba.",
+      elderStep2Html: "<strong>2. Suriin ang tina-type:</strong> Pindutin ang <strong>Show</strong> sa kahon ng password upang makita nang malinaw ang iyong isinusulat.",
+      elderStep3Html: "<strong>3. Nakalimutan ang password?</strong> Pindutin ang <em>Nakalimutan ang password?</em> sa itaas, o humingi ng tulong sa Barangay Health Worker (BHW) sa health station.",
+      regHeading: "Gumawa ng Citizen Account",
+      regLede: "Magrehistro upang makita ang iyong mga sukat mula sa kiosk at ma-download ang iyong health passport.",
+      lblFullName: "Buong pangalan",
+      phFullName: "hal. Juan dela Cruz",
+      phUsernameReg: "Pumili ng username",
+      phPasswordReg: "Hindi bababa sa 8 karakter",
+      regPwHint: "Dapat hindi bababa sa 8 karakter.",
+      lblConfirmPw: "Kumpirmahin ang password",
+      phConfirmPw: "Ilagay muli ang password",
+      lblBirthdate: "Petsa ng kapanganakan",
+      lblGender: "Kasarian",
+      optMale: "Lalaki",
+      optFemale: "Babae",
+      optOther: "Iba pa",
+      btnCreateAcct: "Gumawa ng account",
+      btnCreatingAcct: "Gumagawa ng account…",
+      regAlready: "Nakarehistro na?",
+      regSignInLink: "Mag-sign in sa iyong account",
+      regErrFullName: "Kinakailangan ang buong pangalan.",
+      regErrUsername: "Kinakailangan ang username.",
+      regErrPwReq: "Kinakailangan ang password.",
+      regErrPwLen: "Ang password ay dapat hindi bababa sa 8 karakter.",
+      regErrConfirmReq: "Pakikumpirma ang iyong password.",
+      regErrPwMismatch: "Hindi magkatugma ang mga password.",
+      regErrBirthReq: "Kinakailangan ang petsa ng kapanganakan.",
+      regErrBirthFuture: "Hindi maaaring nasa hinaharap ang petsa ng kapanganakan.",
+      regErrGender: "Pakipili ang kasarian.",
+      regSuccessPrefix: "Nagawa na ang account. ",
+      regSuccessLink: "Mag-sign in gamit ang bagong account",
+      fpHeading: "I-reset ang Password",
+      fpLede: "Kumpirmahin ang iyong nakarehistrong detalye upang ligtas na makapagtakda ng bagong password.",
+      fpDoneHeading: "Kumpleto na ang Pag-reset ng Password",
+      fpDoneBody: "Na-update na ang iyong password. Maaari ka nang mag-sign in gamit ang iyong bagong kredensyal.",
+      fpDoneBtn: "Magpatuloy sa Sign In",
+      fpFullNameHint: "Dapat tumugma sa iyong nakarehistrong pangalan sa rekord.",
+      fpBirthHint: "Ang iyong kaarawan ang nagsisilbing susi sa pagberipika.",
+      fpNewPwLabel: "Bagong Password",
+      fpConfirmNewPwLabel: "Kumpirmahin ang Bagong Password",
+      fpPhConfirmNewPw: "Ilagay muli ang bagong password",
+      fpBtnReset: "I-reset ang Password",
+      fpBtnVerifying: "Bineberipika ang mga detalye…",
+      fpHelpTitle: "Nakalimutan ang username o kailangan ng tulong?",
+      fpHelpBody: "Pumunta sa Barangay Health Station. Maaaring beripikahin ng Barangay Health Worker ang iyong pagkakakilanlan nang personal at i-reset ang iyong account.",
+      fpBackLink: "← Bumalik sa citizen sign in",
+      fpErrUsername: "Pakilagay ang iyong username.",
+      fpErrFullName: "Pakilagay ang buong pangalan tulad ng pagkarehistro.",
+      fpErrBirthdate: "Pakipili ang iyong nakarehistrong petsa ng kapanganakan.",
+      fpErrBirthFuture: "Hindi maaaring nasa hinaharap ang petsa ng kapanganakan.",
+      fpErrPwLen: "Ang bagong password ay dapat hindi bababa sa 8 karakter.",
+      fpErrMismatch: "Hindi magkatugma ang mga password. Pakisuri.",
+      fpToastOk: "Kumpleto na ang pag-reset. Maaari ka nang mag-sign in.",
+      fpErrFallback: "Nabigo ang pag-reset ng password. Pakisuri ang iyong detalye.",
     },
   };
 
@@ -1215,6 +1437,8 @@
   function initLogin() {
     var form = document.getElementById("loginForm");
     if (!form) return;
+    var isCitizenPage = document.body.getAttribute("data-page") === "citizen-login";
+    if (isCitizenPage) bindLangSwitchers();
     var errorNode = document.getElementById("loginError");
     var submit = document.getElementById("loginSubmit");
 
@@ -1224,10 +1448,10 @@
       var username = fieldValue("username");
       var password = document.getElementById("password").value;
       if (!username || !password) {
-        showFormError(errorNode, "Enter your username and password.");
+        showFormError(errorNode, isCitizenPage ? t("loginErrRequired") : "Enter your username and password.");
         return;
       }
-      setBusy(submit, true, "Signing in…");
+      setBusy(submit, true, isCitizenPage ? t("btnSigningIn") : "Signing in…");
       try {
         var data = await API.apiFetch("/api/login", {
           method: "POST",
@@ -1260,9 +1484,12 @@
   function initRegister() {
     var form = document.getElementById("registerForm");
     if (!form) return;
+    bindLangSwitchers();
     var errorNode = document.getElementById("registerError");
     var successNode = document.getElementById("registerSuccess");
     var submit = document.getElementById("registerSubmit");
+    var birthInput = document.getElementById("birthdate");
+    if (birthInput) birthInput.max = todayISO();
 
     /* Per-field inline validation: show/clear an error line under a field. */
     function fieldError(id, message) {
@@ -1308,14 +1535,15 @@
       var gender = fieldValue("gender");
       var ok = true;
 
-      if (!fullName) { fieldError("fullName", "Full name is required."); ok = false; }
-      if (!username) { fieldError("username", "Username is required."); ok = false; }
-      if (!password) { fieldError("password", "Password is required."); ok = false; }
-      else if (password.length < 8) { fieldError("password", "Password must be at least 8 characters."); ok = false; }
-      if (!confirm) { fieldError("confirmPassword", "Please confirm your password."); ok = false; }
-      else if (password !== confirm) { fieldError("confirmPassword", "Passwords do not match."); ok = false; }
-      if (!birthdate) { fieldError("birthdate", "Birthdate is required."); ok = false; }
-      if (!gender) { fieldError("gender", "Please select a gender."); ok = false; }
+      if (!fullName) { fieldError("fullName", t("regErrFullName")); ok = false; }
+      if (!username) { fieldError("username", t("regErrUsername")); ok = false; }
+      if (!password) { fieldError("password", t("regErrPwReq")); ok = false; }
+      else if (password.length < 8) { fieldError("password", t("regErrPwLen")); ok = false; }
+      if (!confirm) { fieldError("confirmPassword", t("regErrConfirmReq")); ok = false; }
+      else if (password !== confirm) { fieldError("confirmPassword", t("regErrPwMismatch")); ok = false; }
+      if (!birthdate) { fieldError("birthdate", t("regErrBirthReq")); ok = false; }
+      else if (birthdate > todayISO()) { fieldError("birthdate", t("regErrBirthFuture")); ok = false; }
+      if (!gender) { fieldError("gender", t("regErrGender")); ok = false; }
       if (!ok) return;
 
       var payload = {
@@ -1326,12 +1554,12 @@
         gender: gender,
       };
 
-      setBusy(submit, true, "Creating account…");
+      setBusy(submit, true, t("btnCreatingAcct"));
       try {
         await API.apiFetch("/api/register", { method: "POST", body: payload });
         form.reset();
-        successNode.textContent = "Account created. ";
-        var link = U.el("a", { href: "/citizen/login.html" }, "Sign in with your new account");
+        successNode.textContent = t("regSuccessPrefix");
+        var link = U.el("a", { href: "/citizen/login.html" }, t("regSuccessLink"));
         successNode.appendChild(link);
         successNode.appendChild(document.createTextNode("."));
         setBusy(submit, false);
@@ -3616,18 +3844,24 @@
     var submit = document.getElementById("resetSubmit");
     var newPwInput = document.getElementById("newPassword");
     var pwHint = document.getElementById("passwordHint");
+    var birthInput = document.getElementById("birthdate");
+    if (birthInput) birthInput.max = todayISO();
 
     function updatePwHint() {
       if (!pwHint || !newPwInput) return;
       var len = newPwInput.value.length;
       pwHint.classList.toggle("hint-ok", len >= 8);
-      pwHint.textContent = len === 0
-        ? "At least 8 characters."
-        : len >= 8
-          ? "Length looks good (" + len + " characters)."
-          : (8 - len) + " more character" + (8 - len === 1 ? "" : "s") + " needed.";
+      if (len === 0) {
+        pwHint.textContent = t("pwHintInitial");
+      } else if (len >= 8) {
+        pwHint.textContent = t("pwHintOk", { len: len });
+      } else {
+        var rem = 8 - len;
+        pwHint.textContent = rem === 1 ? t("pwHintNeedSingle") : t("pwHintNeedPlural", { n: rem });
+      }
     }
 
+    bindLangSwitchers(updatePwHint);
     if (newPwInput) {
       newPwInput.addEventListener("input", updatePwHint);
     }
@@ -3643,27 +3877,31 @@
       var confirmPassword = document.getElementById("confirmPassword").value;
 
       if (!username) {
-        showFormError(errorNode, "Please enter your username.");
+        showFormError(errorNode, t("fpErrUsername"));
         return;
       }
       if (!fullName) {
-        showFormError(errorNode, "Please enter your full name as registered.");
+        showFormError(errorNode, t("fpErrFullName"));
         return;
       }
       if (!birthdate) {
-        showFormError(errorNode, "Please select your registered birthdate.");
+        showFormError(errorNode, t("fpErrBirthdate"));
+        return;
+      }
+      if (birthdate > todayISO()) {
+        showFormError(errorNode, t("fpErrBirthFuture"));
         return;
       }
       if (!newPassword || newPassword.length < 8) {
-        showFormError(errorNode, "New password must be at least 8 characters long.");
+        showFormError(errorNode, t("fpErrPwLen"));
         return;
       }
       if (newPassword !== confirmPassword) {
-        showFormError(errorNode, "Passwords do not match. Please verify both fields.");
+        showFormError(errorNode, t("fpErrMismatch"));
         return;
       }
 
-      setBusy(submit, true, "Verifying details…");
+      setBusy(submit, true, t("fpBtnVerifying"));
       try {
         await API.apiFetch("/api/forgot-password", {
           method: "POST",
@@ -3676,9 +3914,9 @@
         });
         form.style.display = "none";
         if (successCard) successCard.style.display = "block";
-        U.toast("Password reset complete. You can now sign in.", "success");
+        U.toast(t("fpToastOk"), "success");
       } catch (err) {
-        showFormError(errorNode, err.message || "Failed to reset password. Please check your details.");
+        showFormError(errorNode, err.message || t("fpErrFallback"));
         setBusy(submit, false);
       }
     });

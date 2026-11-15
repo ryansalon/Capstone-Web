@@ -26,6 +26,7 @@ class User(Base):
     role = Column(String(10), default="citizen")
     privacy_acknowledged_at = Column(DateTime, nullable=True)
     created_at = Column(DateTime, default=utcnow)
+    updated_at = Column(DateTime, default=utcnow, onupdate=utcnow)
 
 
 class HealthLog(Base):
