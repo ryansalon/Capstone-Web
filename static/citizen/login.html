@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -8,74 +7,45 @@
   <link rel="icon" type="image/svg+xml" href="/img/favicon.svg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link
-    href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Public+Sans:wght@500;600;700;800&display=swap"
-    rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="preload" as="image" href="/img/cpsc-logo.png">
   <link rel="preload" as="image" href="/img/rhu-logo.png">
-  <link rel="stylesheet" href="/css/style.css?v=31">
+  <link rel="stylesheet" href="/css/style.css?v=30">
 </head>
-
 <body data-page="citizen-login">
   <a class="skip-link" href="#main">Skip to main content</a>
   <div class="auth-wrap">
-    <aside class="auth-showcase" aria-label="Program overview">
-      <div class="auth-showcase-top">
-        <div class="auth-gov-bar">
-          <span>Republic of the Philippines · Province of Camiguin</span>
-          <span class="auth-gov-badge">Municipality of Mahinog</span>
-        </div>
-        <div class="auth-brand">
-          <div class="auth-logos">
-            <img src="/img/cpsc-logo.png" alt="Camiguin Polytechnic State College" class="auth-partner-logo" width="64"
-              height="64" loading="eager" decoding="sync" title="Camiguin Polytechnic State College">
-            <img src="/img/rhu-logo.png" alt="Rural Health Unit - Mahinog" class="auth-partner-logo" width="64"
-              height="64" loading="eager" decoding="sync" title="Rural Health Unit - Mahinog, Camiguin">
-          </div>
-          <div class="auth-brand-copy">
-            <h1 class="auth-brand-name">Barangay Health Monitor</h1>
-            <p class="auth-brand-sub">Camiguin Polytechnic State College &amp; Rural Health Unit of Mahinog</p>
-          </div>
-        </div>
+    <div class="auth-top-bar">
+      <div class="auth-gov-bar">
+        <span>Republic of the Philippines · Province of Camiguin</span>
+        <span class="auth-gov-badge">Municipality of Mahinog</span>
       </div>
-
-      <div class="auth-pillars">
-        <div class="auth-pillar">
-          <strong>Kiosk Vitals Ledger</strong>
-          <span>Review blood pressure, SpO2, temperature, pulse, weight, and BMI against RHU &amp; DOH ranges.</span>
-        </div>
-        <div class="auth-pillar">
-          <strong>Citizen Consent Control</strong>
-          <span>Grant or revoke Barangay Health Worker access anytime with an immutable audit trail under RA
-            10173.</span>
-        </div>
-        <div class="auth-pillar">
-          <strong>Offline-Ready Health Passports</strong>
-          <span>Print your clinical summary or export your full history whenever you visit the Rural Health Unit.</span>
-        </div>
-      </div>
-    </aside>
+    </div>
 
     <main id="main" class="auth-main" tabindex="-1">
-      <div class="auth-container">
-        <div class="auth-card">
-          <div class="auth-card-utility">
-            <span class="auth-utility-meta">Mahinog Municipal Portal</span>
-            <div class="auth-lang-dropdown">
-              <svg class="auth-lang-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <circle cx="12" cy="12" r="10" />
-                <line x1="2" y1="12" x2="22" y2="12" />
-                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
-              </svg>
-              <select id="authLangSelect" class="lang-select" aria-label="Language">
-                <option value="en">English</option>
-                <option value="ceb">Bisaya</option>
-                <option value="tl">Tagalog</option>
-              </select>
-            </div>
-          </div>
+      <div class="auth-lang-corner">
+        <div class="auth-lang-dropdown">
+          <svg class="auth-lang-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+          <select id="authLangSelect" class="lang-select" aria-label="Language">
+            <option value="en">English</option>
+            <option value="ceb">Bisaya</option>
+            <option value="tl">Tagalog</option>
+          </select>
+        </div>
+      </div>
 
+      <div class="auth-container">
+        <!-- Unified Civic Brand Header -->
+        <header class="auth-brand">
+          <div class="auth-logos">
+            <img src="/img/cpsc-logo.png" alt="Camiguin Polytechnic State College" class="auth-partner-logo" width="76" height="76" loading="eager" decoding="sync" title="Camiguin Polytechnic State College">
+            <img src="/img/rhu-logo.png" alt="Rural Health Unit - Mahinog" class="auth-partner-logo" width="76" height="76" loading="eager" decoding="sync" title="Rural Health Unit - Mahinog, Camiguin">
+          </div>
+          <h1 class="auth-brand-name">Barangay Health Monitor</h1>
+          <p class="auth-brand-sub">Camiguin Polytechnic State College &amp; Rural Health Unit of Mahinog</p>
+        </header>
+
+        <div class="auth-card">
           <!-- Segmented Portal Switcher -->
           <nav class="auth-role-tabs" aria-label="Portal selection">
             <a href="/citizen/login.html" class="auth-role-tab active" aria-current="page">
@@ -90,34 +60,27 @@
 
           <div class="auth-card-body">
             <h2 data-i18n="loginHeading">Citizen Sign In</h2>
-            <p class="auth-card-lede" data-i18n="loginLede">Sign in with your kiosk account to view your vital readings
-              and health records.</p>
+            <p class="auth-card-lede" data-i18n="loginLede">Sign in with your kiosk account to view your vital readings and health records.</p>
 
-            <p id="sessionExpired" class="form-success" role="status" style="display:none;" data-i18n="loginExpired">
-              Your session expired — please sign in again.</p>
+            <p id="sessionExpired" class="form-success" role="status" style="display:none;" data-i18n="loginExpired">Your session expired — please sign in again.</p>
             <p id="loginError" class="form-error" role="alert" aria-live="assertive"></p>
 
             <form id="loginForm" novalidate>
               <div class="field">
                 <label for="username" data-i18n="lblUsername">Username</label>
-                <input id="username" name="username" type="text" autocomplete="username" placeholder="e.g. maria.santos"
-                  data-i18n-placeholder="phUsernameLogin" required aria-required="true" aria-describedby="loginError">
+                <input id="username" name="username" type="text" autocomplete="username" placeholder="e.g. maria.santos" data-i18n-placeholder="phUsernameLogin" required aria-required="true" aria-describedby="loginError">
               </div>
               <div class="field">
                 <label for="password" data-i18n="lblPassword">Password</label>
                 <div class="password-wrap">
-                  <input id="password" name="password" type="password" autocomplete="current-password"
-                    placeholder="Enter your password" data-i18n-placeholder="phPasswordLogin" required
-                    aria-required="true" aria-describedby="loginError">
+                  <input id="password" name="password" type="password" autocomplete="current-password" placeholder="Enter your password" data-i18n-placeholder="phPasswordLogin" required aria-required="true" aria-describedby="loginError">
                   <button type="button" class="btn-toggle-pw" aria-label="Show password">Show</button>
                 </div>
               </div>
               <div class="auth-helper-row">
-                <a href="/citizen/forgot-password.html" class="auth-forgot-link" data-i18n="linkForgotPw">Forgot
-                  password?</a>
+                <a href="/citizen/forgot-password.html" class="auth-forgot-link" data-i18n="linkForgotPw">Forgot password?</a>
               </div>
-              <button id="loginSubmit" class="btn btn-primary btn-auth-submit" type="submit" data-i18n="btnSignIn">Sign
-                in</button>
+              <button id="loginSubmit" class="btn btn-primary btn-auth-submit" type="submit" data-i18n="btnSignIn">Sign in</button>
             </form>
 
             <details class="elder-guide">
@@ -126,12 +89,9 @@
                 <span data-i18n="elderHelpToggle">Need help signing in? (Step-by-step guide)</span>
               </summary>
               <ol class="elder-guide-steps">
-                <li data-i18n-html="elderStep1Html"><strong>1. Get your account:</strong> Use the username and password
-                  from the Barangay Health Kiosk, or tap <em>Create a citizen account</em> below.</li>
-                <li data-i18n-html="elderStep2Html"><strong>2. Check your typing:</strong> Tap <strong>Show</strong>
-                  inside the password box to see the letters you type clearly.</li>
-                <li data-i18n-html="elderStep3Html"><strong>3. Forgot password?</strong> Tap <em>Forgot password?</em>
-                  above, or ask your Barangay Health Worker (BHW) at the health station for help.</li>
+                <li data-i18n-html="elderStep1Html"><strong>1. Get your account:</strong> Use the username and password from the Barangay Health Kiosk, or tap <em>Create a citizen account</em> below.</li>
+                <li data-i18n-html="elderStep2Html"><strong>2. Check your typing:</strong> Tap <strong>Show</strong> inside the password box to see the letters you type clearly.</li>
+                <li data-i18n-html="elderStep3Html"><strong>3. Forgot password?</strong> Tap <em>Forgot password?</em> above, or ask your Barangay Health Worker (BHW) at the health station for help.</li>
               </ol>
             </details>
 
@@ -141,16 +101,16 @@
             </div>
           </div>
         </div>
-
-        <footer class="auth-page-footer">
-          <p data-i18n="authFooterRa">Data is securely managed under the Philippine Data Privacy Act (RA 10173).</p>
-        </footer>
       </div>
     </main>
+
+    <footer class="auth-page-footer">
+      <p data-i18n="authFooterRa">Data is securely managed under the Philippine Data Privacy Act (RA 10173).</p>
+    </footer>
   </div>
 
-  <script src="/js/api.js?v=31"></script>
-  <script src="/js/citizen.js?v=31"></script>
+  <script src="/js/api.js?v=29"></script>
+  <script src="/js/citizen.js?v=29"></script>
   <script>
     (function () {
       var params = new URLSearchParams(location.search);
@@ -161,5 +121,4 @@
     })();
   </script>
 </body>
-
 </html>
