@@ -11,7 +11,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="preload" as="image" href="/img/cpsc-logo.png">
   <link rel="preload" as="image" href="/img/rhu-logo.png">
-  <link rel="stylesheet" href="/css/style.css?v=28">
+  <link rel="stylesheet" href="/css/style.css?v=29">
 </head>
 
 <body data-page="bhw-dashboard">
@@ -52,37 +52,47 @@
       </div>
     </aside>
     <div class="workspace">
+      <div class="workspace-lang-bar">
+        <div class="auth-lang-dropdown">
+          <svg class="auth-lang-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+          <select id="workspaceLangSelect" class="lang-select" aria-label="Language">
+            <option value="en">English</option>
+            <option value="ceb">Bisaya</option>
+            <option value="tl">Tagalog</option>
+          </select>
+        </div>
+      </div>
 
       <main id="main" class="page portal-staff" tabindex="-1">
         <div class="page-head">
           <div class="page-head-title">
-            <span class="page-eyebrow">Public Health Operations</span>
-            <h1>Barangay Health Desk</h1>
-            <p class="lede">Live community epidemiology aggregates — individual names are protected per RA 10173.</p>
+            <span class="page-eyebrow" data-i18n="dashEyebrow">Public Health Operations</span>
+            <h1 data-i18n="dashTitle">Barangay Health Desk</h1>
+            <p class="lede" data-i18n="dashLede">Live community epidemiology aggregates — individual names are protected per RA 10173.</p>
           </div>
           <div class="page-actions">
-            <a href="/bhw/search.html" class="btn btn-primary">Find citizens</a>
-            <a href="/bhw/reports.html" class="btn btn-secondary">Reports</a>
+            <a href="/bhw/search.html" class="btn btn-primary" data-i18n="navFindCitizens">Find citizens</a>
+            <a href="/bhw/reports.html" class="btn btn-secondary" data-i18n="navReports">Reports</a>
           </div>
         </div>
 
         <div class="filters filters-live">
           <div class="field">
-            <label for="period">Period</label>
+            <label for="period" data-i18n="dashPeriodLabel">Period</label>
             <select id="period">
-              <option value="7">Last 7 days</option>
-              <option value="30" selected>Last 30 days</option>
-              <option value="90">Last 90 days</option>
-              <option value="all">All time</option>
+              <option value="7" data-i18n="opt7d">Last 7 days</option>
+              <option value="30" selected data-i18n="opt30d">Last 30 days</option>
+              <option value="90" data-i18n="opt90d">Last 90 days</option>
+              <option value="all" data-i18n="optAll">All time</option>
             </select>
           </div>
-          <button id="refreshBtn" class="btn btn-secondary" type="button">Refresh</button>
+          <button id="refreshBtn" class="btn btn-secondary" type="button" data-i18n="dashBtnRefresh">Refresh</button>
           <span id="rangeLabel" class="range-label"></span>
           <div class="filters-live-right">
             <span id="liveStatus" class="live-badge"><span class="pulse-dot"></span> <span id="liveText">Live
                 (30s)</span></span>
             <label class="auto-toggle">
-              <input type="checkbox" id="autoRefreshToggle" checked> Auto
+              <input type="checkbox" id="autoRefreshToggle" checked> <span data-i18n="dashAutoShort">Auto</span>
             </label>
           </div>
         </div>
@@ -93,25 +103,25 @@
 
         <!-- 1. At a glance: period KPIs, registry totals, consent + kiosk context -->
         <section class="section" aria-labelledby="totalsHeading">
-          <h2 id="totalsHeading">At a glance</h2>
+          <h2 id="totalsHeading" data-i18n="dashAtAGlance">At a glance</h2>
           <div class="totals-group">
-            <span class="section-caption">In this period</span>
+            <span class="section-caption" data-i18n="dashInThisPeriod">In this period</span>
             <div id="totals" class="totals"></div>
           </div>
           <div class="totals-group">
-            <span class="section-caption">Registry (all time)</span>
+            <span class="section-caption" data-i18n="dashAllTimeRegistry">Registry (all time)</span>
             <div id="registryTotals" class="totals"></div>
           </div>
           <div class="context-row">
             <div class="chart-box context-panel">
-              <h3>Consent coverage</h3>
+              <h3 data-i18n="dashConsentDonutHeading">Consent coverage</h3>
               <canvas id="consentDonut" role="img" aria-label="Citizens who granted consent versus not"></canvas>
-              <p id="consentDonutText" class="donut-summary">Loading coverage…</p>
+              <p id="consentDonutText" class="donut-summary" data-i18n="dashConsentCoverageLabel">Loading coverage…</p>
             </div>
             <div class="chart-box context-panel">
-              <h3>Kiosk freshness</h3>
+              <h3 data-i18n="dashKioskFreshnessHeading">Kiosk freshness</h3>
               <div id="kioskFreshness">
-                <p class="freshness none">Checking the latest reading…</p>
+                <p class="freshness none" data-i18n="dashCheckingLatest">Checking the latest reading…</p>
               </div>
             </div>
           </div>
@@ -119,9 +129,9 @@
 
         <!-- 2. Community trend: the surveillance signal, promoted to hero -->
         <section class="section" aria-labelledby="trendHeading">
-          <h2 id="trendHeading">Community trend</h2>
+          <h2 id="trendHeading" data-i18n="dashTrendHeading">Community trend</h2>
           <div class="chart-box chart-hero">
-            <h3>Fever trend (temperature ≥ 37.9 °C)</h3>
+            <h3 data-i18n="dashFeverHeading">Fever trend (temperature ≥ 37.9 °C)</h3>
             <canvas id="feverChart" height="190" aria-label="Fever cases per day" role="img"></canvas>
             <div id="feverFallback"></div>
           </div>
@@ -129,7 +139,7 @@
 
         <!-- 3. Distributions: supporting row -->
         <section class="section" aria-labelledby="distHeading">
-          <h2 id="distHeading">Measurements by category</h2>
+          <h2 id="distHeading" data-i18n="dashChartsHeading">Measurements by category</h2>
           <div class="grid-3" id="distributions"></div>
         </section>
 
@@ -137,21 +147,21 @@
         <section class="section" aria-labelledby="alertsHeading">
           <div class="grid-2">
             <div class="card-surface">
-              <h2 id="alertsHeading">What's driving alerts</h2>
-              <p class="card-subnote">Derived from this period's category counts — a guide for follow-up, not a
+              <h2 id="alertsHeading" data-i18n="dashConcernsHeading">What's driving alerts</h2>
+              <p class="card-subnote" data-i18n="dashConcernsLede">Derived from this period's category counts — a guide for follow-up, not a
                 per-alert breakdown.</p>
               <ul id="concerns" class="concern-list"></ul>
-              <p id="concernsEmpty" class="status empty" hidden>No concerns recorded in this period.</p>
-              <a class="card-link" href="/bhw/search.html">Review citizens →</a>
+              <p id="concernsEmpty" class="status empty" hidden data-i18n="dashConcernsEmpty">No concerns recorded in this period.</p>
+              <a class="card-link" href="/bhw/search.html" data-i18n="totReviewCitizens">Review citizens →</a>
             </div>
             <div class="card-surface">
-              <h2>Quick actions</h2>
+              <h2 data-i18n="dashQuickLinksHeading">Quick actions</h2>
               <div class="quick-links">
-                <a class="quick-link" href="/bhw/search.html">Find citizens<small>Search the registry and open
+                <a class="quick-link" href="/bhw/search.html"><span data-i18n="navFindCitizens">Find citizens</span><small data-i18n="dashQLSearchSub">Search the registry and open
                     records</small></a>
-                <a class="quick-link" href="/bhw/reports.html">Reports<small>Summary, alerts and printable
+                <a class="quick-link" href="/bhw/reports.html"><span data-i18n="navReports">Reports</span><small data-i18n="dashQLExportSub">Summary, alerts and printable
                     output</small></a>
-                <a class="quick-link" href="/bhw/audit-trail.html">Audit trail<small>Who viewed what, and
+                <a class="quick-link" href="/bhw/audit-trail.html"><span data-i18n="navAuditTrail">Audit trail</span><small data-i18n="dashQLAuditSub">Who viewed what, and
                     when</small></a>
               </div>
             </div>
@@ -160,20 +170,20 @@
 
         <!-- 5. Privacy guarantee, visible instead of fine print -->
         <div class="privacy-badge" role="note">
-          <div>
+          <div data-i18n-html="dashPrivacyHtml">
             <strong>Aggregates only:</strong> Individual records and names are never shown on this dashboard. Readings of citizens who have not granted consent are counted in statistical aggregates, but individual identities remain protected under the Philippine Data Privacy Act (RA 10173).
           </div>
         </div>
       </main>
 
-      <footer class="foot">
+      <footer class="foot" data-i18n="dashFoot">
         Aggregates only — readings of citizens without consent are counted but never named.
       </footer>
     </div>
   </div>
   <script src="/vendor/chart.umd.min.js"></script>
-  <script src="/js/api.js?v=28"></script>
-  <script src="/js/bhw.js?v=28"></script>
+  <script src="/js/api.js?v=29"></script>
+  <script src="/js/bhw.js?v=29"></script>
 </body>
 
 </html>

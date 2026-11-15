@@ -10,7 +10,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="preload" as="image" href="/img/cpsc-logo.png">
   <link rel="preload" as="image" href="/img/rhu-logo.png">
-  <link rel="stylesheet" href="/css/style.css?v=28">
+  <link rel="stylesheet" href="/css/style.css?v=29">
 </head>
 <body data-page="bhw-audit">
   <a class="skip-link" href="#main">Skip to main content</a>
@@ -50,105 +50,115 @@
       </div>
     </aside>
     <div class="workspace">
+      <div class="workspace-lang-bar">
+        <div class="auth-lang-dropdown">
+          <svg class="auth-lang-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+          <select id="workspaceLangSelect" class="lang-select" aria-label="Language">
+            <option value="en">English</option>
+            <option value="ceb">Bisaya</option>
+            <option value="tl">Tagalog</option>
+          </select>
+        </div>
+      </div>
 
     <main id="main" class="page" tabindex="-1">
       <div class="page-head">
         <div class="page-head-title">
-          <span class="page-eyebrow">Compliance &amp; Security</span>
-          <h1>Audit trail</h1>
-          <p class="lede">Append-only log of every access to citizen records. Entries cannot be edited or deleted.</p>
+          <span class="page-eyebrow" data-i18n="auditEyebrow">Compliance &amp; Security</span>
+          <h1 data-i18n="auditTitle">Audit trail</h1>
+          <p class="lede" data-i18n="auditLede">Append-only log of every access to citizen records. Entries cannot be edited or deleted.</p>
         </div>
         <div class="page-actions">
-          <button id="exportAuditCsvBtn" class="btn btn-secondary" type="button" title="Export filtered audit entries as CSV">Export CSV</button>
-          <button id="printAuditBtn" class="btn btn-secondary" type="button" title="Print this audit trail log">Print log</button>
-          <a href="/bhw/dashboard.html" class="btn btn-secondary">Dashboard</a>
-          <a href="/bhw/reports.html" class="btn btn-secondary">Reports</a>
+          <button id="exportAuditCsvBtn" class="btn btn-secondary" type="button" title="Export filtered audit entries as CSV" data-i18n="auditExportCsv">Export CSV</button>
+          <button id="printAuditBtn" class="btn btn-secondary" type="button" title="Print this audit trail log" data-i18n="auditPrintLog">Print log</button>
+          <a href="/bhw/dashboard.html" class="btn btn-secondary" data-i18n="navDashboard">Dashboard</a>
+          <a href="/bhw/reports.html" class="btn btn-secondary" data-i18n="navReports">Reports</a>
         </div>
       </div>
 
       <!-- Audit KPI Summary Overview -->
       <section class="audit-kpis" id="auditKpis" aria-label="Audit summary overview">
         <div class="kpi-card">
-          <span class="kpi-label">Total Logged Events</span>
+          <span class="kpi-label" data-i18n="kpiTotalLabel">Total Logged Events</span>
           <span class="kpi-value" id="kpiTotal">—</span>
-          <span class="kpi-sub">Filtered records</span>
+          <span class="kpi-sub" data-i18n="kpiTotalSub">Filtered records</span>
         </div>
         <div class="kpi-card">
-          <span class="kpi-label">Health Records Viewed</span>
+          <span class="kpi-label" data-i18n="kpiViewsLabel">Health Records Viewed</span>
           <span class="kpi-value" id="kpiViews">—</span>
-          <span class="kpi-sub">Clinical chart queries</span>
+          <span class="kpi-sub" data-i18n="kpiViewsSub">Clinical chart queries</span>
         </div>
         <div class="kpi-card">
-          <span class="kpi-label">Clinical Interventions</span>
+          <span class="kpi-label" data-i18n="kpiInterventionsLabel">Clinical Interventions</span>
           <span class="kpi-value" id="kpiInterventions">—</span>
-          <span class="kpi-sub">Notes &amp; referrals</span>
+          <span class="kpi-sub" data-i18n="kpiInterventionsSub">Notes &amp; referrals</span>
         </div>
         <div class="kpi-card kpi-card-alert" id="kpiBlockedCard">
-          <span class="kpi-label">Security Flags</span>
+          <span class="kpi-label" data-i18n="kpiBlockedLabel">Security Flags</span>
           <span class="kpi-value" id="kpiBlocked">0</span>
-          <span class="kpi-sub" id="kpiBlockedSub">Blocked unauthorized attempts</span>
+          <span class="kpi-sub" id="kpiBlockedSub" data-i18n="kpiBlockedSub">Blocked unauthorized attempts</span>
         </div>
       </section>
 
       <form id="filterForm" class="filters" role="search">
         <div class="field">
-          <label for="fromDate">From</label>
+          <label for="fromDate" data-i18n="auditLblFrom">From</label>
           <input id="fromDate" name="from" type="date">
         </div>
         <div class="field">
-          <label for="toDate">To</label>
+          <label for="toDate" data-i18n="auditLblTo">To</label>
           <input id="toDate" name="to" type="date">
         </div>
         <div class="field date-presets-field">
-          <span class="label">Presets</span>
+          <span class="label" data-i18n="repPresets">Presets</span>
           <div class="date-presets" role="group" aria-label="Date range presets">
-            <button type="button" class="date-preset-btn" data-range="today">Today</button>
-            <button type="button" class="date-preset-btn" data-range="7d">Last 7d</button>
-            <button type="button" class="date-preset-btn" data-range="30d">Last 30d</button>
-            <button type="button" class="date-preset-btn" data-range="all">All time</button>
+            <button type="button" class="date-preset-btn" data-range="today" data-i18n="auditPresetToday">Today</button>
+            <button type="button" class="date-preset-btn" data-range="7d" data-i18n="auditPreset7d">Last 7d</button>
+            <button type="button" class="date-preset-btn" data-range="30d" data-i18n="auditPreset30d">Last 30d</button>
+            <button type="button" class="date-preset-btn" data-range="all" data-i18n="auditPresetAll">All time</button>
           </div>
         </div>
         <div class="field">
-          <label for="bhwName">Health worker</label>
-          <input id="bhwName" name="bhw" type="text" placeholder="e.g. Maria Santos" autocomplete="off">
+          <label for="bhwName" data-i18n="auditLblBhw">Health worker</label>
+          <input id="bhwName" name="bhw" type="text" data-i18n-placeholder="auditPhBhw" placeholder="e.g. Maria Santos" autocomplete="off">
         </div>
         <div class="field">
-          <label for="citizenName">Citizen accessed</label>
-          <input id="citizenName" name="citizen" type="text" placeholder="e.g. Carl Mendoza" autocomplete="off">
+          <label for="citizenName" data-i18n="auditLblCitizen">Citizen accessed</label>
+          <input id="citizenName" name="citizen" type="text" data-i18n-placeholder="auditPhCitizen" placeholder="e.g. Carl Mendoza" autocomplete="off">
         </div>
         <div class="field">
-          <label for="statusFilter">Status</label>
+          <label for="statusFilter" data-i18n="auditLblStatus">Status</label>
           <select id="statusFilter" name="status">
-            <option value="">All statuses</option>
-            <option value="success">Authorized / Success</option>
-            <option value="blocked">Blocked / Security Flag</option>
+            <option value="" data-i18n="auditOptAllStatus">All statuses</option>
+            <option value="success" data-i18n="auditOptAuthorized">Authorized / Success</option>
+            <option value="blocked" data-i18n="auditOptBlocked">Blocked / Security Flag</option>
           </select>
         </div>
         <div class="field">
-          <label for="actionType">Action taken</label>
+          <label for="actionType" data-i18n="auditLblAction">Action taken</label>
           <select id="actionType" name="action">
-            <option value="">All actions</option>
-            <option value="view_health_data">Viewed health records</option>
-            <option value="view_notes">Viewed clinical notes</option>
-            <option value="add_note">Added clinical note</option>
-            <option value="refer_to_rhu">Referred to RHU</option>
-            <option value="unauthorized_access">Blocked: No Consent</option>
-            <option value="export_report">Exported Report / Data</option>
-            <option value="staff_login">Staff Session Authenticated</option>
+            <option value="" data-i18n="auditOptAllActions">All actions</option>
+            <option value="view_health_data" data-i18n="auditActViewHealth">Viewed health records</option>
+            <option value="view_notes" data-i18n="auditActViewNotes">Viewed clinical notes</option>
+            <option value="add_note" data-i18n="auditActAddNote">Added clinical note</option>
+            <option value="refer_to_rhu" data-i18n="auditActRefer">Referred to RHU</option>
+            <option value="unauthorized_access" data-i18n="auditActUnauthorized">Blocked: No Consent</option>
+            <option value="export_report" data-i18n="auditActExport">Exported Report / Data</option>
+            <option value="staff_login" data-i18n="auditActStaffLogin">Staff Session Authenticated</option>
           </select>
         </div>
-        <button id="filterBtn" class="btn btn-primary" type="submit">Apply filters</button>
-        <button id="clearBtn" class="btn btn-secondary" type="button">Clear</button>
+        <button id="filterBtn" class="btn btn-primary" type="submit" data-i18n="auditBtnApply">Apply filters</button>
+        <button id="clearBtn" class="btn btn-secondary" type="button" data-i18n="auditBtnClear">Clear</button>
       </form>
 
       <div id="status" aria-live="polite"></div>
       <div id="results"></div>
     </main>
 
-    <footer class="foot">Timestamps are shown in Philippine time (PHT); hover a timestamp for the UTC original.</footer>
+    <footer class="foot" data-i18n="auditFoot">Timestamps are shown in Philippine time (PHT); hover a timestamp for the UTC original.</footer>
     </div>
   </div>
-  <script src="/js/api.js?v=28"></script>
-  <script src="/js/bhw.js?v=28"></script>
+  <script src="/js/api.js?v=29"></script>
+  <script src="/js/bhw.js?v=29"></script>
 </body>
 </html>

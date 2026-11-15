@@ -10,7 +10,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="preload" as="image" href="/img/cpsc-logo.png">
   <link rel="preload" as="image" href="/img/rhu-logo.png">
-  <link rel="stylesheet" href="/css/style.css?v=28">
+  <link rel="stylesheet" href="/css/style.css?v=29">
 </head>
 <body data-page="citizen-dashboard">
   <a class="skip-link" href="#main">Skip to main content</a>
@@ -50,6 +50,16 @@
       </div>
     </aside>
     <div class="workspace">
+      <div class="workspace-lang-bar">
+        <div class="auth-lang-dropdown">
+          <svg class="auth-lang-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+          <select id="workspaceLangSelect" class="lang-select" aria-label="Language">
+            <option value="en">English</option>
+            <option value="ceb">Bisaya</option>
+            <option value="tl">Tagalog</option>
+          </select>
+        </div>
+      </div>
 
     <main id="main" class="page portal-citizen" tabindex="-1">
       <!-- Integrated Patient Hero Banner -->
@@ -90,11 +100,6 @@
         <div class="hero-meta-bar">
           <div id="latestMeta" class="latest-checkin-meta"></div>
           <div class="hero-meta-right">
-            <div class="lang-switcher" role="group" aria-label="Language preference">
-              <button type="button" class="lang-btn is-active" data-lang="en" aria-pressed="true">EN</button>
-              <button type="button" class="lang-btn" data-lang="ceb" aria-pressed="false">Bisaya</button>
-              <button type="button" class="lang-btn" data-lang="tl" aria-pressed="false">Tagalog</button>
-            </div>
             <a id="consentChip" class="status-chip" href="/citizen/consent.html" title="Consent status — open the Consent page to change it.">Consent status</a>
           </div>
         </div>
@@ -194,7 +199,7 @@
     </div>
   </div>
   <script src="/vendor/chart.umd.min.js"></script>
-  <script src="/js/api.js?v=28"></script>
-  <script src="/js/citizen.js?v=28"></script>
+  <script src="/js/api.js?v=29"></script>
+  <script src="/js/citizen.js?v=29"></script>
 </body>
 </html>

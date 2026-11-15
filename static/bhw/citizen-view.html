@@ -10,7 +10,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="preload" as="image" href="/img/cpsc-logo.png">
   <link rel="preload" as="image" href="/img/rhu-logo.png">
-  <link rel="stylesheet" href="/css/style.css?v=28">
+  <link rel="stylesheet" href="/css/style.css?v=29">
 </head>
 <body data-page="bhw-citizen-view">
   <a class="skip-link" href="#main">Skip to main content</a>
@@ -50,11 +50,21 @@
       </div>
     </aside>
     <div class="workspace">
+      <div class="workspace-lang-bar">
+        <div class="auth-lang-dropdown">
+          <svg class="auth-lang-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+          <select id="workspaceLangSelect" class="lang-select" aria-label="Language">
+            <option value="en">English</option>
+            <option value="ceb">Bisaya</option>
+            <option value="tl">Tagalog</option>
+          </select>
+        </div>
+      </div>
 
     <main id="main" class="page" tabindex="-1">
-      <p><a href="/bhw/search.html">← Back to search</a></p>
-      <h1 id="pageTitle">Citizen record</h1>
-      <p class="lede">This access is recorded in the audit trail.</p>
+      <p><a href="/bhw/search.html" data-i18n="cvBackToSearch">← Back to search</a></p>
+      <h1 id="pageTitle" data-i18n="cvTitleFallback">Citizen record</h1>
+      <p class="lede" data-i18n="cvLede">This access is recorded in the audit trail.</p>
 
       <div id="status" aria-live="polite"></div>
       <div id="consentBlocked"></div>
@@ -66,18 +76,18 @@
             <div class="patient-identity-cluster">
               <div class="patient-avatar" id="patientAvatar" aria-hidden="true">CR</div>
               <div class="patient-identity-text">
-                <span class="patient-eyebrow">Barangay Resident · Kiosk Record</span>
-                <h2 id="profileHeading" class="patient-name">Citizen Profile</h2>
+                <span class="patient-eyebrow" data-i18n="cvEyebrow">Barangay Resident · Kiosk Record</span>
+                <h2 id="profileHeading" class="patient-name" data-i18n="cvProfileHeading">Citizen Profile</h2>
                 <div class="patient-quick-tags" id="patientTags"></div>
               </div>
             </div>
             <div class="patient-card-actions">
               <button id="printReferralBtn" class="btn btn-primary" type="button" title="Generate printable clinical referral slip for RHU Mahinog">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
-                <span>Print Referral Slip</span>
+                <span data-i18n="cvPrintReferral">Print Referral Slip</span>
               </button>
-              <button id="referBtn" class="btn btn-secondary" type="button">Refer to RHU</button>
-              <button id="resetCitizenPwBtn" class="btn btn-secondary" type="button" title="Issue a temporary password for this citizen">
+              <button id="referBtn" class="btn btn-secondary" type="button" data-i18n="cvReferBtn">Refer to RHU</button>
+              <button id="resetCitizenPwBtn" class="btn btn-secondary" type="button" title="Issue a temporary password for this citizen" data-i18n="cvResetPwBtn">
                 Reset Password
               </button>
             </div>
@@ -91,19 +101,19 @@
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0f6b53" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
               </div>
               <div class="consent-banner-text">
-                <span class="consent-status-title">Consent Active &amp; Verified</span>
+                <span class="consent-status-title" data-i18n="cvConsentTitle">Consent Active &amp; Verified</span>
                 <p id="consentLine" class="consent-line-top"></p>
               </div>
             </div>
-            <span class="badge badge-ok consent-badge">RA 10173 Protected</span>
+            <span class="badge badge-ok consent-badge" data-i18n="cvConsentBadge">RA 10173 Protected</span>
           </div>
         </section>
 
         <section class="section" aria-labelledby="readingsHeading">
           <div class="section-header-row">
             <div>
-              <h2 id="readingsHeading">Readings &amp; Telemetry</h2>
-              <p class="section-subtext" id="readingsSubtext">Vital measurements recorded from the Barangay Health Kiosk.</p>
+              <h2 id="readingsHeading" data-i18n="cvReadingsHeading">Readings &amp; Telemetry</h2>
+              <p class="section-subtext" id="readingsSubtext" data-i18n="cvReadingsSubtext">Vital measurements recorded from the Barangay Health Kiosk.</p>
             </div>
             <div id="readingsCountBadge" class="readings-count-badge"></div>
           </div>
@@ -113,43 +123,43 @@
         <section class="section" aria-labelledby="notesHeading">
           <div class="section-header-row">
             <div>
-              <h2 id="notesHeading">Health Worker Notes &amp; Guidance</h2>
-              <p class="section-subtext">Share follow-up instructions with the resident, or uncheck sharing to keep an entry staff-only.</p>
+              <h2 id="notesHeading" data-i18n="cvNotesHeading">Health Worker Notes &amp; Guidance</h2>
+              <p class="section-subtext" data-i18n="cvNotesSubtext">Share follow-up instructions with the resident, or uncheck sharing to keep an entry staff-only.</p>
             </div>
           </div>
           <div id="notesArea"></div>
           <form id="noteForm" class="card-surface" novalidate>
             <div class="field">
-              <label for="noteText">Add a note</label>
+              <label for="noteText" data-i18n="cvAddNoteLabel">Add a note</label>
               <div class="chip-group" id="noteChips">
-                <span class="chip-label">Clinical templates:</span>
-                <button class="chip" type="button" data-chip="BP follow-up scheduled for next week.">BP follow-up</button>
-                <button class="chip" type="button" data-chip="Advised low-sodium diet and lifestyle modification.">Dietary counseling</button>
-                <button class="chip" type="button" data-chip="Vitals within healthy normal limits. Routine check.">Routine normal</button>
-                <button class="chip" type="button" data-chip="Referred to RHU doctor for further clinical assessment.">Refer to RHU</button>
-                <button class="chip" type="button" data-chip="Advised immediate rest, hydration, and fever monitoring.">Fever guidance</button>
+                <span class="chip-label" data-i18n="cvTemplatesLabel">Clinical templates:</span>
+                <button class="chip" type="button" data-chip="BP follow-up scheduled for next week." data-i18n="chipBpFollowup">BP follow-up</button>
+                <button class="chip" type="button" data-chip="Advised low-sodium diet and lifestyle modification." data-i18n="chipDiet">Dietary counseling</button>
+                <button class="chip" type="button" data-chip="Vitals within healthy normal limits. Routine check." data-i18n="chipRoutine">Routine normal</button>
+                <button class="chip" type="button" data-chip="Referred to RHU doctor for further clinical assessment." data-i18n="chipRefer">Refer to RHU</button>
+                <button class="chip" type="button" data-chip="Advised immediate rest, hydration, and fever monitoring." data-i18n="chipFever">Fever guidance</button>
               </div>
-              <textarea id="noteText" name="note" maxlength="1000" placeholder="Follow-up plan, observations, referrals…" aria-describedby="noteHint noteError"></textarea>
+              <textarea id="noteText" name="note" maxlength="1000" data-i18n-placeholder="cvNotePlaceholder" placeholder="Follow-up plan, observations, referrals…" aria-describedby="noteHint noteError"></textarea>
               <div class="note-share-row">
                 <label class="note-share-toggle" for="noteVisibleToggle">
                   <input id="noteVisibleToggle" type="checkbox" checked>
-                  <span>Share with resident on their portal</span>
+                  <span data-i18n="cvShareToggle">Share with resident on their portal</span>
                 </label>
-                <span id="noteHint" class="hint">Visible on the resident's dashboard for their reference. Maximum 1000 characters.</span>
+                <span id="noteHint" class="hint" data-i18n="cvNoteHintDefault">Visible on the resident's dashboard for their reference. Maximum 1000 characters.</span>
               </div>
             </div>
             <p id="noteError" class="form-error" role="alert"></p>
             <p id="noteFeedback" class="form-success" role="status"></p>
-            <button id="noteSubmit" class="btn btn-primary" type="submit">Save note</button>
+            <button id="noteSubmit" class="btn btn-primary" type="submit" data-i18n="cvSaveNoteBtn">Save note</button>
           </form>
         </section>
       </div>
     </main>
 
-    <footer class="foot">Notes and record views are audited. RA 10173 applies.</footer>
+    <footer class="foot" data-i18n="cvFoot">Notes and record views are audited. RA 10173 applies.</footer>
     </div>
   </div>
-  <script src="/js/api.js?v=28"></script>
-  <script src="/js/bhw.js?v=28"></script>
+  <script src="/js/api.js?v=29"></script>
+  <script src="/js/bhw.js?v=29"></script>
 </body>
 </html>

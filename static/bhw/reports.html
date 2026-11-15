@@ -10,7 +10,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="preload" as="image" href="/img/cpsc-logo.png">
   <link rel="preload" as="image" href="/img/rhu-logo.png">
-  <link rel="stylesheet" href="/css/style.css?v=28">
+  <link rel="stylesheet" href="/css/style.css?v=29">
 </head>
 <body data-page="bhw-reports">
   <a class="skip-link" href="#main">Skip to main content</a>
@@ -50,59 +50,69 @@
       </div>
     </aside>
     <div class="workspace">
+      <div class="workspace-lang-bar">
+        <div class="auth-lang-dropdown">
+          <svg class="auth-lang-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+          <select id="workspaceLangSelect" class="lang-select" aria-label="Language">
+            <option value="en">English</option>
+            <option value="ceb">Bisaya</option>
+            <option value="tl">Tagalog</option>
+          </select>
+        </div>
+      </div>
 
     <main id="main" class="page" tabindex="-1">
       <div class="page-head">
         <div class="page-head-title">
-          <span class="page-eyebrow">Epidemiology &amp; Exports</span>
-          <h1>Reports</h1>
-          <p class="lede">Download CSV files for record keeping, or open a printable page for the Rural Health Unit.</p>
+          <span class="page-eyebrow" data-i18n="repEyebrow">Epidemiology &amp; Exports</span>
+          <h1 data-i18n="repTitle">Reports</h1>
+          <p class="lede" data-i18n="repLede">Download CSV files for record keeping, or open a printable page for the Rural Health Unit.</p>
         </div>
         <div class="page-actions">
-          <a href="/bhw/dashboard.html" class="btn btn-secondary">Dashboard</a>
-          <a href="/bhw/search.html" class="btn btn-secondary">Find citizens</a>
+          <a href="/bhw/dashboard.html" class="btn btn-secondary" data-i18n="navDashboard">Dashboard</a>
+          <a href="/bhw/search.html" class="btn btn-secondary" data-i18n="navFindCitizens">Find citizens</a>
         </div>
       </div>
 
       <form id="reportForm" class="filters" novalidate>
         <div class="field">
-          <label for="reportType">Report</label>
+          <label for="reportType" data-i18n="repLblType">Report</label>
           <select id="reportType" name="type">
-            <option value="summary">Summary</option>
-            <option value="consent">Consent</option>
-            <option value="audit">Audit</option>
-            <option value="alerts">Alerts</option>
+            <option value="summary" data-i18n="repOptSummary">Summary</option>
+            <option value="consent" data-i18n="repOptConsent">Consent</option>
+            <option value="audit" data-i18n="repOptAudit">Audit</option>
+            <option value="alerts" data-i18n="repOptAlerts">Alerts</option>
           </select>
         </div>
         <div class="field">
-          <label for="fromDate">From</label>
+          <label for="fromDate" data-i18n="auditLblFrom">From</label>
           <input id="fromDate" name="from" type="date">
         </div>
         <div class="field">
-          <label for="toDate">To</label>
+          <label for="toDate" data-i18n="auditLblTo">To</label>
           <input id="toDate" name="to" type="date">
         </div>
         <div class="field date-presets-field">
-          <span class="label">Presets</span>
+          <span class="label" data-i18n="repPresets">Presets</span>
           <div class="date-presets" role="group" aria-label="Date range presets">
-            <button type="button" class="date-preset-btn" data-range="today">Today</button>
-            <button type="button" class="date-preset-btn" data-range="7d">Last 7d</button>
-            <button type="button" class="date-preset-btn" data-range="30d">Last 30d</button>
-            <button type="button" class="date-preset-btn" data-range="all">All time</button>
+            <button type="button" class="date-preset-btn" data-range="today" data-i18n="repPresetToday">Today</button>
+            <button type="button" class="date-preset-btn" data-range="7d" data-i18n="repPreset7d">Last 7d</button>
+            <button type="button" class="date-preset-btn" data-range="30d" data-i18n="repPreset30d">Last 30d</button>
+            <button type="button" class="date-preset-btn" data-range="all" data-i18n="repPresetAll">All time</button>
           </div>
         </div>
-        <button id="csvBtn" class="btn btn-primary" type="button">Download CSV</button>
-        <button id="printBtn" class="btn btn-secondary" type="button">Open printable report</button>
+        <button id="csvBtn" class="btn btn-primary" type="button" data-i18n="repBtnCsv">Download CSV</button>
+        <button id="printBtn" class="btn btn-secondary" type="button" data-i18n="repBtnPrint">Open printable report</button>
       </form>
 
       <div id="status" aria-live="polite"></div>
-      <p class="muted">Leave the dates empty to include all recorded data.</p>
+      <p class="muted" data-i18n="repHintEmpty">Leave the dates empty to include all recorded data.</p>
     </main>
 
-    <footer class="foot">Citizens without consent are labelled “Withheld (no consent)” in alert reports.</footer>
+    <footer class="foot" data-i18n="repFoot">Citizens without consent are labelled “Withheld (no consent)” in alert reports.</footer>
     </div>
   </div>
-  <script src="/js/api.js?v=28"></script>
-  <script src="/js/bhw.js?v=28"></script>
+  <script src="/js/api.js?v=29"></script>
+  <script src="/js/bhw.js?v=29"></script>
 </body>
 </html>

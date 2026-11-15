@@ -10,7 +10,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="preload" as="image" href="/img/cpsc-logo.png">
   <link rel="preload" as="image" href="/img/rhu-logo.png">
-  <link rel="stylesheet" href="/css/style.css?v=28">
+  <link rel="stylesheet" href="/css/style.css?v=29">
 </head>
 <body data-page="bhw-login">
   <a class="skip-link" href="#main">Skip to main content</a>
@@ -23,6 +23,17 @@
     </div>
 
     <main id="main" class="auth-main" tabindex="-1">
+      <div class="auth-lang-corner">
+        <div class="auth-lang-dropdown">
+          <svg class="auth-lang-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+          <select id="authLangSelect" class="lang-select" aria-label="Language">
+            <option value="en">English</option>
+            <option value="ceb">Bisaya</option>
+            <option value="tl">Tagalog</option>
+          </select>
+        </div>
+      </div>
+
       <div class="auth-container">
         <!-- Unified Civic Brand Header -->
         <header class="auth-brand">
@@ -38,43 +49,43 @@
           <!-- Segmented Portal Switcher -->
           <nav class="auth-role-tabs" aria-label="Portal selection">
             <a href="/citizen/login.html" class="auth-role-tab">
-              <span class="auth-role-title">Citizen</span>
-              <span class="auth-role-desc">Residents &amp; Patients</span>
+              <span class="auth-role-title" data-i18n="authRoleCitTitle">Citizen</span>
+              <span class="auth-role-desc" data-i18n="authRoleCitDesc">Residents &amp; Patients</span>
             </a>
             <a href="/bhw/login.html" class="auth-role-tab active" aria-current="page">
-              <span class="auth-role-title">Health Worker</span>
-              <span class="auth-role-desc">BHW &amp; Clinic Staff</span>
+              <span class="auth-role-title" data-i18n="authRoleBhwTitle">Health Worker</span>
+              <span class="auth-role-desc" data-i18n="authRoleBhwDesc">BHW &amp; Clinic Staff</span>
             </a>
           </nav>
 
           <div class="auth-card-body">
-            <h2>Staff Sign In</h2>
-            <p class="auth-card-lede">Authorized health worker access to monitor vitals and manage records.</p>
+            <h2 data-i18n="bhwLoginHeading">Staff Sign In</h2>
+            <p class="auth-card-lede" data-i18n="bhwLoginLede">Authorized health worker access to monitor vitals and manage records.</p>
 
-            <p id="sessionExpired" class="form-success" role="status" style="display:none;">Your session expired — please sign in again.</p>
+            <p id="sessionExpired" class="form-success" role="status" style="display:none;" data-i18n="loginExpired">Your session expired — please sign in again.</p>
             <p id="loginError" class="form-error" role="alert" aria-live="assertive"></p>
 
             <form id="loginForm" novalidate>
               <div class="field">
-                <label for="username">Username</label>
-                <input id="username" name="username" type="text" autocomplete="username" placeholder="Staff username" required aria-required="true" aria-describedby="loginError">
+                <label for="username" data-i18n="lblUsername">Username</label>
+                <input id="username" name="username" type="text" autocomplete="username" data-i18n-placeholder="phBhwUsername" placeholder="Staff username" required aria-required="true" aria-describedby="loginError">
               </div>
               <div class="field">
-                <label for="password">Password</label>
+                <label for="password" data-i18n="lblPassword">Password</label>
                 <div class="password-wrap">
-                  <input id="password" name="password" type="password" autocomplete="current-password" placeholder="Staff password" required aria-required="true" aria-describedby="loginError">
+                  <input id="password" name="password" type="password" autocomplete="current-password" data-i18n-placeholder="phBhwPassword" placeholder="Staff password" required aria-required="true" aria-describedby="loginError">
                   <button type="button" class="btn-toggle-pw" aria-label="Show password">Show</button>
                 </div>
               </div>
               <div class="auth-helper-row">
-                <span class="auth-staff-hint">Forgot staff credentials? Contact the RHU IT Administrator.</span>
+                <span class="auth-staff-hint" data-i18n="bhwStaffHint">Forgot staff credentials? Contact the RHU IT Administrator.</span>
               </div>
-              <button id="loginSubmit" class="btn btn-primary btn-auth-submit" type="submit">Sign in</button>
+              <button id="loginSubmit" class="btn btn-primary btn-auth-submit" type="submit" data-i18n="btnSignIn">Sign in</button>
             </form>
 
             <div class="auth-footer-links">
-              <span>Are you a resident?</span>
-              <a href="/citizen/login.html">Go to citizen portal</a>
+              <span data-i18n="bhwAreYouResident">Are you a resident?</span>
+              <a href="/citizen/login.html" data-i18n="bhwGoCitizenPortal">Go to citizen portal</a>
             </div>
           </div>
         </div>
@@ -82,12 +93,12 @@
     </main>
 
     <footer class="auth-page-footer">
-      <p>All record access is written to an append-only audit trail per RA 10173.</p>
+      <p data-i18n="bhwLoginFooterRa">All record access is written to an append-only audit trail per RA 10173.</p>
     </footer>
   </div>
 
-  <script src="/js/api.js?v=28"></script>
-  <script src="/js/bhw.js?v=28"></script>
+  <script src="/js/api.js?v=29"></script>
+  <script src="/js/bhw.js?v=29"></script>
   <script>
     (function () {
       var params = new URLSearchParams(location.search);

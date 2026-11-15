@@ -37,6 +37,7 @@
   /* Full Citizen Portal localization (EN / Bisaya / Tagalog). */
   var CITIZEN_I18N = {
     en: {
+      roleCitizen: "Citizen",
       skipToMain: "Skip to main content",
       navDashboard: "Dashboard",
       navHistory: "History",
@@ -445,6 +446,7 @@
       fpErrFallback: "Failed to reset password. Please check your details.",
     },
     ceb: {
+      roleCitizen: "Lumulupyo",
       skipToMain: "Laktaw ngadto sa nag-unang sulod",
       navDashboard: "Dashboard",
       navHistory: "Kasaysayan",
@@ -849,6 +851,7 @@
       fpErrFallback: "Napakyas ang pag-reset sa password. Palihug susiha ang imong detalye.",
     },
     tl: {
+      roleCitizen: "Mamamayan",
       skipToMain: "Lumaktaw sa pangunahing nilalaman",
       navDashboard: "Dashboard",
       navHistory: "Kasaysayan",
@@ -1255,18 +1258,12 @@
   };
 
   function getCitizenLang() {
-    try {
-      var saved = window.localStorage.getItem("hk_lang");
-      return (saved && CITIZEN_I18N[saved]) ? saved : "en";
-    } catch (e) {
-      return "en";
-    }
+    var lang = API.getLang();
+    return CITIZEN_I18N[lang] ? lang : "en";
   }
 
   function setCitizenLang(lang) {
-    if (!CITIZEN_I18N[lang]) lang = "en";
-    try { window.localStorage.setItem("hk_lang", lang); } catch (e) {}
-    return lang;
+    return API.setLang(CITIZEN_I18N[lang] ? lang : "en");
   }
 
   function t(key, vars) {
@@ -1332,27 +1329,7 @@
   }
 
   function applyCitizenI18n() {
-    var active = getCitizenLang();
-    document.documentElement.lang = active;
-    document.querySelectorAll(".lang-btn").forEach(function (btn) {
-      var on = btn.dataset.lang === active;
-      btn.classList.toggle("is-active", on);
-      btn.setAttribute("aria-pressed", on ? "true" : "false");
-    });
-    document.querySelectorAll(".lang-select").forEach(function (sel) {
-      if (sel.value !== active) sel.value = active;
-    });
-    document.querySelectorAll("[data-i18n]").forEach(function (el) {
-      el.textContent = t(el.getAttribute("data-i18n"));
-    });
-    document.querySelectorAll("[data-i18n-html]").forEach(function (el) {
-      el.innerHTML = t(el.getAttribute("data-i18n-html"));
-    });
-    document.querySelectorAll("[data-i18n-placeholder]").forEach(function (el) {
-      el.placeholder = t(el.getAttribute("data-i18n-placeholder"));
-    });
-    var skip = document.querySelector(".skip-link");
-    if (skip) skip.textContent = t("skipToMain");
+    API.applyI18nDOM(t);
     var navMap = [
       ["/citizen/dashboard.html", "navDashboard"],
       ["/citizen/history.html", "navHistory"],
@@ -1363,28 +1340,12 @@
       document.querySelectorAll('.sidenav a[href="' + pair[0] + '"] span, .mobile-bottom-dock a[href="' + pair[0] + '"] span')
         .forEach(function (span) { span.textContent = t(pair[1]); });
     });
-    var logoutBtn = document.getElementById("logoutBtn");
-    if (logoutBtn) logoutBtn.textContent = t("navLogout");
   }
 
   function bindLangSwitchers(onChange) {
-    document.querySelectorAll(".lang-btn").forEach(function (btn) {
-      if (btn.dataset.langBound === "1") return;
-      btn.dataset.langBound = "1";
-      btn.addEventListener("click", function () {
-        setCitizenLang(btn.dataset.lang);
-        applyCitizenI18n();
-        if (typeof onChange === "function") onChange();
-      });
-    });
-    document.querySelectorAll(".lang-select").forEach(function (sel) {
-      if (sel.dataset.langBound === "1") return;
-      sel.dataset.langBound = "1";
-      sel.addEventListener("change", function () {
-        setCitizenLang(sel.value);
-        applyCitizenI18n();
-        if (typeof onChange === "function") onChange();
-      });
+    API.bindLangDropdowns(t, function () {
+      applyCitizenI18n();
+      if (typeof onChange === "function") onChange();
     });
     applyCitizenI18n();
   }

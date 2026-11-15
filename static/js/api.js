@@ -10,6 +10,19 @@
   var ROLE_KEY = "hk_role";
   var NAME_KEY = "hk_name";
   var PRIVACY_ACK_KEY = "hk_privacy_ack";
+  var LANG_KEY = "hk_lang";
+
+  function getLang() {
+    var lang = localStorage.getItem(LANG_KEY);
+    return lang === "ceb" || lang === "tl" ? lang : "en";
+  }
+
+  function setLang(lang) {
+    var next = lang === "ceb" || lang === "tl" ? lang : "en";
+    localStorage.setItem(LANG_KEY, next);
+    document.documentElement.lang = next;
+    return next;
+  }
 
   function getToken() {
     return localStorage.getItem(TOKEN_KEY);
@@ -851,6 +864,66 @@
     };
   }
 
+  var activeTranslator = null;
+
+  function applyI18nDOM(t) {
+    if (typeof t === "function") activeTranslator = t;
+    var tr = activeTranslator;
+    var active = getLang();
+    document.documentElement.lang = active;
+    document.querySelectorAll(".lang-btn").forEach(function (btn) {
+      var on = btn.dataset.lang === active;
+      btn.classList.toggle("is-active", on);
+      btn.setAttribute("aria-pressed", on ? "true" : "false");
+    });
+    document.querySelectorAll(".lang-select").forEach(function (sel) {
+      if (sel.value !== active) sel.value = active;
+    });
+    if (!tr) return;
+    document.querySelectorAll("[data-i18n]").forEach(function (el) {
+      el.textContent = tr(el.getAttribute("data-i18n"));
+    });
+    document.querySelectorAll("[data-i18n-html]").forEach(function (el) {
+      el.innerHTML = tr(el.getAttribute("data-i18n-html"));
+    });
+    document.querySelectorAll("[data-i18n-placeholder]").forEach(function (el) {
+      el.placeholder = tr(el.getAttribute("data-i18n-placeholder"));
+    });
+    document.querySelectorAll("[data-dock-i18n]").forEach(function (el) {
+      var key = el.getAttribute("data-dock-i18n");
+      var translated = tr(key);
+      if (translated && translated !== key) el.textContent = translated;
+    });
+    var skip = document.querySelector(".skip-link");
+    if (skip && tr("skipToMain") !== "skipToMain") skip.textContent = tr("skipToMain");
+    var logoutBtn = document.getElementById("logoutBtn");
+    if (logoutBtn && tr("navLogout") !== "navLogout") logoutBtn.textContent = tr("navLogout");
+    renderWhoami();
+  }
+
+  function bindLangDropdowns(t, onChange) {
+    if (typeof t === "function") activeTranslator = t;
+    document.querySelectorAll(".lang-btn").forEach(function (btn) {
+      if (btn.dataset.langBound === "1") return;
+      btn.dataset.langBound = "1";
+      btn.addEventListener("click", function () {
+        setLang(btn.dataset.lang);
+        applyI18nDOM(activeTranslator);
+        if (typeof onChange === "function") onChange();
+      });
+    });
+    document.querySelectorAll(".lang-select").forEach(function (sel) {
+      if (sel.dataset.langBound === "1") return;
+      sel.dataset.langBound = "1";
+      sel.addEventListener("change", function () {
+        setLang(sel.value);
+        applyI18nDOM(activeTranslator);
+        if (typeof onChange === "function") onChange();
+      });
+    });
+    applyI18nDOM(activeTranslator);
+  }
+
   window.API = {
     apiFetch: apiFetch,
     apiFetchRaw: apiFetchRaw,
@@ -861,6 +934,10 @@
     getToken: getToken,
     getRole: getRole,
     getName: getName,
+    getLang: getLang,
+    setLang: setLang,
+    applyI18nDOM: applyI18nDOM,
+    bindLangDropdowns: bindLangDropdowns,
     getPrivacyAcknowledged: getPrivacyAcknowledged,
     setPrivacyAcknowledged: setPrivacyAcknowledged,
     isStaff: isStaff,
@@ -883,7 +960,11 @@
       .slice(0, 2)
       .map(function (w) { return w[0].toUpperCase(); })
       .join("") || "U";
-    var roleLabel = role === "bhw" ? "Health Worker" : role === "admin" ? "Staff Admin" : "Citizen";
+    var roleKey = role === "bhw" ? "roleBhw" : role === "admin" ? "roleAdmin" : "roleCitizen";
+    var roleFallback = role === "bhw" ? "Health Worker" : role === "admin" ? "Staff Admin" : "Citizen";
+    var roleLabel = (activeTranslator && activeTranslator(roleKey) !== roleKey)
+      ? activeTranslator(roleKey)
+      : roleFallback;
 
     UI.clear(whoami);
     var avatar = UI.el("span", { class: "user-avatar", "aria-hidden": "true" }, initials);
@@ -897,6 +978,7 @@
 
   /* Fill the header name and wire the log-out button on every page. */
   document.addEventListener("DOMContentLoaded", function () {
+    document.documentElement.lang = getLang();
     renderWhoami();
     var logoutBtn = document.getElementById("logoutBtn");
     if (logoutBtn) {
@@ -1004,24 +1086,28 @@
         {
           href: "/citizen/dashboard.html",
           label: "Dashboard",
+          i18nKey: "navDashboard",
           active: page === "citizen-dashboard",
           icon: '<svg class="dock-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>'
         },
         {
           href: "/citizen/history.html",
           label: "History",
+          i18nKey: "navHistory",
           active: page === "citizen-history",
           icon: '<svg class="dock-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>'
         },
         {
           href: "/citizen/consent.html",
           label: "Consent",
+          i18nKey: "navConsent",
           active: page === "citizen-consent",
           icon: '<svg class="dock-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>'
         },
         {
           href: "/citizen/profile.html",
           label: "Profile",
+          i18nKey: "navProfile",
           active: page === "citizen-profile",
           icon: '<svg class="dock-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>'
         }
@@ -1031,24 +1117,28 @@
         {
           href: "/bhw/dashboard.html",
           label: "Dashboard",
+          i18nKey: "navDashboard",
           active: page === "bhw-dashboard",
           icon: '<svg class="dock-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>'
         },
         {
           href: "/bhw/search.html",
           label: "Citizens",
+          i18nKey: "navDockCitizens",
           active: page === "bhw-search" || page === "bhw-citizen-view",
           icon: '<svg class="dock-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>'
         },
         {
           href: "/bhw/audit-trail.html",
           label: "Audit",
+          i18nKey: "navDockAudit",
           active: page === "bhw-audit-trail" || page === "bhw-audit",
           icon: '<svg class="dock-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>'
         },
         {
           href: "/bhw/reports.html",
           label: "Reports",
+          i18nKey: "navReports",
           active: page === "bhw-reports",
           icon: '<svg class="dock-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>'
         }
@@ -1060,7 +1150,7 @@
     items.forEach(function (it) {
       var a = UI.el("a", { class: "mobile-bottom-link" + (it.active ? " is-active" : ""), href: it.href });
       if (it.active) a.setAttribute("aria-current", "page");
-      a.innerHTML = it.icon + '<span>' + it.label + '</span>';
+      a.innerHTML = it.icon + '<span data-dock-i18n="' + it.i18nKey + '">' + it.label + '</span>';
       dock.appendChild(a);
     });
 

@@ -3382,7 +3382,9 @@ a.status-chip:hover {
   .nav-backdrop,
   .table-controls,
   .pagination,
-  .cell-legend {
+  .cell-legend,
+  .auth-lang-corner,
+  .workspace-lang-bar {
     display: none !important;
   }
 
@@ -5269,6 +5271,30 @@ mark.match {
   }
   .auth-container {
     margin: 0 auto;
+  }
+}
+
+/* Workspace far top-right language dropdown (below mobile header on mobile, far top-right on desktop) */
+.workspace-lang-bar {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  padding: 0.85rem 1.5rem 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.workspace-lang-bar + .page {
+  padding-top: 0.75rem;
+}
+
+@media (max-width: 900px) {
+  .workspace-lang-bar {
+    padding: 0.65rem 0.95rem 0;
+  }
+
+  .workspace-lang-bar + .page {
+    padding-top: 0.65rem;
   }
 }
 
