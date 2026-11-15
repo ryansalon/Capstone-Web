@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -8,12 +7,11 @@
   <link rel="icon" href="data:,">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Public+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
   <link rel="preload" as="image" href="/img/cpsc-logo.png">
   <link rel="preload" as="image" href="/img/rhu-logo.png">
-  <link rel="stylesheet" href="/css/style.css?v=30">
+  <link rel="stylesheet" href="/css/style.css?v=31">
 </head>
-
 <body data-page="bhw-dashboard">
   <a class="skip-link" href="#main">Skip to main content</a>
   <div class="shell">
@@ -49,10 +47,15 @@
       <div class="sidebar-foot">
         <span id="whoami" class="whoami"></span>
         <button id="logoutBtn" class="btn btn-ghost" type="button">Log out</button>
+        <div class="rail-status">Local-First · PHT (UTC+8)</div>
       </div>
     </aside>
     <div class="workspace">
       <div class="workspace-lang-bar">
+        <div class="workspace-context">
+          <span class="workspace-context-dot" aria-hidden="true"></span>
+          <span>RHU Mahinog Operations · RA 10173 Protected</span>
+        </div>
         <div class="auth-lang-dropdown">
           <svg class="auth-lang-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
           <select id="workspaceLangSelect" class="lang-select" aria-label="Language">
@@ -66,7 +69,6 @@
       <main id="main" class="page portal-staff" tabindex="-1">
         <div class="page-head">
           <div class="page-head-title">
-            <span class="page-eyebrow" data-i18n="dashEyebrow">Public Health Operations</span>
             <h1 data-i18n="dashTitle">Barangay Health Desk</h1>
             <p class="lede" data-i18n="dashLede">Live community epidemiology aggregates — individual names are protected per RA 10173.</p>
           </div>
@@ -89,8 +91,7 @@
           <button id="refreshBtn" class="btn btn-secondary" type="button" data-i18n="dashBtnRefresh">Refresh</button>
           <span id="rangeLabel" class="range-label"></span>
           <div class="filters-live-right">
-            <span id="liveStatus" class="live-badge"><span class="pulse-dot"></span> <span id="liveText">Live
-                (30s)</span></span>
+            <span id="liveStatus" class="live-badge"><span class="live-dot" aria-hidden="true"></span> <span id="liveText">Live (30s)</span></span>
             <label class="auto-toggle">
               <input type="checkbox" id="autoRefreshToggle" checked> <span data-i18n="dashAutoShort">Auto</span>
             </label>
@@ -101,18 +102,18 @@
         <div id="status" aria-live="polite"></div>
         <div id="emptyState"></div>
 
-        <!-- 1. At a glance: period KPIs, registry totals, consent + kiosk context -->
+        <!-- 1. At a glance: period KPIs + balanced 3-panel registry/consent/freshness row -->
         <section class="section" aria-labelledby="totalsHeading">
           <h2 id="totalsHeading" data-i18n="dashAtAGlance">At a glance</h2>
           <div class="totals-group">
             <span class="section-caption" data-i18n="dashInThisPeriod">In this period</span>
             <div id="totals" class="totals"></div>
           </div>
-          <div class="totals-group">
-            <span class="section-caption" data-i18n="dashAllTimeRegistry">Registry (all time)</span>
-            <div id="registryTotals" class="totals"></div>
-          </div>
-          <div class="context-row">
+          <div class="context-row context-row-3">
+            <div class="chart-box context-panel registry-panel">
+              <h3 data-i18n="dashAllTimeRegistry">Registry (all time)</h3>
+              <div id="registryTotals" class="totals totals-single"></div>
+            </div>
             <div class="chart-box context-panel">
               <h3 data-i18n="dashConsentDonutHeading">Consent coverage</h3>
               <canvas id="consentDonut" role="img" aria-label="Citizens who granted consent versus not"></canvas>
@@ -157,12 +158,9 @@
             <div class="card-surface">
               <h2 data-i18n="dashQuickLinksHeading">Quick actions</h2>
               <div class="quick-links">
-                <a class="quick-link" href="/bhw/search.html"><span data-i18n="navFindCitizens">Find citizens</span><small data-i18n="dashQLSearchSub">Search the registry and open
-                    records</small></a>
-                <a class="quick-link" href="/bhw/reports.html"><span data-i18n="navReports">Reports</span><small data-i18n="dashQLExportSub">Summary, alerts and printable
-                    output</small></a>
-                <a class="quick-link" href="/bhw/audit-trail.html"><span data-i18n="navAuditTrail">Audit trail</span><small data-i18n="dashQLAuditSub">Who viewed what, and
-                    when</small></a>
+                <a class="quick-link" href="/bhw/search.html"><span data-i18n="navFindCitizens">Find citizens</span><small data-i18n="dashQLSearchSub">Search the registry and open records</small></a>
+                <a class="quick-link" href="/bhw/reports.html"><span data-i18n="navReports">Reports</span><small data-i18n="dashQLExportSub">Summary, alerts and printable output</small></a>
+                <a class="quick-link" href="/bhw/audit-trail.html"><span data-i18n="navAuditTrail">Audit trail</span><small data-i18n="dashQLAuditSub">Who viewed what, and when</small></a>
               </div>
             </div>
           </div>
@@ -182,8 +180,7 @@
     </div>
   </div>
   <script src="/vendor/chart.umd.min.js"></script>
-  <script src="/js/api.js?v=29"></script>
-  <script src="/js/bhw.js?v=29"></script>
+  <script src="/js/api.js?v=31"></script>
+  <script src="/js/bhw.js?v=31"></script>
 </body>
-
 </html>

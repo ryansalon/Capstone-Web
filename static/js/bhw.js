@@ -1270,16 +1270,16 @@
   };
 
   var DIST_COLORS = {
-    Underweight: "#8a5a00",
-    Normal: "#0f6b53",
-    Overweight: "#b9761b",
-    Obese: "#a5271d",
-    Elevated: "#b9761b",
-    "Stage 1": "#c26a12",
-    "Stage 2": "#a5271d",
-    Crisis: "#7d1a13",
-    Low: "#b9761b",
-    Critical: "#a5271d",
+    Underweight: "#B45309",
+    Normal: "#0B6B68",
+    Overweight: "#B45309",
+    Obese: "#B91C1C",
+    Elevated: "#B45309",
+    "Stage 1": "#C2410C",
+    "Stage 2": "#B91C1C",
+    Crisis: "#991B1B",
+    Low: "#B45309",
+    Critical: "#B91C1C",
   };
 
   /* Inline per-chart plugin: draws "count (xx%)" at the end of each
@@ -1294,8 +1294,8 @@
         if (!xScale || !yScale) return;
         var ctx = chart.ctx;
         ctx.save();
-        ctx.font = '700 11px "Segoe UI", system-ui, sans-serif';
-        ctx.fillStyle = "#14332b";
+        ctx.font = '700 11px "Public Sans", system-ui, sans-serif';
+        ctx.fillStyle = "#101B1E";
         ctx.textBaseline = "middle";
         ctx.textAlign = "left";
         chart.data.datasets.forEach(function (dataset, datasetIndex) {
@@ -1373,7 +1373,7 @@
                 return data[name];
               }),
               backgroundColor: keys.map(function (name) {
-                return DIST_COLORS[name] || "#0f6b53";
+                return DIST_COLORS[name] || "#0B6B68";
               }),
               borderRadius: 6,
             },
@@ -1437,8 +1437,8 @@
             data: trend.map(function (item) {
               return item[1];
             }),
-            borderColor: "#a5271d",
-            backgroundColor: "rgba(165, 39, 29, 0.12)",
+            borderColor: "#B91C1C",
+            backgroundColor: "rgba(185, 28, 28, 0.12)",
             fill: true,
             tension: 0.25,
             pointRadius: 3,
@@ -1571,7 +1571,7 @@
           datasets: [
             {
               data: [granted, total - granted],
-              backgroundColor: ["#14876a", "#e6efeb"],
+              backgroundColor: ["#0B6B68", "#D4E0E1"],
               borderColor: "#ffffff",
               borderWidth: 2,
             },
@@ -1893,7 +1893,7 @@
     citizens.forEach(function (citizen) {
       var row = U.el("tr");
       if (citizen.consent) {
-        row.style.background = "#fafdfb";
+        row.style.background = "#F7FAFA";
       }
       var tdName = U.el("td", { class: "cell-name", style: "font-weight:600; text-align:left;" });
       U.highlight(tdName, citizen.full_name, query);
@@ -2093,7 +2093,6 @@
     
     var snapHead = U.el("div", { class: "readings-snapshot-header" });
     var snapHeadLeft = U.el("div");
-    snapHeadLeft.appendChild(U.el("span", { class: "readings-snapshot-eyebrow" }, bt("cvSnapshotEyebrow")));
     snapHeadLeft.appendChild(U.el("h3", { class: "readings-snapshot-title" }, bt("cvSnapshotTitle")));
     snapHead.appendChild(snapHeadLeft);
     snapHead.appendChild(
@@ -2427,9 +2426,9 @@
     pLogos.appendChild(U.el("img", { src: "/img/cpsc-logo.png", alt: "CPSC", width: "48", height: "48", style: "object-fit:contain;" }));
     pLogos.appendChild(U.el("img", { src: "/img/rhu-logo.png", alt: "RHU Mahinog", width: "48", height: "48", style: "object-fit:contain;" }));
     pHead.appendChild(pLogos);
-    pHead.appendChild(U.el("div", { style: "font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:#0b3d30;" }, "Republic of the Philippines · Province of Camiguin"));
-    pHead.appendChild(U.el("h2", { style: "margin:0.25rem 0; font-size:1.3rem; color:#0b3d30;" }, "Clinical Referral Slip (RHU Mahinog)"));
-    pHead.appendChild(U.el("p", { style: "margin:0; font-size:0.82rem; color:#4a655a;" }, "Municipality of Mahinog · Barangay Health Station & Rural Health Unit"));
+    pHead.appendChild(U.el("div", { style: "font-size:0.78rem; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:#0B6B68;" }, "Republic of the Philippines · Province of Camiguin"));
+    pHead.appendChild(U.el("h2", { style: "margin:0.25rem 0; font-size:1.3rem; color:#101B1E;" }, "Clinical Referral Slip (RHU Mahinog)"));
+    pHead.appendChild(U.el("p", { style: "margin:0; font-size:0.84rem; color:#465E64;" }, "Municipality of Mahinog · Barangay Health Station & Rural Health Unit"));
     slip.appendChild(pHead);
 
     var infoDl = U.el("dl", { class: "kv", style: "margin-bottom:0.85rem;" });
@@ -2450,7 +2449,7 @@
     reasonBox.appendChild(U.el("div", { style: "line-height:1.45; white-space:pre-wrap;" }, reason || "Patient referred for medical evaluation, diagnosis, and prescription management at the Rural Health Unit."));
     slip.appendChild(reasonBox);
 
-    var vitalsTitle = U.el("h4", { style: "margin:0.75rem 0 0.35rem 0; font-size:0.85rem; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; color:#0b3d30;" }, "Latest Vital Signs (Barangay Health Kiosk)");
+    var vitalsTitle = U.el("h4", { style: "margin:0.75rem 0 0.35rem 0; font-size:0.85rem; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; color:#0B6B68;" }, "Latest Vital Signs (Barangay Health Kiosk)");
     slip.appendChild(vitalsTitle);
 
     var grid = U.el("div", { class: "passport-grid" });
@@ -2458,7 +2457,7 @@
       var box = U.el("div", { class: "passport-stat" });
       box.appendChild(U.el("div", { class: "lbl" }, lbl));
       box.appendChild(U.el("div", { class: "val" }, val));
-      if (sub) box.appendChild(U.el("div", { class: "sub", style: "font-size:0.75rem; color:#4b6b62;" }, sub));
+      if (sub) box.appendChild(U.el("div", { class: "sub", style: "font-size:0.78rem; color:#465E64;" }, sub));
       grid.appendChild(box);
     }
 
@@ -2502,9 +2501,9 @@
     sigBlock.appendChild(sigFlex);
     slip.appendChild(sigBlock);
 
-    var foot = U.el("div", { class: "referral-footer", style: "margin-top:1.1rem; border-top:1px dashed var(--line-strong); padding-top:0.45rem; display:flex; justify-content:space-between; font-size:0.72rem; color:#4a655a;" });
+    var foot = U.el("div", { class: "referral-footer", style: "margin-top:1.1rem; border-top:1px dashed var(--border-strong); padding-top:0.45rem; display:flex; justify-content:space-between; font-size:0.78rem; color:#465E64;" });
     foot.appendChild(U.el("span", null, "Generated: " + nowPht()));
-    foot.appendChild(U.el("span", { style: "font-weight:700; color:#0b3d30;" }, "OFFICIAL RHU REFERRAL · RA 10173 AUDITED"));
+    foot.appendChild(U.el("span", { style: "font-weight:700; color:#0B6B68;" }, "OFFICIAL RHU REFERRAL · RA 10173 AUDITED"));
     slip.appendChild(foot);
 
     body.appendChild(slip);
@@ -2582,7 +2581,7 @@
     function renderCitizenDetails() {
       document.getElementById("pageTitle").textContent = citizen.full_name || bt("cvTitleFallback");
       var profileHeading = document.getElementById("profileHeading");
-      if (profileHeading) profileHeading.textContent = citizen.full_name || bt("cvProfileHeading");
+      if (profileHeading) profileHeading.textContent = bt("cvProfileHeading");
 
       var avatar = document.getElementById("patientAvatar");
       if (avatar) {
@@ -2879,7 +2878,7 @@
             p1.appendChild(U.el("strong", null, citizenName));
             p1.appendChild(document.createTextNode(":"));
             resBody.appendChild(p1);
-            var codeBox = U.el("div", { style: "font-size:1.35rem; font-family:monospace; font-weight:700; color:#0f6b53; background:#eaf4f0; padding:0.75rem; border-radius:8px; border:1px solid #b0c4bc; margin-bottom:1rem; user-select:all;" }, res.temporary_password);
+            var codeBox = U.el("div", { style: "font-size:1.35rem; font-family:monospace; font-weight:700; color:#0B6B68; background:#E1F0EF; padding:0.75rem; border-radius:8px; border:1px solid #B2D5D3; margin-bottom:1rem; user-select:all;" }, res.temporary_password);
             resBody.appendChild(codeBox);
             resBody.appendChild(U.el("p", { style: "font-size:0.85rem; color:var(--ink-soft);" }, "Please write this down or hand it to the citizen. They should sign in and update their password on their profile."));
             resCard.appendChild(resBody);
@@ -2909,14 +2908,14 @@
   /* ---------------- audit trail ---------------- */
 
   var AUDIT_ACTION_KEY = {
-    view_health_data: { key: "auditActViewHealth", cls: "badge-ok" },
-    view_notes: { key: "auditActViewNotes", cls: "badge-admin" },
-    add_note: { key: "auditActAddNote", cls: "badge-ok" },
+    view_health_data: { key: "auditActViewHealth", cls: "badge-neutral" },
+    view_notes: { key: "auditActViewNotes", cls: "badge-neutral" },
+    add_note: { key: "auditActAddNote", cls: "badge-info" },
     update_note_visibility: { key: "auditActUpdateVis", cls: "badge-info" },
     refer_to_rhu: { key: "auditActRefer", cls: "badge-warn" },
     unauthorized_access: { key: "auditActUnauthorized", cls: "badge-danger" },
     export_report: { key: "auditActExport", cls: "badge-info" },
-    staff_login: { key: "auditActStaffLogin", cls: "badge-admin" },
+    staff_login: { key: "auditActStaffLogin", cls: "badge-neutral" },
     self_password_reset: { key: "auditActSelfPw", cls: "badge-info" },
     staff_password_reset: { key: "auditActStaffPw", cls: "badge-warn" },
   };
@@ -3046,7 +3045,7 @@
 
     var legalBox = U.el("div", {
       style:
-        "margin-top:1rem; padding:0.75rem 1rem; border-radius:8px; background:var(--green-50, #f0fdf4); border:1px solid #bbf7d0; font-size:0.82rem; color:#14532d; display:flex; align-items:center; gap:0.5rem;",
+        "margin-top:1rem; padding:0.75rem 1rem; border-radius:8px; background:#E5F4EE; border:1px solid #A8D9C7; font-size:0.84rem; color:#0E6B53; display:flex; align-items:center; gap:0.5rem;",
     });
     legalBox.innerHTML =
       '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0;"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>' +

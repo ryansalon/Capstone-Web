@@ -7,45 +7,59 @@
   <link rel="icon" href="data:,">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Public+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
   <link rel="preload" as="image" href="/img/cpsc-logo.png">
   <link rel="preload" as="image" href="/img/rhu-logo.png">
-  <link rel="stylesheet" href="/css/style.css?v=30">
+  <link rel="stylesheet" href="/css/style.css?v=31">
 </head>
 <body data-page="bhw-login">
   <a class="skip-link" href="#main">Skip to main content</a>
   <div class="auth-wrap">
-    <div class="auth-top-bar">
-      <div class="auth-gov-bar">
-        <span>Republic of the Philippines · Province of Camiguin</span>
-        <span class="auth-gov-badge">Municipality of Mahinog</span>
-      </div>
-    </div>
-
-    <main id="main" class="auth-main" tabindex="-1">
-      <div class="auth-lang-corner">
-        <div class="auth-lang-dropdown">
-          <svg class="auth-lang-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-          <select id="authLangSelect" class="lang-select" aria-label="Language">
-            <option value="en">English</option>
-            <option value="ceb">Bisaya</option>
-            <option value="tl">Tagalog</option>
-          </select>
+    <aside class="auth-showcase" aria-label="Program overview">
+      <div class="auth-showcase-top">
+        <div class="auth-gov-bar">
+          <span>Republic of the Philippines · Province of Camiguin</span>
+          <span class="auth-gov-badge">Municipality of Mahinog</span>
+        </div>
+        <div class="auth-brand">
+          <div class="auth-logos">
+            <img src="/img/cpsc-logo.png" alt="Camiguin Polytechnic State College" class="auth-partner-logo" width="64" height="64" loading="eager" decoding="sync" title="Camiguin Polytechnic State College">
+            <img src="/img/rhu-logo.png" alt="Rural Health Unit - Mahinog" class="auth-partner-logo" width="64" height="64" loading="eager" decoding="sync" title="Rural Health Unit - Mahinog, Camiguin">
+          </div>
+          <div class="auth-brand-copy">
+            <h1 class="auth-brand-name">Barangay Health Monitor</h1>
+            <p class="auth-brand-sub">Camiguin Polytechnic State College &amp; Rural Health Unit of Mahinog</p>
+          </div>
         </div>
       </div>
 
-      <div class="auth-container">
-        <!-- Unified Civic Brand Header -->
-        <header class="auth-brand">
-          <div class="auth-logos">
-            <img src="/img/cpsc-logo.png" alt="Camiguin Polytechnic State College" class="auth-partner-logo" width="76" height="76" loading="eager" decoding="sync" title="Camiguin Polytechnic State College">
-            <img src="/img/rhu-logo.png" alt="Rural Health Unit - Mahinog" class="auth-partner-logo" width="76" height="76" loading="eager" decoding="sync" title="Rural Health Unit - Mahinog, Camiguin">
-          </div>
-          <h1 class="auth-brand-name">Barangay Health Monitor</h1>
-          <p class="auth-brand-sub">Camiguin Polytechnic State College &amp; Rural Health Unit of Mahinog</p>
-        </header>
+      <div class="auth-pillars">
+        <div class="auth-pillar">
+          <strong>Community Surveillance Desk</strong>
+          <span>Track barangay-wide fever trends, BP severity distributions, and consent coverage cleanly.</span>
+        </div>
+        <div class="auth-pillar">
+          <strong>Append-Only RA 10173 Audit Trail</strong>
+          <span>Every authorized view, denied attempt, note, RHU referral, and report export is permanently logged.</span>
+        </div>
+      </div>
+    </aside>
 
+    <main id="main" class="auth-main" tabindex="-1">
+      <div class="auth-container">
         <div class="auth-card">
+          <div class="auth-card-utility">
+            <span class="auth-utility-meta">RHU Operations Gate</span>
+            <div class="auth-lang-dropdown">
+              <svg class="auth-lang-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+              <select id="authLangSelect" class="lang-select" aria-label="Language">
+                <option value="en">English</option>
+                <option value="ceb">Bisaya</option>
+                <option value="tl">Tagalog</option>
+              </select>
+            </div>
+          </div>
+
           <!-- Segmented Portal Switcher -->
           <nav class="auth-role-tabs" aria-label="Portal selection">
             <a href="/citizen/login.html" class="auth-role-tab">
@@ -89,16 +103,16 @@
             </div>
           </div>
         </div>
+
+        <footer class="auth-page-footer">
+          <p data-i18n="bhwLoginFooterRa">All record access is written to an append-only audit trail per RA 10173.</p>
+        </footer>
       </div>
     </main>
-
-    <footer class="auth-page-footer">
-      <p data-i18n="bhwLoginFooterRa">All record access is written to an append-only audit trail per RA 10173.</p>
-    </footer>
   </div>
 
-  <script src="/js/api.js?v=29"></script>
-  <script src="/js/bhw.js?v=29"></script>
+  <script src="/js/api.js?v=31"></script>
+  <script src="/js/bhw.js?v=31"></script>
   <script>
     (function () {
       var params = new URLSearchParams(location.search);
