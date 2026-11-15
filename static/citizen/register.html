@@ -1,54 +1,80 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Create a Citizen Account — Barangay Health Monitor</title>
-  <link rel="icon" href="data:,">
+  <link rel="icon" type="image/svg+xml" href="/img/favicon.svg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Public+Sans:wght@500;600;700;800&display=swap"
+    rel="stylesheet">
   <link rel="preload" as="image" href="/img/cpsc-logo.png">
   <link rel="preload" as="image" href="/img/rhu-logo.png">
-  <link rel="stylesheet" href="/css/style.css?v=30">
+  <link rel="stylesheet" href="/css/style.css?v=31">
 </head>
+
 <body data-page="citizen-register">
   <a class="skip-link" href="#main">Skip to main content</a>
   <div class="auth-wrap">
-    <div class="auth-top-bar">
-      <div class="auth-gov-bar">
-        <span>Republic of the Philippines · Province of Camiguin</span>
-        <span class="auth-gov-badge">Municipality of Mahinog</span>
-      </div>
-    </div>
-
-    <main id="main" class="auth-main" tabindex="-1">
-      <div class="auth-lang-corner">
-        <div class="auth-lang-dropdown">
-          <svg class="auth-lang-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-          <select id="authLangSelect" class="lang-select" aria-label="Language">
-            <option value="en">English</option>
-            <option value="ceb">Bisaya</option>
-            <option value="tl">Tagalog</option>
-          </select>
+    <aside class="auth-showcase" aria-label="Program overview">
+      <div class="auth-showcase-top">
+        <div class="auth-gov-bar">
+          <span>Republic of the Philippines · Province of Camiguin</span>
+          <span class="auth-gov-badge">Municipality of Mahinog</span>
+        </div>
+        <div class="auth-brand">
+          <div class="auth-logos">
+            <img src="/img/cpsc-logo.png" alt="Camiguin Polytechnic State College" class="auth-partner-logo" width="64"
+              height="64" loading="eager" decoding="sync" title="Camiguin Polytechnic State College">
+            <img src="/img/rhu-logo.png" alt="Rural Health Unit - Mahinog" class="auth-partner-logo" width="64"
+              height="64" loading="eager" decoding="sync" title="Rural Health Unit - Mahinog, Camiguin">
+          </div>
+          <div class="auth-brand-copy">
+            <h1 class="auth-brand-name">Barangay Health Monitor</h1>
+            <p class="auth-brand-sub">Camiguin Polytechnic State College &amp; Rural Health Unit of Mahinog</p>
+          </div>
         </div>
       </div>
 
-      <div class="auth-container register">
-        <!-- Unified Civic Brand Header -->
-        <header class="auth-brand">
-          <div class="auth-logos">
-            <img src="/img/cpsc-logo.png" alt="Camiguin Polytechnic State College" class="auth-partner-logo" width="76" height="76" loading="eager" decoding="sync" title="Camiguin Polytechnic State College">
-            <img src="/img/rhu-logo.png" alt="Rural Health Unit - Mahinog" class="auth-partner-logo" width="76" height="76" loading="eager" decoding="sync" title="Rural Health Unit - Mahinog, Camiguin">
-          </div>
-          <h1 class="auth-brand-name">Barangay Health Monitor</h1>
-          <p class="auth-brand-sub">Camiguin Polytechnic State College &amp; Rural Health Unit of Mahinog</p>
-        </header>
+      <div class="auth-pillars">
+        <div class="auth-pillar">
+          <strong>Own Your Health Record</strong>
+          <span>Monitor check-in trends over time and check RHU reference guides in English, Bisaya, or Tagalog.</span>
+        </div>
+        <div class="auth-pillar">
+          <strong>Private by Default</strong>
+          <span>Health workers cannot open individual vitals without your recorded RA 10173 consent.</span>
+        </div>
+      </div>
+    </aside>
 
+    <main id="main" class="auth-main" tabindex="-1">
+      <div class="auth-container register">
         <div class="auth-card">
+          <div class="auth-card-utility">
+            <span class="auth-utility-meta">Resident Registration</span>
+            <div class="auth-lang-dropdown">
+              <svg class="auth-lang-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <circle cx="12" cy="12" r="10" />
+                <line x1="2" y1="12" x2="22" y2="12" />
+                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+              </svg>
+              <select id="authLangSelect" class="lang-select" aria-label="Language">
+                <option value="en">English</option>
+                <option value="ceb">Bisaya</option>
+                <option value="tl">Tagalog</option>
+              </select>
+            </div>
+          </div>
+
           <div class="auth-card-body">
             <h2 data-i18n="regHeading">Create Citizen Account</h2>
-            <p class="auth-card-lede" data-i18n="regLede">Register to access your kiosk vital measurements and download your health passport.</p>
+            <p class="auth-card-lede" data-i18n="regLede">Register to access your kiosk vital measurements and download
+              your health passport.</p>
 
             <p id="registerError" class="form-error" role="alert"></p>
             <p id="registerSuccess" class="form-success" role="status"></p>
@@ -56,16 +82,20 @@
             <form id="registerForm" novalidate>
               <div class="field">
                 <label for="fullName" data-i18n="lblFullName">Full name</label>
-                <input id="fullName" name="full_name" type="text" autocomplete="name" placeholder="e.g. Juan dela Cruz" data-i18n-placeholder="phFullName" required aria-required="true" aria-describedby="registerError">
+                <input id="fullName" name="full_name" type="text" autocomplete="name" placeholder="e.g. Juan dela Cruz"
+                  data-i18n-placeholder="phFullName" required aria-required="true" aria-describedby="registerError">
               </div>
               <div class="field">
                 <label for="username" data-i18n="lblUsername">Username</label>
-                <input id="username" name="username" type="text" autocomplete="username" placeholder="Choose a username" data-i18n-placeholder="phUsernameReg" required aria-required="true" aria-describedby="registerError">
+                <input id="username" name="username" type="text" autocomplete="username" placeholder="Choose a username"
+                  data-i18n-placeholder="phUsernameReg" required aria-required="true" aria-describedby="registerError">
               </div>
               <div class="field">
                 <label for="password" data-i18n="lblPassword">Password</label>
                 <div class="password-wrap">
-                  <input id="password" name="password" type="password" autocomplete="new-password" minlength="8" placeholder="At least 8 characters" data-i18n-placeholder="phPasswordReg" required aria-required="true" aria-describedby="registerPasswordHint registerError">
+                  <input id="password" name="password" type="password" autocomplete="new-password" minlength="8"
+                    placeholder="At least 8 characters" data-i18n-placeholder="phPasswordReg" required
+                    aria-required="true" aria-describedby="registerPasswordHint registerError">
                   <button type="button" class="btn-toggle-pw" aria-label="Show password">Show</button>
                 </div>
                 <p id="registerPasswordHint" class="hint" data-i18n="regPwHint">Must be at least 8 characters.</p>
@@ -73,14 +103,17 @@
               <div class="field">
                 <label for="confirmPassword" data-i18n="lblConfirmPw">Confirm password</label>
                 <div class="password-wrap">
-                  <input id="confirmPassword" name="confirm_password" type="password" autocomplete="new-password" placeholder="Re-enter your password" data-i18n-placeholder="phConfirmPw" required aria-required="true" aria-describedby="registerError">
+                  <input id="confirmPassword" name="confirm_password" type="password" autocomplete="new-password"
+                    placeholder="Re-enter your password" data-i18n-placeholder="phConfirmPw" required
+                    aria-required="true" aria-describedby="registerError">
                   <button type="button" class="btn-toggle-pw" aria-label="Show password">Show</button>
                 </div>
               </div>
               <div class="field-row">
                 <div class="field">
                   <label for="birthdate" data-i18n="lblBirthdate">Birthdate</label>
-                  <input id="birthdate" name="birthdate" type="date" required aria-required="true" aria-describedby="registerError">
+                  <input id="birthdate" name="birthdate" type="date" required aria-required="true"
+                    aria-describedby="registerError">
                 </div>
                 <div class="field">
                   <label for="gender" data-i18n="lblGender">Gender</label>
@@ -91,7 +124,8 @@
                   </select>
                 </div>
               </div>
-              <button id="registerSubmit" class="btn btn-primary btn-auth-submit" type="submit" data-i18n="btnCreateAcct">Create account</button>
+              <button id="registerSubmit" class="btn btn-primary btn-auth-submit" type="submit"
+                data-i18n="btnCreateAcct">Create account</button>
             </form>
 
             <div class="auth-footer-links">
@@ -100,15 +134,16 @@
             </div>
           </div>
         </div>
+
+        <footer class="auth-page-footer">
+          <p data-i18n="authFooterRa">Data is securely managed under the Philippine Data Privacy Act (RA 10173).</p>
+        </footer>
       </div>
     </main>
-
-    <footer class="auth-page-footer">
-      <p data-i18n="authFooterRa">Data is securely managed under the Philippine Data Privacy Act (RA 10173).</p>
-    </footer>
   </div>
 
-  <script src="/js/api.js?v=29"></script>
-  <script src="/js/citizen.js?v=29"></script>
+  <script src="/js/api.js?v=31"></script>
+  <script src="/js/citizen.js?v=31"></script>
 </body>
+
 </html>
