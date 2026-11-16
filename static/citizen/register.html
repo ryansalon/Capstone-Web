@@ -5,12 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Create a Citizen Account — Barangay Health Monitor</title>
   <link rel="icon" type="image/svg+xml" href="/img/favicon.svg">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="preload" as="image" href="/img/cpsc-logo.png">
   <link rel="preload" as="image" href="/img/rhu-logo.png">
-  <link rel="stylesheet" href="/css/style.css?v=30">
+  <link rel="stylesheet" href="/css/style.css?v=32">
 </head>
 <body data-page="citizen-register">
   <a class="skip-link" href="#main">Skip to main content</a>
@@ -91,6 +88,9 @@
                   </select>
                 </div>
               </div>
+              <div class="register-privacy-note" data-i18n="regPrivacyNote">
+                Your account automatically syncs with the Barangay Health Kiosk. Your readings remain private under RA 10173 until you choose to grant health worker consent.
+              </div>
               <button id="registerSubmit" class="btn btn-primary btn-auth-submit" type="submit" data-i18n="btnCreateAcct">Create account</button>
             </form>
 
@@ -98,6 +98,18 @@
               <span data-i18n="regAlready">Already registered?</span>
               <a href="/citizen/login.html" data-i18n="regSignInLink">Sign in to your account</a>
             </div>
+
+            <details class="elder-guide">
+              <summary class="elder-guide-summary">
+                <span class="elder-guide-icon" aria-hidden="true">?</span>
+                <span data-i18n="regElderGuideTitle">Need help creating an account? (Step-by-step guide)</span>
+              </summary>
+              <ol class="elder-guide-steps">
+                <li data-i18n-html="regElderStep1"><strong>1. Choose a username:</strong> Pick an easy-to-remember username with no spaces (for example, <em>juan.cruz</em>) to sign in on both this portal and the health kiosk.</li>
+                <li data-i18n-html="regElderStep2"><strong>2. Check your password:</strong> Use at least 8 characters and tap <strong>Show</strong> inside the box to confirm your typing.</li>
+                <li data-i18n-html="regElderStep3"><strong>3. Need in-person help?</strong> Ask your Barangay Health Worker (BHW) at the barangay health station to assist you.</li>
+              </ol>
+            </details>
           </div>
         </div>
       </div>
@@ -108,7 +120,7 @@
     </footer>
   </div>
 
-  <script src="/js/api.js?v=29"></script>
-  <script src="/js/citizen.js?v=29"></script>
+  <script src="/js/api.js?v=31"></script>
+  <script src="/js/citizen.js?v=31"></script>
 </body>
 </html>

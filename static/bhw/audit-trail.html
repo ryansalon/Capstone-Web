@@ -5,12 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Audit trail — Barangay Health Monitor</title>
   <link rel="icon" type="image/svg+xml" href="/img/favicon.svg">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="preload" as="image" href="/img/cpsc-logo.png">
   <link rel="preload" as="image" href="/img/rhu-logo.png">
-  <link rel="stylesheet" href="/css/style.css?v=30">
+  <link rel="stylesheet" href="/css/style.css?v=32">
 </head>
 <body data-page="bhw-audit">
   <a class="skip-link" href="#main">Skip to main content</a>
@@ -64,15 +61,12 @@
     <main id="main" class="page" tabindex="-1">
       <div class="page-head">
         <div class="page-head-title">
-          <span class="page-eyebrow" data-i18n="auditEyebrow">Compliance &amp; Security</span>
           <h1 data-i18n="auditTitle">Audit trail</h1>
           <p class="lede" data-i18n="auditLede">Append-only log of every access to citizen records. Entries cannot be edited or deleted.</p>
         </div>
         <div class="page-actions">
           <button id="exportAuditCsvBtn" class="btn btn-secondary" type="button" title="Export filtered audit entries as CSV" data-i18n="auditExportCsv">Export CSV</button>
           <button id="printAuditBtn" class="btn btn-secondary" type="button" title="Print this audit trail log" data-i18n="auditPrintLog">Print log</button>
-          <a href="/bhw/dashboard.html" class="btn btn-secondary" data-i18n="navDashboard">Dashboard</a>
-          <a href="/bhw/reports.html" class="btn btn-secondary" data-i18n="navReports">Reports</a>
         </div>
       </div>
 
@@ -110,45 +104,53 @@
           <input id="toDate" name="to" type="date">
         </div>
         <div class="field date-presets-field">
-          <span class="label" data-i18n="repPresets">Presets</span>
-          <div class="date-presets" role="group" aria-label="Date range presets">
+          <span class="label" id="auditPresetsLabel" data-i18n="repPresets">Presets</span>
+          <div class="date-presets" role="group" aria-labelledby="auditPresetsLabel">
             <button type="button" class="date-preset-btn" data-range="today" data-i18n="auditPresetToday">Today</button>
             <button type="button" class="date-preset-btn" data-range="7d" data-i18n="auditPreset7d">Last 7d</button>
             <button type="button" class="date-preset-btn" data-range="30d" data-i18n="auditPreset30d">Last 30d</button>
             <button type="button" class="date-preset-btn" data-range="all" data-i18n="auditPresetAll">All time</button>
           </div>
         </div>
-        <div class="field">
-          <label for="bhwName" data-i18n="auditLblBhw">Health worker</label>
-          <input id="bhwName" name="bhw" type="text" data-i18n-placeholder="auditPhBhw" placeholder="e.g. Maria Santos" autocomplete="off">
-        </div>
-        <div class="field">
-          <label for="citizenName" data-i18n="auditLblCitizen">Citizen accessed</label>
-          <input id="citizenName" name="citizen" type="text" data-i18n-placeholder="auditPhCitizen" placeholder="e.g. Carl Mendoza" autocomplete="off">
-        </div>
-        <div class="field">
-          <label for="statusFilter" data-i18n="auditLblStatus">Status</label>
-          <select id="statusFilter" name="status">
-            <option value="" data-i18n="auditOptAllStatus">All statuses</option>
-            <option value="success" data-i18n="auditOptAuthorized">Authorized / Success</option>
-            <option value="blocked" data-i18n="auditOptBlocked">Blocked / Security Flag</option>
-          </select>
-        </div>
-        <div class="field">
-          <label for="actionType" data-i18n="auditLblAction">Action taken</label>
-          <select id="actionType" name="action">
-            <option value="" data-i18n="auditOptAllActions">All actions</option>
-            <option value="view_health_data" data-i18n="auditActViewHealth">Viewed health records</option>
-            <option value="view_notes" data-i18n="auditActViewNotes">Viewed clinical notes</option>
-            <option value="add_note" data-i18n="auditActAddNote">Added clinical note</option>
-            <option value="refer_to_rhu" data-i18n="auditActRefer">Referred to RHU</option>
-            <option value="unauthorized_access" data-i18n="auditActUnauthorized">Blocked: No Consent</option>
-            <option value="export_report" data-i18n="auditActExport">Exported Report / Data</option>
-            <option value="staff_login" data-i18n="auditActStaffLogin">Staff Session Authenticated</option>
-          </select>
-        </div>
         <button id="filterBtn" class="btn btn-primary" type="submit" data-i18n="auditBtnApply">Apply filters</button>
         <button id="clearBtn" class="btn btn-secondary" type="button" data-i18n="auditBtnClear">Clear</button>
+        <details class="filters-more">
+          <summary class="filters-more-summary" data-i18n="auditMoreFilters">More filters (health worker, citizen, status, action)</summary>
+          <div class="filters-more-grid">
+            <div class="field">
+              <label for="bhwName" data-i18n="auditLblBhw">Health worker</label>
+              <input id="bhwName" name="bhw" type="text" data-i18n-placeholder="auditPhBhw" placeholder="e.g. Maria Santos" autocomplete="off">
+            </div>
+            <div class="field">
+              <label for="citizenName" data-i18n="auditLblCitizen">Citizen accessed</label>
+              <input id="citizenName" name="citizen" type="text" data-i18n-placeholder="auditPhCitizen" placeholder="e.g. Carl Mendoza" autocomplete="off">
+            </div>
+            <div class="field">
+              <label for="statusFilter" data-i18n="auditLblStatus">Status</label>
+              <select id="statusFilter" name="status">
+                <option value="" data-i18n="auditOptAllStatus">All statuses</option>
+                <option value="success" data-i18n="auditOptAuthorized">Authorized / Success</option>
+                <option value="blocked" data-i18n="auditOptBlocked">Blocked / Security Flag</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="actionType" data-i18n="auditLblAction">Action taken</label>
+              <select id="actionType" name="action">
+                <option value="" data-i18n="auditOptAllActions">All actions</option>
+                <option value="view_health_data" data-i18n="auditActViewHealth">Viewed health records</option>
+                <option value="view_notes" data-i18n="auditActViewNotes">Viewed clinical notes</option>
+                <option value="add_note" data-i18n="auditActAddNote">Added clinical note</option>
+                <option value="update_note_visibility" data-i18n="auditActUpdateVis">Updated note visibility</option>
+                <option value="refer_to_rhu" data-i18n="auditActRefer">Referred to RHU</option>
+                <option value="unauthorized_access" data-i18n="auditActUnauthorized">Blocked: No Consent</option>
+                <option value="export_report" data-i18n="auditActExport">Exported Report / Data</option>
+                <option value="staff_login" data-i18n="auditActStaffLogin">Staff Session Authenticated</option>
+                <option value="self_password_reset" data-i18n="auditActSelfPw">Self Password Reset</option>
+                <option value="staff_password_reset" data-i18n="auditActStaffPw">Staff Password Reset</option>
+              </select>
+            </div>
+          </div>
+        </details>
       </form>
 
       <div id="status" aria-live="polite"></div>
@@ -158,7 +160,7 @@
     <footer class="foot" data-i18n="auditFoot">Timestamps are shown in Philippine time (PHT); hover a timestamp for the UTC original.</footer>
     </div>
   </div>
-  <script src="/js/api.js?v=29"></script>
-  <script src="/js/bhw.js?v=29"></script>
+  <script src="/js/api.js?v=31"></script>
+  <script src="/js/bhw.js?v=31"></script>
 </body>
 </html>

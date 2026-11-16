@@ -351,6 +351,60 @@
       conLowSpo2: "Low SpO2",
       conOverweight: "Overweight",
       conUnderweight: "Underweight",
+
+      /* Shared toggles, Offline banner, Modals, Search & Audit */
+      btnShowPw: "Show",
+      btnHidePw: "Hide",
+      ariaShowPw: "Show password",
+      ariaHidePw: "Hide password",
+      statusOfflineBanner: "⚠️ Internet connection interrupted. Changes will synchronize automatically once reconnected.",
+      statusOnlineBanner: "✓ Connection restored. Data synchronized.",
+      btnNoConsent: "No consent",
+      noConsentHint: "Resident consent is required before individual health records can be opened.",
+      cvColWeight: "Weight (kg)",
+      cvColHeight: "Height (cm)",
+      cvColBmi: "BMI",
+      cvColTemp: "Temp (°C)",
+      cvColPulse: "Pulse (bpm)",
+      cvColSpo2: "SpO2 (%)",
+      btnClose: "Close",
+      btnCancel: "Cancel",
+      btnDone: "Done",
+      auditMoreFilters: "More filters (health worker, citizen, status, action)",
+      auditInspect: "Inspect",
+      auditInspectAria: "Inspect audit record #{id}",
+      auditCsvNone: "No audit records to export",
+      auditCsvDone: "Audit trail exported as CSV",
+      auditNewEvents: "New audit events recorded — click Apply filters to refresh.",
+      auditModalTitle: "Audit Log Inspector #{id}",
+      auditModalSub: "RA 10173 Compliance Verification",
+      auditModalStatus: "Event Status",
+      auditModalBlocked: "Blocked / Security Flag",
+      auditModalAuthorized: "Authorized / Verified",
+      auditModalAction: "Action Performed",
+      auditModalActor: "Health Worker / Actor",
+      auditModalSubject: "Citizen Subject",
+      auditModalSubjectAll: "All Citizens / System",
+      auditModalTimePht: "Timestamp (PHT)",
+      auditModalTimeUtc: "Timestamp (UTC)",
+      auditModalDetails: "Event Details",
+      auditModalDetailsDefault: "Standard operational record access",
+      auditModalIp: "Origin IP Address",
+      auditModalUa: "Client User Agent",
+      auditModalUaDefault: "Standard Browser Client",
+      auditModalLegalHtml: "Logged in accordance with the <strong>Republic Act No. 10173 (Data Privacy Act of 2012)</strong>. Record is immutable and append-only.",
+      auditModalOpenRecord: "Open Citizen Record →",
+      pwResetTitle: "Reset Citizen Password",
+      pwResetPrompt: "Issue a temporary password for {name}. Ensure you have verified their resident or government ID in person.",
+      pwResetLabel: "Custom temporary password (optional, min 8 chars):",
+      pwResetPlaceholder: "Leave blank for auto-generated password",
+      pwResetErrMin: "Custom password must be at least 8 characters long.",
+      pwResetBusy: "Resetting…",
+      btnResetPw: "Reset Password",
+      pwResetDoneTitle: "New Temporary Password",
+      pwResetDoneIntro: "Temporary password generated for ",
+      pwResetDoneNote: "Please write this down or hand it to the citizen. They should sign in and update their password on their profile.",
+      repPreviewTitle: "Printable {type} Report Preview",
     },
     ceb: {
       skipToMain: "Laktaw ngadto sa nag-unang sulod",
@@ -687,6 +741,59 @@
       conLowSpo2: "Ubos nga SpO2",
       conOverweight: "Sobra sa timbang",
       conUnderweight: "Ubos sa timbang",
+
+      btnShowPw: "Ipakita",
+      btnHidePw: "Tagoa",
+      ariaShowPw: "Ipakita ang password",
+      ariaHidePw: "Tagoa ang password",
+      statusOfflineBanner: "⚠️ Naputol ang koneksyon sa internet. Mo-sync ra ang mga kausaban kung mabalik ang koneksyon.",
+      statusOnlineBanner: "✓ Nabalik na ang koneksyon. Na-sync na ang datos.",
+      btnNoConsent: "Walay pagtugot",
+      noConsentHint: "Gikinahanglan ang pagtugot sa residente sa dili pa maablihan ang iyang indibidwal nga rekord.",
+      cvColWeight: "Timbang (kg)",
+      cvColHeight: "Gitas-on (cm)",
+      cvColBmi: "BMI",
+      cvColTemp: "Temperatura (°C)",
+      cvColPulse: "Pulso (bpm)",
+      cvColSpo2: "SpO2 (%)",
+      btnClose: "Isira",
+      btnCancel: "Kanselahon",
+      btnDone: "Nahuman",
+      auditMoreFilters: "Dugang mga filter (health worker, lumulupyo, kahimtang, aksyon)",
+      auditInspect: "Susiha",
+      auditInspectAria: "Susiha ang audit record #{id}",
+      auditCsvNone: "Walay audit record nga ma-export",
+      auditCsvDone: "Na-export na ang audit trail isip CSV",
+      auditNewEvents: "Adunay bag-ong mga panghitabo sa audit — pindota ang Ipadapat aron ma-refresh.",
+      auditModalTitle: "Tigsusi sa Audit Log #{id}",
+      auditModalSub: "Pagmatuod sa Pagsunod sa RA 10173",
+      auditModalStatus: "Kahimtang sa Hitabo",
+      auditModalBlocked: "Gipugngan / Bandila sa Seguridad",
+      auditModalAuthorized: "Awtorisado / Gipamatud-an",
+      auditModalAction: "Gibuhat nga Aksyon",
+      auditModalActor: "Health Worker / Nagbuhat",
+      auditModalSubject: "Nalambigit nga Lumulupyo",
+      auditModalSubjectAll: "Tanang Lumulupyo / Sistema",
+      auditModalTimePht: "Oras (PHT)",
+      auditModalTimeUtc: "Oras (UTC)",
+      auditModalDetails: "Mga Detalye sa Hitabo",
+      auditModalDetailsDefault: "Kasagarang pag-access sa rekord sa operasyon",
+      auditModalIp: "Gikan nga IP Address",
+      auditModalUa: "Client User Agent",
+      auditModalUaDefault: "Standard Browser Client",
+      auditModalLegalHtml: "Girekord sumala sa <strong>Republic Act No. 10173 (Data Privacy Act of 2012)</strong>. Dili mabag-o ug append-only ang rekord.",
+      auditModalOpenRecord: "Ablihi ang Rekord sa Lumulupyo →",
+      pwResetTitle: "I-reset ang Password sa Lumulupyo",
+      pwResetPrompt: "Paghatag og temporaryo nga password alang kang {name}. Siguroha nga nasusi nimo ang iyang ID sa personal.",
+      pwResetLabel: "Gipili nga temporaryo nga password (opsyonal, labing menos 8 ka karakter):",
+      pwResetPlaceholder: "Biyai nga blangko alang sa awtomatik nga password",
+      pwResetErrMin: "Ang gipili nga password kinahanglan labing menos 8 ka karakter.",
+      pwResetBusy: "Gi-reset…",
+      btnResetPw: "I-reset ang Password",
+      pwResetDoneTitle: "Bag-ong Temporaryo nga Password",
+      pwResetDoneIntro: "Temporaryo nga password nga gihimo alang kang ",
+      pwResetDoneNote: "Palihug isulat kini o ihatag sa lumulupyo. Kinahanglan sila mag-sign in ug mag-ilis og password sa ilang profile.",
+      repPreviewTitle: "Ma-print nga Preview sa Report ({type})",
     },
     tl: {
       skipToMain: "Lumaktaw sa pangunahing nilalaman",
@@ -1023,6 +1130,59 @@
       conLowSpo2: "Mababang SpO2",
       conOverweight: "Sobra sa timbang",
       conUnderweight: "Kuláng sa timbang",
+
+      btnShowPw: "Ipakita",
+      btnHidePw: "Itago",
+      ariaShowPw: "Ipakita ang password",
+      ariaHidePw: "Itago ang password",
+      statusOfflineBanner: "⚠️ Naputol ang koneksyon sa internet. Awtomatikong magsi-sync ang datos kapag nakakonekta muli.",
+      statusOnlineBanner: "✓ Naibalik ang koneksyon. Na-sync na ang datos.",
+      btnNoConsent: "Walang pahintulot",
+      noConsentHint: "Kailangan ang pahintulot ng residente bago mabuksan ang kanyang indibidwal na rekord.",
+      cvColWeight: "Timbang (kg)",
+      cvColHeight: "Taas (cm)",
+      cvColBmi: "BMI",
+      cvColTemp: "Temperatura (°C)",
+      cvColPulse: "Pulso (bpm)",
+      cvColSpo2: "SpO2 (%)",
+      btnClose: "Isara",
+      btnCancel: "Kanselahin",
+      btnDone: "Tapos na",
+      auditMoreFilters: "Iba pang filter (health worker, mamamayan, estado, aksyon)",
+      auditInspect: "Suriin",
+      auditInspectAria: "Suriin ang audit record #{id}",
+      auditCsvNone: "Walang audit record na mai-export",
+      auditCsvDone: "Na-export na ang audit trail bilang CSV",
+      auditNewEvents: "May bagong naitalang audit event — pindutin ang Ilapat upang i-refresh.",
+      auditModalTitle: "Tagasuri ng Audit Log #{id}",
+      auditModalSub: "Pagpapatunay sa Pagsunod sa RA 10173",
+      auditModalStatus: "Estado ng Kaganapan",
+      auditModalBlocked: "Hinarangan / Bandila sa Seguridad",
+      auditModalAuthorized: "Awtorisado / Beripikado",
+      auditModalAction: "Isinagawang Aksyon",
+      auditModalActor: "Health Worker / Gumanap",
+      auditModalSubject: "Mamamayang Sanggunian",
+      auditModalSubjectAll: "Lahat ng Mamamayan / Sistema",
+      auditModalTimePht: "Oras (PHT)",
+      auditModalTimeUtc: "Oras (UTC)",
+      auditModalDetails: "Detalye ng Kaganapan",
+      auditModalDetailsDefault: "Karaniwang pag-access sa rekord ng operasyon",
+      auditModalIp: "Pinagmulang IP Address",
+      auditModalUa: "Client User Agent",
+      auditModalUaDefault: "Standard Browser Client",
+      auditModalLegalHtml: "Naitala alinsunod sa <strong>Republic Act No. 10173 (Data Privacy Act of 2012)</strong>. Ang rekord ay hindi mababago at append-only.",
+      auditModalOpenRecord: "Buksan ang Rekord ng Mamamayan →",
+      pwResetTitle: "I-reset ang Password ng Mamamayan",
+      pwResetPrompt: "Magbigay ng pansamantalang password para kay {name}. Tiyaking naberipika nang personal ang kanyang ID.",
+      pwResetLabel: "Pasadyang pansamantalang password (opsyonal, min 8 karakter):",
+      pwResetPlaceholder: "Iwanang blangko para sa awtomatikong password",
+      pwResetErrMin: "Ang pasadyang password ay dapat hindi bababa sa 8 karakter.",
+      pwResetBusy: "Nire-reset…",
+      btnResetPw: "I-reset ang Password",
+      pwResetDoneTitle: "Bagong Pansamantalang Password",
+      pwResetDoneIntro: "Pansamantalang password na ginawa para kay ",
+      pwResetDoneNote: "Pakisulat o ibigay ito sa mamamayan. Dapat silang mag-sign in at palitan ang password sa kanilang profile.",
+      repPreviewTitle: "Ma-print na Preview ng Ulat ({type})",
     },
   };
 
@@ -1294,7 +1454,7 @@
         if (!xScale || !yScale) return;
         var ctx = chart.ctx;
         ctx.save();
-        ctx.font = '700 11px "Segoe UI", system-ui, sans-serif';
+        ctx.font = '700 11px system-ui, -apple-system, "Segoe UI", sans-serif';
         ctx.fillStyle = "#14332b";
         ctx.textBaseline = "middle";
         ctx.textAlign = "left";
@@ -1932,15 +2092,27 @@
       row.appendChild(consentCell);
 
       var actionCell = U.el("td", { style: "text-align:right;" });
-      var button = U.el("button", {
-        class: citizen.consent ? "btn btn-primary" : "btn btn-secondary",
-        type: "button",
-        style: "min-height:2.1rem; padding:0.35rem 0.8rem; font-size:0.85rem;"
-      }, bt("btnOpenRecord"));
-      button.addEventListener("click", function () {
-        location.href = "/bhw/citizen-view.html?id=" + encodeURIComponent(citizen.id);
-      });
-      actionCell.appendChild(button);
+      if (citizen.consent) {
+        var button = U.el("button", {
+          class: "btn btn-primary",
+          type: "button",
+          style: "min-height:2.1rem; padding:0.35rem 0.8rem; font-size:0.85rem;"
+        }, bt("btnOpenRecord"));
+        button.addEventListener("click", function () {
+          location.href = "/bhw/citizen-view.html?id=" + encodeURIComponent(citizen.id);
+        });
+        actionCell.appendChild(button);
+      } else {
+        var lockedBtn = U.el("button", {
+          class: "btn btn-secondary",
+          type: "button",
+          disabled: "disabled",
+          "aria-disabled": "true",
+          title: bt("noConsentHint"),
+          style: "min-height:2.1rem; padding:0.35rem 0.8rem; font-size:0.85rem; opacity:0.68; cursor:not-allowed;"
+        }, bt("btnNoConsent"));
+        actionCell.appendChild(lockedBtn);
+      }
       row.appendChild(actionCell);
       rowsFrag.appendChild(row);
     });
@@ -1990,8 +2162,12 @@
     var chips = document.querySelectorAll("#searchTriageChips button.chip");
     chips.forEach(function (btn) {
       btn.addEventListener("click", function () {
-        chips.forEach(function (c) { c.classList.remove("is-active"); });
+        chips.forEach(function (c) {
+          c.classList.remove("is-active");
+          c.setAttribute("aria-pressed", "false");
+        });
         btn.classList.add("is-active");
+        btn.setAttribute("aria-pressed", "true");
         searchState.filter = btn.getAttribute("data-filter") || "all";
         applySearchFilter();
       });
@@ -2006,28 +2182,15 @@
   /* ---------------- citizen record ---------------- */
 
   function bmiCategory(value) {
-    if (value === null || value === undefined) return null;
-    if (value < 18.5) return "Underweight";
-    if (value < 25) return "Normal";
-    if (value < 30) return "Overweight";
-    return "Obese";
+    return API.Clinical.bmiCategory(value);
   }
 
   function bpCategory(systolic, diastolic) {
-    if (systolic === null || systolic === undefined) return null;
-    if (diastolic === null || diastolic === undefined) return null;
-    if (systolic >= 180 || diastolic >= 120) return "Crisis";
-    if (systolic >= 140 || diastolic >= 90) return "Stage 2";
-    if (systolic >= 130 || diastolic >= 80) return "Stage 1";
-    if (systolic >= 120) return "Elevated";
-    return "Normal";
+    return API.Clinical.bpCategory(systolic, diastolic);
   }
 
   function spo2Category(value) {
-    if (value === null || value === undefined) return null;
-    if (value < 90) return "Critical";
-    if (value < 95) return "Low";
-    return "Normal";
+    return API.Clinical.spo2Category(value);
   }
 
   function isMissing(value) {
@@ -2234,7 +2397,16 @@
     var table = U.el("table");
     var thead = U.el("thead");
     var headRow = U.el("tr");
-    [bt("auditColTime"), "Weight (kg)", "Height (cm)", "BMI", "Temp (°C)", "Pulse (bpm)", "SpO2 (%)", bt("cvVitalBp")].forEach(function (label, index) {
+    [
+      bt("auditColTime"),
+      bt("cvColWeight"),
+      bt("cvColHeight"),
+      bt("cvColBmi"),
+      bt("cvColTemp"),
+      bt("cvColPulse"),
+      bt("cvColSpo2"),
+      bt("cvVitalBp"),
+    ].forEach(function (label, index) {
       headRow.appendChild(U.el("th", index === 0 ? { scope: "col" } : { class: "num", scope: "col" }, label));
     });
     thead.appendChild(headRow);
@@ -2485,16 +2657,16 @@
     slip.appendChild(grid);
 
     var sigBlock = U.el("div", { class: "official-signature-block", style: "margin-top:1.5rem;" });
-    var sigFlex = U.el("div", { style: "display:flex; justify-content:space-between; gap:1rem;" });
-    
-    var sig1 = U.el("div");
-    sig1.appendChild(U.el("div", { style: "border-bottom:1.5px solid #000; width:220px; height:1.4rem;" }));
+    var sigFlex = U.el("div", { class: "referral-sig-row" });
+
+    var sig1 = U.el("div", { class: "referral-sig-box" });
+    sig1.appendChild(U.el("div", { class: "referral-sig-line" }));
     sig1.appendChild(U.el("div", { style: "font-size:0.75rem; margin-top:0.3rem; font-weight:600;" }, "Referring BHW / Health Worker"));
     sig1.appendChild(U.el("div", { style: "font-size:0.72rem; color:#4a655a;" }, API.getName() || "Barangay Health Worker"));
     sigFlex.appendChild(sig1);
 
-    var sig2 = U.el("div");
-    sig2.appendChild(U.el("div", { style: "border-bottom:1.5px solid #000; width:220px; height:1.4rem;" }));
+    var sig2 = U.el("div", { class: "referral-sig-box" });
+    sig2.appendChild(U.el("div", { class: "referral-sig-line" }));
     sig2.appendChild(U.el("div", { style: "font-size:0.75rem; margin-top:0.3rem; font-weight:600;" }, "Receiving RHU Doctor / Nurse"));
     sig2.appendChild(U.el("div", { style: "font-size:0.72rem; color:#4a655a;" }, "Rural Health Unit Mahinog"));
     sigFlex.appendChild(sig2);
@@ -2750,8 +2922,8 @@
       card.appendChild(header);
 
       var body = U.el("div", { class: "modal-body" });
-      body.appendChild(U.el("label", { style: "display:block; font-weight:600; margin-bottom:0.35rem;" }, bt("referReasonLabel")));
-      var reason = U.el("textarea", { name: "reason", required: true, style: "width:100%; min-height:90px; padding:0.55rem 0.65rem; font:inherit; font-size:0.95rem; border:1px solid #b9cdc6; border-radius:8px;" });
+      body.appendChild(U.el("label", { for: "referReasonInput", style: "display:block; font-weight:600; margin-bottom:0.35rem;" }, bt("referReasonLabel")));
+      var reason = U.el("textarea", { id: "referReasonInput", name: "reason", required: true, style: "width:100%; min-height:90px; padding:0.55rem 0.65rem; font:inherit; font-size:0.95rem; border:1px solid #b9cdc6; border-radius:8px;" });
       body.appendChild(reason);
       var reasonErr = U.el("p", { style: "color:#a5271d; font-size:0.85rem; margin-top:0.35rem; display:none;" }, bt("referReasonErr"));
       body.appendChild(reasonErr);
@@ -2823,22 +2995,30 @@
         var card = U.el("div", { class: "modal-card", style: "max-width: 480px; width: 100%;" });
 
         var header = U.el("div", { class: "modal-header" });
-        header.appendChild(U.el("h3", null, "Reset Citizen Password"));
-        var closeBtn = U.el("button", { class: "btn btn-ghost", type: "button", "aria-label": "Close" }, "✕");
+        header.appendChild(U.el("h3", null, bt("pwResetTitle")));
+        var closeBtn = U.el("button", { class: "btn btn-ghost", type: "button", "aria-label": bt("btnClose") }, "✕");
         header.appendChild(closeBtn);
         card.appendChild(header);
 
         var body = U.el("div", { class: "modal-body" });
-        var citizenName = (citizen && citizen.full_name) ? citizen.full_name : "this citizen";
-        body.appendChild(U.el("p", { style: "margin-bottom: 0.85rem;" }, "Issue a temporary password for " + citizenName + ". Ensure you have verified their resident or government ID in person."));
-        body.appendChild(U.el("label", { style: "display:block; font-weight:600; font-size:0.88rem; margin-bottom:0.35rem;" }, "Custom temporary password (optional, min 8 chars):"));
-        var pwInput = U.el("input", { type: "text", placeholder: "Leave blank for auto-generated password", style: "width:100%; padding:0.5rem 0.65rem; border:1px solid #b9cdc6; border-radius:8px; font-size:0.92rem;" });
+        var citizenName = (citizen && citizen.full_name) ? citizen.full_name : bt("roleCitizen");
+        body.appendChild(U.el("p", { style: "margin-bottom: 0.85rem;" }, bt("pwResetPrompt", { name: citizenName })));
+        body.appendChild(U.el("label", { for: "resetCitizenPwInput", style: "display:block; font-weight:600; font-size:0.88rem; margin-bottom:0.35rem;" }, bt("pwResetLabel")));
+        var pwInput = U.el("input", {
+          id: "resetCitizenPwInput",
+          type: "text",
+          placeholder: bt("pwResetPlaceholder"),
+          "aria-describedby": "resetCitizenPwErr",
+          style: "width:100%; padding:0.5rem 0.65rem; border:1px solid #b9cdc6; border-radius:8px; font-size:0.92rem;",
+        });
         body.appendChild(pwInput);
+        var pwErr = U.el("p", { id: "resetCitizenPwErr", class: "form-error", role: "alert", style: "display:none; margin-top:0.55rem; margin-bottom:0;" });
+        body.appendChild(pwErr);
         card.appendChild(body);
 
         var footer = U.el("div", { class: "modal-footer" });
-        var cancelBtn = U.el("button", { class: "btn btn-secondary", type: "button" }, "Cancel");
-        var confirmBtn = U.el("button", { class: "btn btn-primary", type: "button" }, "Reset Password");
+        var cancelBtn = U.el("button", { class: "btn btn-secondary", type: "button" }, bt("btnCancel"));
+        var confirmBtn = U.el("button", { class: "btn btn-primary", type: "button" }, bt("btnResetPw"));
         footer.appendChild(cancelBtn);
         footer.appendChild(confirmBtn);
         card.appendChild(footer);
@@ -2851,13 +3031,18 @@
         cancelBtn.onclick = closeDialog;
 
         confirmBtn.onclick = async function () {
+          pwErr.style.display = "none";
+          pwErr.textContent = "";
+          pwInput.removeAttribute("aria-invalid");
           var customVal = pwInput.value.trim();
           if (customVal && customVal.length < 8) {
-            alert("Custom password must be at least 8 characters long.");
+            pwErr.textContent = bt("pwResetErrMin");
+            pwErr.style.display = "block";
+            pwInput.setAttribute("aria-invalid", "true");
             pwInput.focus();
             return;
           }
-          setBusy(confirmBtn, true, "Resetting…");
+          setBusy(confirmBtn, true, bt("pwResetBusy"));
           try {
             var res = await API.apiFetch("/api/bhw/citizen/" + encodeURIComponent(citizenId) + "/reset-password", {
               method: "POST",
@@ -2868,24 +3053,24 @@
             var resBackdrop = U.el("div", { class: "modal-backdrop" });
             var resCard = U.el("div", { class: "modal-card", style: "max-width: 480px; width: 100%; text-align:center;" });
             var resHeader = U.el("div", { class: "modal-header" });
-            resHeader.appendChild(U.el("h3", null, "New Temporary Password"));
-            var resClose = U.el("button", { class: "btn btn-ghost", type: "button", "aria-label": "Close" }, "✕");
+            resHeader.appendChild(U.el("h3", null, bt("pwResetDoneTitle")));
+            var resClose = U.el("button", { class: "btn btn-ghost", type: "button", "aria-label": bt("btnClose") }, "✕");
             resHeader.appendChild(resClose);
             resCard.appendChild(resHeader);
 
             var resBody = U.el("div", { class: "modal-body", style: "padding: 1.5rem 1rem;" });
             var p1 = U.el("p", { style: "margin-bottom:0.75rem;" });
-            p1.appendChild(document.createTextNode("Temporary password generated for "));
+            p1.appendChild(document.createTextNode(bt("pwResetDoneIntro")));
             p1.appendChild(U.el("strong", null, citizenName));
             p1.appendChild(document.createTextNode(":"));
             resBody.appendChild(p1);
             var codeBox = U.el("div", { style: "font-size:1.35rem; font-family:monospace; font-weight:700; color:#0f6b53; background:#eaf4f0; padding:0.75rem; border-radius:8px; border:1px solid #b0c4bc; margin-bottom:1rem; user-select:all;" }, res.temporary_password);
             resBody.appendChild(codeBox);
-            resBody.appendChild(U.el("p", { style: "font-size:0.85rem; color:var(--ink-soft);" }, "Please write this down or hand it to the citizen. They should sign in and update their password on their profile."));
+            resBody.appendChild(U.el("p", { style: "font-size:0.85rem; color:var(--ink-soft);" }, bt("pwResetDoneNote")));
             resCard.appendChild(resBody);
 
             var resFooter = U.el("div", { class: "modal-footer", style: "justify-content:center;" });
-            var doneBtn = U.el("button", { class: "btn btn-primary", type: "button" }, "Done");
+            var doneBtn = U.el("button", { class: "btn btn-primary", type: "button" }, bt("btnDone"));
             resFooter.appendChild(doneBtn);
             resCard.appendChild(resFooter);
 
@@ -2898,7 +3083,8 @@
 
             U.toast("Citizen password reset successfully", "success");
           } catch (err) {
-            alert("Error: " + (err.message || "Failed to reset password"));
+            pwErr.textContent = err.message || "Failed to reset password.";
+            pwErr.style.display = "block";
             setBusy(confirmBtn, false);
           }
         };
@@ -2975,16 +3161,16 @@
     });
     var headerTitle = U.el("div");
     headerTitle.appendChild(
-      U.el("h3", { style: "margin:0; font-size:1.15rem; color:#fff;" }, "Audit Log Inspector #" + (entry.id || "—"))
+      U.el("h3", { style: "margin:0; font-size:1.15rem; color:#fff;" }, bt("auditModalTitle", { id: entry.id || "—" }))
     );
     headerTitle.appendChild(
-      U.el("small", { style: "color: rgba(255,255,255,0.85); font-weight: 500;" }, "RA 10173 Compliance Verification")
+      U.el("small", { style: "color: rgba(255,255,255,0.85); font-weight: 500;" }, bt("auditModalSub"))
     );
     header.appendChild(headerTitle);
 
     var closeBtn = U.el(
       "button",
-      { class: "btn btn-ghost", type: "button", "aria-label": "Close" },
+      { class: "btn btn-ghost", type: "button", "aria-label": bt("btnClose") },
       "✕"
     );
     header.appendChild(closeBtn);
@@ -3007,39 +3193,39 @@
     }
 
     addDetailItem(
-      "Event Status",
+      bt("auditModalStatus"),
       U.el(
         "span",
         { class: isBlocked ? "badge badge-danger" : "badge badge-ok" },
-        isBlocked ? "Blocked / Security Flag" : "Authorized / Verified"
+        isBlocked ? bt("auditModalBlocked") : bt("auditModalAuthorized")
       )
     );
-    addDetailItem("Action Performed", U.el("strong", null, (entry.action || "—").replace(/_/g, " ")));
+    addDetailItem(bt("auditModalAction"), U.el("strong", null, (entry.action || "—").replace(/_/g, " ")));
 
     var actorFrag = document.createDocumentFragment();
     actorFrag.appendChild(document.createTextNode((entry.bhw_name || "—") + " "));
     actorFrag.appendChild(U.el("span", { style: "color:var(--ink-soft); font-size:0.8rem;" }, "(ID: " + (entry.bhw || "—") + ")"));
-    addDetailItem("Health Worker / Actor", actorFrag);
+    addDetailItem(bt("auditModalActor"), actorFrag);
 
     var citFrag = document.createDocumentFragment();
-    citFrag.appendChild(document.createTextNode(entry.citizen_name || "All Citizens / System"));
+    citFrag.appendChild(document.createTextNode(entry.citizen_name || bt("auditModalSubjectAll")));
     if (entry.citizen) {
       citFrag.appendChild(document.createTextNode(" "));
       citFrag.appendChild(U.el("span", { style: "color:var(--ink-soft); font-size:0.8rem;" }, "(ID: " + entry.citizen + ")"));
     }
-    addDetailItem("Citizen Subject", citFrag);
+    addDetailItem(bt("auditModalSubject"), citFrag);
 
     var phtFrag = document.createDocumentFragment();
     phtFrag.appendChild(document.createTextNode(U.fmtDT(entry.time) + " "));
     phtFrag.appendChild(U.el("span", { style: "color:var(--ink-soft); font-size:0.8rem;" }, "(" + U.fmtAge(entry.time) + ")"));
-    addDetailItem("Timestamp (PHT)", phtFrag);
+    addDetailItem(bt("auditModalTimePht"), phtFrag);
 
-    addDetailItem("Timestamp (UTC)", U.el("code", null, (entry.time || "—") + "Z"));
-    addDetailItem("Event Details", entry.details || "Standard operational record access");
-    addDetailItem("Origin IP Address", U.el("code", null, entry.ip || "—"));
+    addDetailItem(bt("auditModalTimeUtc"), U.el("code", null, U.fmtUTC(entry.time)));
+    addDetailItem(bt("auditModalDetails"), entry.details || bt("auditModalDetailsDefault"));
+    addDetailItem(bt("auditModalIp"), U.el("code", null, entry.ip || "—"));
     addDetailItem(
-      "Client User Agent",
-      U.el("span", { style: "font-size:0.82rem; word-break:break-all; color:var(--ink-soft); font-family:monospace;" }, entry.user_agent || "Standard Browser Client")
+      bt("auditModalUa"),
+      U.el("span", { style: "font-size:0.82rem; word-break:break-all; color:var(--ink-soft); font-family:monospace;" }, entry.user_agent || bt("auditModalUaDefault"))
     );
 
     body.appendChild(dl);
@@ -3050,7 +3236,7 @@
     });
     legalBox.innerHTML =
       '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0;"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>' +
-      "<span>Logged in accordance with the <strong>Republic Act No. 10173 (Data Privacy Act of 2012)</strong>. Record is immutable and append-only.</span>";
+      "<span>" + bt("auditModalLegalHtml") + "</span>";
     body.appendChild(legalBox);
     card.appendChild(body);
 
@@ -3058,48 +3244,36 @@
       class: "modal-footer",
       style: "display:flex; justify-content:space-between; align-items:center;",
     });
-    if (entry.citizen) {
+    if (entry.citizen && !isBlocked) {
       var viewCitizenLink = U.el(
         "a",
         {
-          href: "/bhw/citizen-view.html?id=" + entry.citizen,
+          href: "/bhw/citizen-view.html?id=" + encodeURIComponent(entry.citizen),
           class: "btn btn-secondary",
           style: "font-size:0.88rem;",
         },
-        "Open Citizen Record →"
+        bt("auditModalOpenRecord")
       );
       footer.appendChild(viewCitizenLink);
     } else {
       footer.appendChild(U.el("span"));
     }
 
-    var dismissBtn = U.el("button", { class: "btn btn-primary", type: "button" }, "Done");
+    var dismissBtn = U.el("button", { class: "btn btn-primary", type: "button" }, bt("btnDone"));
     footer.appendChild(dismissBtn);
     card.appendChild(footer);
 
     backdrop.appendChild(card);
     document.body.appendChild(backdrop);
 
-    function close() {
-      if (backdrop.parentNode) backdrop.parentNode.removeChild(backdrop);
-      document.removeEventListener("keydown", onKey);
-    }
-    function onKey(e) {
-      if (e.key === "Escape" || e.key === "Esc") close();
-    }
-
-    closeBtn.onclick = close;
-    dismissBtn.onclick = close;
-    backdrop.onclick = function (e) {
-      if (e.target === backdrop) close();
-    };
-    document.addEventListener("keydown", onKey);
-    dismissBtn.focus();
+    var closeDialog = U.openDialog(backdrop, dismissBtn);
+    closeBtn.onclick = closeDialog;
+    dismissBtn.onclick = closeDialog;
   }
 
   function exportAuditToCsv(rows) {
     if (!rows || !rows.length) {
-      U.toast("No audit records to export", "info");
+      U.toast(bt("auditCsvNone"), "info");
       return;
     }
     var headers = [
@@ -3142,7 +3316,7 @@
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-    U.toast("Audit trail exported as CSV", "success");
+    U.toast(bt("auditCsvDone"), "success");
   }
 
   function renderAudit(rows) {
@@ -3165,6 +3339,7 @@
       bt("auditColStatus"),
       bt("auditColDetails"),
       bt("auditColIp"),
+      "",
     ].forEach(function (label) {
       headRow.appendChild(U.el("th", { scope: "col" }, label));
     });
@@ -3178,15 +3353,14 @@
       var row = U.el("tr", {
         class: "audit-row" + (isBlocked ? " audit-row-blocked" : ""),
         tabindex: "0",
-        role: "button",
-        "aria-label": "Inspect audit record #" + entry.id,
+        "aria-label": bt("auditInspectAria", { id: entry.id }),
       });
-      row.title = "Click to inspect complete audit details & compliance trace";
 
       var tdTime = U.el(
         "td",
         {
           class: "cell-time nowrap",
+          title: U.fmtUTC(entry.time),
           style: "font-weight:600; text-align:left;",
         },
         U.fmtDT(entry.time)
@@ -3229,10 +3403,29 @@
         )
       );
 
-      row.addEventListener("click", function () {
+      var inspectTd = U.el("td", { style: "text-align:right; white-space:nowrap;" });
+      var inspectBtn = U.el(
+        "button",
+        {
+          type: "button",
+          class: "btn btn-secondary btn-sm",
+          "aria-label": bt("auditInspectAria", { id: entry.id }),
+        },
+        bt("auditInspect")
+      );
+      inspectBtn.addEventListener("click", function (e) {
+        e.stopPropagation();
+        showAuditDetailsModal(entry);
+      });
+      inspectTd.appendChild(inspectBtn);
+      row.appendChild(inspectTd);
+
+      row.addEventListener("click", function (e) {
+        if (e.target && e.target.closest("button, a")) return;
         showAuditDetailsModal(entry);
       });
       row.addEventListener("keydown", function (e) {
+        if (e.target && e.target !== row) return;
         if (e.key === "Enter" || e.key === " ") {
           e.preventDefault();
           showAuditDetailsModal(entry);
@@ -3343,14 +3536,26 @@
       });
     }
 
+    var auditNoticeShown = false;
+
     loadAudit();
     onLangRefresh = function () {
       renderAudit(currentAuditRows);
     };
 
-    // Live sync for audit trail
+    // Live sync for audit trail without disrupting active modal/filter inspection.
     API.initRealtimeSync({
       onReading: function () {
+        var modalOpen = Boolean(document.querySelector(".modal-backdrop"));
+        var filtering = form && document.activeElement && form.contains(document.activeElement);
+        if (modalOpen || filtering) {
+          if (!auditNoticeShown) {
+            auditNoticeShown = true;
+            U.toast(bt("auditNewEvents"), "info");
+          }
+          return;
+        }
+        auditNoticeShown = false;
         loadAudit();
       },
     });
@@ -3413,8 +3618,8 @@
       var card = U.el("div", { class: "modal-card" });
 
       var header = U.el("div", { class: "modal-header" });
-      header.appendChild(U.el("h3", null, "Printable " + reportType.toUpperCase() + " Report Preview"));
-      var closeBtn = U.el("button", { class: "btn btn-ghost", type: "button", "aria-label": "Close" }, "✕");
+      header.appendChild(U.el("h3", null, bt("repPreviewTitle", { type: reportType.toUpperCase() })));
+      var closeBtn = U.el("button", { class: "btn btn-ghost", type: "button", "aria-label": bt("btnClose") }, "✕");
       header.appendChild(closeBtn);
       card.appendChild(header);
 
@@ -3710,6 +3915,34 @@
     };
   }
 
+  function showOathVerifyErrorModal(err, callback) {
+    var existing = document.getElementById("staffOathVerifyErrBackdrop");
+    if (existing) existing.parentNode.removeChild(existing);
+    var backdrop = U.el("div", { id: "staffOathVerifyErrBackdrop", class: "modal-backdrop" });
+    var card = U.el("div", { class: "modal-card", style: "max-width: 460px; width: 100%;" });
+    var header = U.el("div", { class: "modal-header" });
+    header.appendChild(U.el("h3", { style: "margin:0; font-size:1.05rem; color:#fff;" }, "Privacy Compliance Check Required"));
+    card.appendChild(header);
+    var body = U.el("div", { class: "modal-body" });
+    body.appendChild(U.el("p", { style: "margin:0 0 0.65rem;" }, "We could not verify your RA 10173 privacy oath status with the server. Access to staff workflows requires verification."));
+    if (err && err.message) {
+      body.appendChild(U.el("p", { class: "form-error", role: "alert", style: "display:block; margin:0;" }, err.message));
+    }
+    card.appendChild(body);
+    var footer = U.el("div", { class: "modal-footer", style: "justify-content:flex-end;" });
+    var retryBtn = U.el("button", { class: "btn btn-primary", type: "button" }, "Retry Verification");
+    footer.appendChild(retryBtn);
+    card.appendChild(footer);
+    backdrop.appendChild(card);
+    document.body.appendChild(backdrop);
+
+    var closeDialog = U.openDialog(backdrop, retryBtn, { persistent: true });
+    retryBtn.onclick = function () {
+      closeDialog();
+      checkStaffPrivacyOath(callback);
+    };
+  }
+
   async function checkStaffPrivacyOath(callback) {
     if (!API.getToken()) return;
     if (API.getPrivacyAcknowledged() === true) {
@@ -3723,7 +3956,8 @@
         if (typeof callback === "function") callback();
         return;
       }
-    } catch (_) {
+    } catch (err) {
+      showOathVerifyErrorModal(err, callback);
       return;
     }
     showStaffPenaltiesModal(callback);
@@ -3753,14 +3987,16 @@
       return;
     }
 
-    checkStaffPrivacyOath();
-
-    if (page === "bhw-dashboard") initDashboard();
-    else if (page === "bhw-search") initSearch();
-    else if (page === "bhw-citizen-view") initCitizenView();
-    else if (page === "bhw-audit") initAudit();
-    else if (page === "bhw-reports") initReports();
-
     bindBhwLangDropdowns();
+
+    function bootStaffPage() {
+      if (page === "bhw-dashboard") initDashboard();
+      else if (page === "bhw-search") initSearch();
+      else if (page === "bhw-citizen-view") initCitizenView();
+      else if (page === "bhw-audit") initAudit();
+      else if (page === "bhw-reports") initReports();
+    }
+
+    checkStaffPrivacyOath(bootStaffPage);
   });
 })();

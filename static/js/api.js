@@ -11,49 +11,72 @@
   var NAME_KEY = "hk_name";
   var PRIVACY_ACK_KEY = "hk_privacy_ack";
   var LANG_KEY = "hk_lang";
+  var memStore = Object.create(null);
+
+  function lsGet(key) {
+    try {
+      return localStorage.getItem(key);
+    } catch (_) {
+      return Object.prototype.hasOwnProperty.call(memStore, key) ? memStore[key] : null;
+    }
+  }
+
+  function lsSet(key, value) {
+    memStore[key] = String(value);
+    try {
+      localStorage.setItem(key, value);
+    } catch (_) {}
+  }
+
+  function lsRemove(key) {
+    delete memStore[key];
+    try {
+      localStorage.removeItem(key);
+    } catch (_) {}
+  }
 
   function getLang() {
-    var lang = localStorage.getItem(LANG_KEY);
+    var lang = lsGet(LANG_KEY);
     return lang === "ceb" || lang === "tl" ? lang : "en";
   }
 
   function setLang(lang) {
     var next = lang === "ceb" || lang === "tl" ? lang : "en";
-    localStorage.setItem(LANG_KEY, next);
+    lsSet(LANG_KEY, next);
     document.documentElement.lang = next;
     return next;
   }
 
   function getToken() {
-    return localStorage.getItem(TOKEN_KEY);
+    return lsGet(TOKEN_KEY);
   }
 
   function getRole() {
-    return localStorage.getItem(ROLE_KEY);
+    return lsGet(ROLE_KEY);
   }
 
   function getName() {
-    return localStorage.getItem(NAME_KEY);
+    return lsGet(NAME_KEY);
   }
 
   function getPrivacyAcknowledged() {
-    var val = localStorage.getItem(PRIVACY_ACK_KEY);
+    var val = lsGet(PRIVACY_ACK_KEY);
     if (val === "1") return true;
     if (val === "0") return false;
     return null;
   }
 
   function setPrivacyAcknowledged(acknowledged) {
-    localStorage.setItem(PRIVACY_ACK_KEY, acknowledged ? "1" : "0");
+    lsSet(PRIVACY_ACK_KEY, acknowledged ? "1" : "0");
   }
 
   function saveSession(token, role, fullName, privacyAck) {
-    localStorage.setItem(TOKEN_KEY, token);
-    localStorage.setItem(ROLE_KEY, role);
+    lsSet(TOKEN_KEY, token);
+    lsSet(ROLE_KEY, role);
     if (fullName === undefined || fullName === null) {
-      localStorage.removeItem(NAME_KEY);
+      lsRemove(NAME_KEY);
     } else {
-      localStorage.setItem(NAME_KEY, fullName);
+      lsSet(NAME_KEY, fullName);
     }
     if (privacyAck !== undefined) {
       setPrivacyAcknowledged(Boolean(privacyAck));
@@ -61,15 +84,41 @@
   }
 
   function clearSession() {
-    localStorage.removeItem(TOKEN_KEY);
-    localStorage.removeItem(ROLE_KEY);
-    localStorage.removeItem(NAME_KEY);
-    localStorage.removeItem(PRIVACY_ACK_KEY);
+    lsRemove(TOKEN_KEY);
+    lsRemove(ROLE_KEY);
+    lsRemove(NAME_KEY);
+    lsRemove(PRIVACY_ACK_KEY);
     try {
       sessionStorage.removeItem("bhm:staff_privacy_oath");
       sessionStorage.removeItem("bhm:citizen_terms_seen");
     } catch (_) {}
   }
+
+  /* Canonical clinical range classifiers mirroring backend vitals.py. */
+  var Clinical = {
+    bmiCategory: function (value) {
+      if (value === null || value === undefined) return null;
+      if (value < 18.5) return "Underweight";
+      if (value < 25) return "Normal";
+      if (value < 30) return "Overweight";
+      return "Obese";
+    },
+    bpCategory: function (systolic, diastolic) {
+      if (systolic === null || systolic === undefined) return null;
+      if (diastolic === null || diastolic === undefined) return null;
+      if (systolic >= 180 || diastolic >= 120) return "Crisis";
+      if (systolic >= 140 || diastolic >= 90) return "Stage 2";
+      if (systolic >= 130 || diastolic >= 80) return "Stage 1";
+      if (systolic >= 120) return "Elevated";
+      return "Normal";
+    },
+    spo2Category: function (value) {
+      if (value === null || value === undefined) return null;
+      if (value < 90) return "Critical";
+      if (value < 95) return "Low";
+      return "Normal";
+    },
+  };
 
   function isStaff(role) {
     return role === "bhw" || role === "admin";
@@ -898,6 +947,8 @@
     if (skip && tr("skipToMain") !== "skipToMain") skip.textContent = tr("skipToMain");
     var logoutBtn = document.getElementById("logoutBtn");
     if (logoutBtn && tr("navLogout") !== "navLogout") logoutBtn.textContent = tr("navLogout");
+    updatePasswordToggleTexts();
+    updateOfflineBannerText();
     renderWhoami();
   }
 
@@ -944,6 +995,7 @@
     loginPageForRole: loginPageForRole,
     homeForRole: homeForRole,
     initRealtimeSync: initRealtimeSync,
+    Clinical: Clinical,
     UI: UI,
   };
 
@@ -992,22 +1044,43 @@
     initPasswordToggles();
   });
 
+  function trShared(key, fallback) {
+    if (activeTranslator) {
+      var val = activeTranslator(key);
+      if (val && val !== key) return val;
+    }
+    return fallback;
+  }
+
+  function applyPasswordToggleState(btn, visible) {
+    btn.textContent = visible ? trShared("btnHidePw", "Hide") : trShared("btnShowPw", "Show");
+    btn.setAttribute("aria-label", visible ? trShared("ariaHidePw", "Hide password") : trShared("ariaShowPw", "Show password"));
+    btn.setAttribute("aria-pressed", visible ? "true" : "false");
+  }
+
+  function updatePasswordToggleTexts() {
+    document.querySelectorAll(".btn-toggle-pw").forEach(function (btn) {
+      var wrap = btn.closest(".password-wrap");
+      var input = (wrap && wrap.querySelector("input")) || btn.previousElementSibling;
+      var visible = input ? input.type === "text" : btn.getAttribute("aria-pressed") === "true";
+      applyPasswordToggleState(btn, visible);
+    });
+  }
+
   /* Shared accessible Show/Hide password toggle for auth and profile forms. */
   function initPasswordToggles() {
     document.querySelectorAll(".btn-toggle-pw").forEach(function (btn) {
       if (btn.dataset.pwBound === "1") return;
       btn.dataset.pwBound = "1";
       btn.removeAttribute("tabindex");
-      btn.setAttribute("aria-pressed", "false");
+      applyPasswordToggleState(btn, false);
       btn.addEventListener("click", function () {
         var wrap = btn.closest(".password-wrap");
         var input = (wrap && wrap.querySelector("input")) || btn.previousElementSibling;
         if (!input) return;
         var show = input.type === "password";
         input.type = show ? "text" : "password";
-        btn.textContent = show ? "Hide" : "Show";
-        btn.setAttribute("aria-label", show ? "Hide password" : "Show password");
-        btn.setAttribute("aria-pressed", show ? "true" : "false");
+        applyPasswordToggleState(btn, show);
       });
     });
   }
@@ -1157,6 +1230,22 @@
     document.body.appendChild(dock);
   }
 
+  function updateOfflineBannerText() {
+    var banner = document.getElementById("offlineBanner");
+    if (!banner || banner.style.display === "none") return;
+    if (banner.classList.contains("is-offline")) {
+      banner.textContent = trShared(
+        "statusOfflineBanner",
+        "⚠️ Internet connection interrupted. Changes will synchronize automatically once reconnected."
+      );
+    } else if (banner.classList.contains("is-online")) {
+      banner.textContent = trShared(
+        "statusOnlineBanner",
+        "✓ Connection restored. Data synchronized."
+      );
+    }
+  }
+
   /* Ambient offline indicator */
   function initOfflineIndicator() {
     var banner = document.getElementById("offlineBanner");
@@ -1175,10 +1264,16 @@
       if (!navigator.onLine) {
         banner.className = "offline-banner is-offline";
         banner.style.display = "block";
-        banner.textContent = "⚠️ Internet connection interrupted. Changes will synchronize automatically once reconnected.";
+        banner.textContent = trShared(
+          "statusOfflineBanner",
+          "⚠️ Internet connection interrupted. Changes will synchronize automatically once reconnected."
+        );
       } else if (banner.classList.contains("is-offline")) {
         banner.className = "offline-banner is-online";
-        banner.textContent = "✓ Connection restored. Data synchronized.";
+        banner.textContent = trShared(
+          "statusOnlineBanner",
+          "✓ Connection restored. Data synchronized."
+        );
         setTimeout(function () {
           if (navigator.onLine) {
             banner.style.display = "none";

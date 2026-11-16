@@ -18,9 +18,9 @@
       if (y === null || y === undefined) return;
       ctx.save();
       ctx.strokeStyle = "#a5271d";
-      ctx.lineDash = [6, 4];
+      if (ctx.setLineDash) ctx.setLineDash([6, 4]);
       ctx.lineWidth = 1.5;
-      ctx.font = "11px var(--font, sans-serif)";
+      ctx.font = '11px system-ui, -apple-system, "Segoe UI", sans-serif';
       ctx.fillStyle = "#a5271d";
       ctx.textAlign = "right";
       ctx.textBaseline = "bottom";
@@ -157,7 +157,7 @@
       bhwNotesFrom: "From",
       bhwNotesRefBadge: "RHU Referral",
       feverThresholdLabel: "Fever ≥ 37.9 °C",
-      chartsUnavailMini: "Charts unavailable (the Chart.js CDN is unreachable) — open History for the full table.",
+      chartsUnavailMini: "Charts unavailable (the chart script failed to load) — open History for the full table.",
       notEnoughBp: "Not enough blood pressure readings yet to show a trend.",
       notEnoughWeight: "Not enough weight readings yet to show a trend.",
       trendNoChange: "no change",
@@ -257,7 +257,7 @@
       needsAttentionLegend: "Needs attention",
       loadingReadings: "Loading your readings…",
       noReadingsHistory: "No readings yet. After your first kiosk measurement the table and charts will appear here.",
-      chartsUnavailHistory: "Charts could not load (the Chart.js CDN is unreachable). The table below still lists every reading.",
+      chartsUnavailHistory: "Charts could not load (the chart script failed to load). The table below still lists every reading.",
       filterLabel: "Filter readings",
       filterPlaceholder: "Filter by date, BP, BMI…",
       rangeAll: "All time",
@@ -444,6 +444,24 @@
       fpErrMismatch: "Passwords do not match. Please verify both fields.",
       fpToastOk: "Password reset complete. You can now sign in.",
       fpErrFallback: "Failed to reset password. Please check your details.",
+      btnShowPw: "Show",
+      btnHidePw: "Hide",
+      ariaShowPw: "Show password",
+      ariaHidePw: "Hide password",
+      statusOfflineBanner: "⚠️ Internet connection interrupted. Changes will synchronize automatically once reconnected.",
+      statusOnlineBanner: "✓ Connection restored. Data synchronized.",
+      regPrivacyNote: "Your account automatically syncs with the Barangay Health Kiosk. Your readings remain private under RA 10173 until you choose to grant health worker consent.",
+      regElderGuideTitle: "Need help creating an account? (Step-by-step guide)",
+      regElderStep1: "<strong>1. Choose a username:</strong> Pick an easy-to-remember username with no spaces (for example, <em>juan.cruz</em>) to sign in on both this portal and the health kiosk.",
+      regElderStep2: "<strong>2. Check your password:</strong> Use at least 8 characters and tap <strong>Show</strong> inside the box to confirm your typing.",
+      regElderStep3: "<strong>3. Need in-person help?</strong> Ask your Barangay Health Worker (BHW) at the barangay health station to assist you.",
+      alertSpo2Low: "Low Oxygen Saturation ({val}%). Please recheck at the health station or consult your Barangay Health Worker.",
+      deltaNoChange: "No change",
+      valFullNameReq: "Full name is required.",
+      valFullNameMin: "Enter your full name.",
+      valBirthReq: "Birthdate is required.",
+      valBirthFuture: "Birthdate cannot be in the future.",
+      valBirthMinYear: "Check the year of your birthdate.",
     },
     ceb: {
       roleCitizen: "Lumulupyo",
@@ -849,6 +867,24 @@
       fpErrMismatch: "Wala magtugma ang mga password. Palihug susiha.",
       fpToastOk: "Nahuman na ang pag-reset. Mahimo ka nang mag-sign in.",
       fpErrFallback: "Napakyas ang pag-reset sa password. Palihug susiha ang imong detalye.",
+      btnShowPw: "Ipakita",
+      btnHidePw: "Tagoa",
+      ariaShowPw: "Ipakita ang password",
+      ariaHidePw: "Tagoa ang password",
+      statusOfflineBanner: "⚠️ Naputol ang koneksyon sa internet. Mo-sync ra ang mga kausaban kung mabalik ang koneksyon.",
+      statusOnlineBanner: "✓ Nabalik na ang koneksyon. Na-sync na ang datos.",
+      regPrivacyNote: "Ang imong account awtomatikong mag-sync sa Barangay Health Kiosk. Pribado ang imong mga sukod ubos sa RA 10173 hangtod mohatag ka og pagtugot sa health worker.",
+      regElderGuideTitle: "Nagkinahanglan og tabang sa paghimo og account? (Lakang-lakang nga giya)",
+      regElderStep1: "<strong>1. Pagpili og username:</strong> Pagpili og sayon hinumduman nga username nga walay espasyo (pananglitan, <em>juan.cruz</em>) aron maka-sign in sa portal ug sa kiosk.",
+      regElderStep2: "<strong>2. Susiha ang imong password:</strong> Gamita ang labing menos 8 ka karakter ug pindota ang <strong>Ipakita</strong> aron makumpirma ang imong gi-type.",
+      regElderStep3: "<strong>3. Nagkinahanglan og personal nga tabang?</strong> Pangayo og tabang sa Barangay Health Worker (BHW) sa health station.",
+      alertSpo2Low: "Ubos nga Antas sa Oksiheno ({val}%). Palihug pagsukod pag-usab sa health station o pakigkonsulta sa imong BHW.",
+      deltaNoChange: "Walay kausaban",
+      valFullNameReq: "Gikinahanglan ang tibuok ngalan.",
+      valFullNameMin: "Isulat ang imong tibuok ngalan.",
+      valBirthReq: "Gikinahanglan ang petsa sa pagkatawo.",
+      valBirthFuture: "Dili mahimong umaabot ang petsa sa pagkatawo.",
+      valBirthMinYear: "Susiha ang tuig sa imong pagkatawo.",
     },
     tl: {
       roleCitizen: "Mamamayan",
@@ -1254,6 +1290,24 @@
       fpErrMismatch: "Hindi magkatugma ang mga password. Pakisuri.",
       fpToastOk: "Kumpleto na ang pag-reset. Maaari ka nang mag-sign in.",
       fpErrFallback: "Nabigo ang pag-reset ng password. Pakisuri ang iyong detalye.",
+      btnShowPw: "Ipakita",
+      btnHidePw: "Itago",
+      ariaShowPw: "Ipakita ang password",
+      ariaHidePw: "Itago ang password",
+      statusOfflineBanner: "⚠️ Naputol ang koneksyon sa internet. Awtomatikong magsi-sync ang datos kapag nakakonekta muli.",
+      statusOnlineBanner: "✓ Naibalik ang koneksyon. Na-sync na ang datos.",
+      regPrivacyNote: "Awtomatikong magsi-sync ang iyong account sa Barangay Health Kiosk. Nananatiling pribado ang iyong mga sukat sa ilalim ng RA 10173 hanggang bigyan mo ng pahintulot ang health worker.",
+      regElderGuideTitle: "Kailangan ng tulong sa paggawa ng account? (Hakbang-hakbang na gabay)",
+      regElderStep1: "<strong>1. Pumili ng username:</strong> Pumili ng madaling tandaan na username na walang espasyo (halimbawa, <em>juan.cruz</em>) upang makapag-sign in sa portal at sa kiosk.",
+      regElderStep2: "<strong>2. Suriin ang password:</strong> Gumamit ng hindi bababa sa 8 karakter at pindutin ang <strong>Ipakita</strong> sa loob ng kahon upang makita ang iyong nai-type.",
+      regElderStep3: "<strong>3. Kailangan ng personal na tulong?</strong> Magpatulong sa Barangay Health Worker (BHW) sa health station.",
+      alertSpo2Low: "Mababang Antas ng Oxygen ({val}%). Magpasukat muli sa health station o kumonsulta sa iyong BHW.",
+      deltaNoChange: "Walang pagbabago",
+      valFullNameReq: "Kinakailangan ang buong pangalan.",
+      valFullNameMin: "Ilagay ang iyong buong pangalan.",
+      valBirthReq: "Kinakailangan ang petsa ng kapanganakan.",
+      valBirthFuture: "Hindi maaaring nasa hinaharap ang petsa ng kapanganakan.",
+      valBirthMinYear: "Suriin ang taon ng iyong kapanganakan.",
     },
   };
 
@@ -1353,28 +1407,15 @@
   /* ---------------- classification (display only) ---------------- */
 
   function bmiCategory(value) {
-    if (value === null || value === undefined) return null;
-    if (value < 18.5) return "Underweight";
-    if (value < 25) return "Normal";
-    if (value < 30) return "Overweight";
-    return "Obese";
+    return API.Clinical.bmiCategory(value);
   }
 
   function bpCategory(systolic, diastolic) {
-    if (systolic === null || systolic === undefined) return null;
-    if (diastolic === null || diastolic === undefined) return null;
-    if (systolic >= 180 || diastolic >= 120) return "Crisis";
-    if (systolic >= 140 || diastolic >= 90) return "Stage 2";
-    if (systolic >= 130 || diastolic >= 80) return "Stage 1";
-    if (systolic >= 120) return "Elevated";
-    return "Normal";
+    return API.Clinical.bpCategory(systolic, diastolic);
   }
 
   function spo2Category(value) {
-    if (value === null || value === undefined) return null;
-    if (value < 90) return "Critical";
-    if (value < 95) return "Low";
-    return "Normal";
+    return API.Clinical.spo2Category(value);
   }
 
   function isMissing(value) {
@@ -1566,7 +1607,7 @@
     var epsilon = places === 0 ? 0.5 : 0.05;
     var sign = diff > 0 ? "+" : diff < 0 ? "−" : "±";
     var abs = Math.abs(diff);
-    if (abs < epsilon) return U.el("span", { class: "delta neutral" }, "No change");
+    if (abs < epsilon) return U.el("span", { class: "delta neutral" }, t("deltaNoChange"));
     var isGood = lowerIsBetter ? diff < 0 : diff > 0;
     var tone = neutral ? "neutral" : isGood ? "good" : "warn";
     var text = (diff > 0 ? "▲ " : "▼ ") + sign + abs.toFixed(places) + (unit ? " " + unit : "");
@@ -1825,8 +1866,6 @@
 
     var calloutBox = U.el("div", {
       class: "statutory-callout",
-      style:
-        "background:var(--green-050); border-left:4px solid var(--green-600); padding:0.85rem 1rem; border-radius:6px; margin:0.9rem 0;",
     });
     calloutBox.appendChild(
       U.el(
@@ -1961,8 +2000,10 @@
         alerts.push(t("alertBpStage1", { bp: bpPair }));
       }
     }
-    if (!isMissing(log.spo2) && log.spo2 <= 90) {
+    if (!isMissing(log.spo2) && log.spo2 < 90) {
       alerts.push(t("alertSpo2Crit", { val: log.spo2 }));
+    } else if (!isMissing(log.spo2) && log.spo2 === 90) {
+      alerts.push(t("alertSpo2Low", { val: log.spo2 }));
     }
     // Spec alert rule: temperature >= 37.9 (was 38.5, which missed
     // low-grade fevers the backend already counts as alerts).
@@ -2413,7 +2454,9 @@
         ? "missing"
         : bpCat === "Normal"
           ? null
-          : "abnormal",
+          : bpCat === "Elevated"
+            ? "attention"
+            : "abnormal",
       bpGauge,
       bpDelta,
       spark(logs, "systolic_bp", "#0f6b53"),
@@ -2438,7 +2481,7 @@
       "SpO2 (Oxygen)",
       U.fmtNum(log.spo2, 0),
       null,
-      isMissing(log.spo2) ? "missing" : spo2Cat === "Normal" ? null : "abnormal",
+      isMissing(log.spo2) ? "missing" : spo2Cat === "Normal" ? null : spo2Cat === "Low" ? "attention" : "abnormal",
       spo2Gauge,
       spo2Delta,
       spark(logs, "spo2", "#0f6b53"),
@@ -2504,7 +2547,7 @@
       "Body mass index",
       isMissing(log.bmi) ? "—" : U.fmtNum(log.bmi, 1),
       null,
-      isMissing(log.bmi) ? "missing" : bmiCat === "Normal" ? null : "abnormal",
+      isMissing(log.bmi) ? "missing" : bmiCat === "Normal" ? null : "attention",
       bmiGauge,
       bmiDelta,
       spark(logs, "bmi", "#0f6b53"),
@@ -2697,42 +2740,51 @@
           !noticeDismissedInPage &&
           API.getPrivacyAcknowledged() !== true;
 
+        function paintDashboardLogs(rows) {
+          if (rows.length === 0) {
+            knownTimestamp = null;
+            latestLog = null;
+            U.clear(cards);
+            U.clear(supportCards);
+            setVitalsVisible(false);
+            renderHeroOnboarding();
+            U.clear(emptyNode);
+            meta.textContent = "";
+            if (passportBtn) passportBtn.hidden = false;
+            loaded = true;
+            return;
+          }
+
+          U.clear(emptyNode);
+          setVitalsVisible(true);
+          if (passportBtn) passportBtn.hidden = false;
+          var latest = rows[0];
+          renderLatestMeta(rows);
+
+          // Re-render only when a new kiosk reading actually arrived, so the
+          // 60s poll never disturbs the screen or screen-reader users.
+          if (knownTimestamp !== latest.timestamp) {
+            knownTimestamp = latest.timestamp;
+            latestLog = latest;
+            renderLatest(rows);
+          }
+          loaded = true;
+        }
+
         if (shouldShowConsentModal) {
+          U.clear(cards);
+          U.clear(supportCards);
+          setVitalsVisible(false);
           showCitizenConsentModal(function () {
             noticeDismissedInPage = true;
+            paintDashboardLogs(logs);
           });
+          return true;
         } else if (consentInfo.privacy_acknowledged) {
           API.setPrivacyAcknowledged(true);
         }
 
-        if (logs.length === 0) {
-          knownTimestamp = null;
-          latestLog = null;
-          U.clear(cards);
-          U.clear(supportCards);
-          setVitalsVisible(false);
-          renderHeroOnboarding();
-          U.clear(emptyNode);
-          meta.textContent = "";
-          if (passportBtn) passportBtn.hidden = false;
-          loaded = true;
-          return true;
-        }
-
-        U.clear(emptyNode);
-        setVitalsVisible(true);
-        if (passportBtn) passportBtn.hidden = false;
-        var latest = logs[0];
-        renderLatestMeta(logs);
-
-        // Re-render only when a new kiosk reading actually arrived, so the
-        // 60s poll never disturbs the screen or screen-reader users.
-        if (knownTimestamp !== latest.timestamp) {
-          knownTimestamp = latest.timestamp;
-          latestLog = latest;
-          renderLatest(logs);
-        }
-        loaded = true;
+        paintDashboardLogs(logs);
         return true;
       } catch (error) {
         // First-load/manual failures surface an error with Retry; auto-refresh
@@ -3413,6 +3465,7 @@
               section.hidden = false;
               renderLogTable(freshLogs);
               renderCharts(freshLogs);
+              applyChartFilter(historyState.chartGroup);
               U.toast(t("toastHistoryNew"), "success");
             }
           });
@@ -3597,15 +3650,15 @@
   }
 
   function validateFullName(value) {
-    if (!value) return "Full name is required.";
-    if (value.length < 2) return "Enter your full name.";
+    if (!value) return t("valFullNameReq");
+    if (value.length < 2) return t("valFullNameMin");
     return "";
   }
 
   function validateBirthdate(value) {
-    if (!value) return "Birthdate is required.";
-    if (value > todayISO()) return "Birthdate cannot be in the future.";
-    if (value < "1900-01-01") return "Check the year of your birthdate.";
+    if (!value) return t("valBirthReq");
+    if (value > todayISO()) return t("valBirthFuture");
+    if (value < "1900-01-01") return t("valBirthMinYear");
     return "";
   }
 

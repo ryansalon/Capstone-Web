@@ -5,12 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Reports — Barangay Health Monitor</title>
   <link rel="icon" type="image/svg+xml" href="/img/favicon.svg">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="preload" as="image" href="/img/cpsc-logo.png">
   <link rel="preload" as="image" href="/img/rhu-logo.png">
-  <link rel="stylesheet" href="/css/style.css?v=30">
+  <link rel="stylesheet" href="/css/style.css?v=32">
 </head>
 <body data-page="bhw-reports">
   <a class="skip-link" href="#main">Skip to main content</a>
@@ -64,13 +61,8 @@
     <main id="main" class="page" tabindex="-1">
       <div class="page-head">
         <div class="page-head-title">
-          <span class="page-eyebrow" data-i18n="repEyebrow">Epidemiology &amp; Exports</span>
           <h1 data-i18n="repTitle">Reports</h1>
           <p class="lede" data-i18n="repLede">Download CSV files for record keeping, or open a printable page for the Rural Health Unit.</p>
-        </div>
-        <div class="page-actions">
-          <a href="/bhw/dashboard.html" class="btn btn-secondary" data-i18n="navDashboard">Dashboard</a>
-          <a href="/bhw/search.html" class="btn btn-secondary" data-i18n="navFindCitizens">Find citizens</a>
         </div>
       </div>
 
@@ -93,8 +85,8 @@
           <input id="toDate" name="to" type="date">
         </div>
         <div class="field date-presets-field">
-          <span class="label" data-i18n="repPresets">Presets</span>
-          <div class="date-presets" role="group" aria-label="Date range presets">
+          <span class="label" id="repPresetsLabel" data-i18n="repPresets">Presets</span>
+          <div class="date-presets" role="group" aria-labelledby="repPresetsLabel">
             <button type="button" class="date-preset-btn" data-range="today" data-i18n="repPresetToday">Today</button>
             <button type="button" class="date-preset-btn" data-range="7d" data-i18n="repPreset7d">Last 7d</button>
             <button type="button" class="date-preset-btn" data-range="30d" data-i18n="repPreset30d">Last 30d</button>
@@ -112,7 +104,7 @@
     <footer class="foot" data-i18n="repFoot">Citizens without consent are labelled “Withheld (no consent)” in alert reports.</footer>
     </div>
   </div>
-  <script src="/js/api.js?v=29"></script>
-  <script src="/js/bhw.js?v=29"></script>
+  <script src="/js/api.js?v=31"></script>
+  <script src="/js/bhw.js?v=31"></script>
 </body>
 </html>

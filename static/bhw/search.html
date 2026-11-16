@@ -5,12 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Find citizens — Barangay Health Monitor</title>
   <link rel="icon" type="image/svg+xml" href="/img/favicon.svg">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="preload" as="image" href="/img/cpsc-logo.png">
   <link rel="preload" as="image" href="/img/rhu-logo.png">
-  <link rel="stylesheet" href="/css/style.css?v=30">
+  <link rel="stylesheet" href="/css/style.css?v=32">
 </head>
 <body data-page="bhw-search">
   <a class="skip-link" href="#main">Skip to main content</a>
@@ -64,13 +61,8 @@
     <main id="main" class="page" tabindex="-1">
       <div class="page-head">
         <div class="page-head-title">
-          <span class="page-eyebrow" data-i18n="searchEyebrow">Citizen Registry</span>
           <h1 data-i18n="searchTitle">Find a citizen</h1>
           <p class="lede" data-i18n="searchLede">Search by name or username. The consent badge shows whether individual records may be opened.</p>
-        </div>
-        <div class="page-actions">
-          <a href="/bhw/dashboard.html" class="btn btn-secondary" data-i18n="navDashboard">Dashboard</a>
-          <a href="/bhw/reports.html" class="btn btn-secondary" data-i18n="navReports">Reports</a>
         </div>
       </div>
 
@@ -82,11 +74,11 @@
         <button id="searchBtn" class="btn btn-primary" type="submit" data-i18n="searchBtn">Search</button>
       </form>
 
-      <div class="search-triage-chips" id="searchTriageChips" role="tablist" aria-label="Filter citizens by status">
-        <button type="button" class="chip is-active" data-filter="all"><span data-i18n="chipAll">All citizens</span> (<span id="countAll">0</span>)</button>
-        <button type="button" class="chip" data-filter="consented"><span data-i18n="chipConsented">Consented only</span> (<span id="countConsented">0</span>)</button>
-        <button type="button" class="chip" data-filter="active"><span data-i18n="chipWithVisits">With kiosk visits</span> (<span id="countActive">0</span>)</button>
-        <button type="button" class="chip" data-filter="novisit"><span data-i18n="chipNoVisits">No visits yet</span> (<span id="countNoVisit">0</span>)</button>
+      <div class="search-triage-chips" id="searchTriageChips" role="group" aria-label="Filter citizens by status">
+        <button type="button" class="chip is-active" data-filter="all" aria-pressed="true"><span data-i18n="chipAll">All citizens</span> (<span id="countAll">0</span>)</button>
+        <button type="button" class="chip" data-filter="consented" aria-pressed="false"><span data-i18n="chipConsented">Consented only</span> (<span id="countConsented">0</span>)</button>
+        <button type="button" class="chip" data-filter="active" aria-pressed="false"><span data-i18n="chipWithVisits">With kiosk visits</span> (<span id="countActive">0</span>)</button>
+        <button type="button" class="chip" data-filter="novisit" aria-pressed="false"><span data-i18n="chipNoVisits">No visits yet</span> (<span id="countNoVisit">0</span>)</button>
       </div>
 
       <div id="status" aria-live="polite"></div>
@@ -96,7 +88,7 @@
     <footer class="foot" data-i18n="searchFoot">Opening a record without consent is blocked by the server.</footer>
     </div>
   </div>
-  <script src="/js/api.js?v=29"></script>
-  <script src="/js/bhw.js?v=29"></script>
+  <script src="/js/api.js?v=31"></script>
+  <script src="/js/bhw.js?v=31"></script>
 </body>
 </html>

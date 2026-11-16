@@ -5,12 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>My dashboard — Barangay Health Monitor</title>
   <link rel="icon" type="image/svg+xml" href="/img/favicon.svg">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="preload" as="image" href="/img/cpsc-logo.png">
   <link rel="preload" as="image" href="/img/rhu-logo.png">
-  <link rel="stylesheet" href="/css/style.css?v=30">
+  <link rel="stylesheet" href="/css/style.css?v=32">
 </head>
 <body data-page="citizen-dashboard">
   <a class="skip-link" href="#main">Skip to main content</a>
@@ -66,7 +63,6 @@
       <section class="hero hero-patient-banner" id="heroPanel" aria-labelledby="heroGreeting">
         <div class="hero-header-top">
           <div class="hero-patient-info">
-            <span class="hero-eyebrow" data-i18n="heroEyebrow">Barangay Health Kiosk · Patient Station</span>
             <h1 class="hero-greeting" id="heroGreeting">Welcome</h1>
           </div>
           <div class="hero-actions">
@@ -110,7 +106,7 @@
       <p class="trust-line" id="consentExplain"></p>
 
       <section class="section" id="headlineSection" aria-labelledby="headlineHeading">
-        <h2 id="headlineHeading">Key vitals</h2>
+        <h2 id="headlineHeading" data-i18n="headlineHeading">Key vitals</h2>
         <div id="cards" class="cards cards-headline" aria-live="polite">
           <div class="card skeleton-card" aria-hidden="true">
             <div class="skeleton skeleton-label"></div>
@@ -130,13 +126,13 @@
         </div>
       </section>
       <section class="section" id="supportSection" aria-labelledby="supportHeading" hidden>
-        <h2 id="supportHeading">Your other measurements</h2>
+        <h2 id="supportHeading" data-i18n="supportHeading">Your other measurements</h2>
         <div id="supportCards" class="cards cards-support"></div>
       </section>
       <div id="emptyState"></div>
 
       <section class="section" id="trendsSection" aria-labelledby="trendsHeading" hidden>
-        <h2 id="trendsHeading">Trends at a glance</h2>
+        <h2 id="trendsHeading" data-i18n="trendsHeading">Trends at a glance</h2>
         <div class="grid-2">
           <div class="chart-box">
             <h3 data-i18n="bpTrendHeading">Blood pressure — last 10 readings</h3>
@@ -156,15 +152,15 @@
       <section class="section" id="bhwNotesSection" aria-labelledby="bhwNotesHeading">
         <div class="section-header-row">
           <div>
-            <h2 id="bhwNotesHeading">Health Worker Notes &amp; Guidance</h2>
-            <p class="section-subtext" id="bhwNotesSub">Follow-up reminders and referrals shared by your Barangay Health Worker.</p>
+            <h2 id="bhwNotesHeading" data-i18n="bhwNotesHeading">Health Worker Notes &amp; Guidance</h2>
+            <p class="section-subtext" id="bhwNotesSub" data-i18n="bhwNotesSub">Follow-up reminders and referrals shared by your Barangay Health Worker.</p>
           </div>
         </div>
         <div id="bhwNotesList" aria-live="polite"></div>
       </section>
 
       <details class="vital-hints" id="vitalHintsBox">
-        <summary id="vitalHintsSummary">What do these numbers mean?</summary>
+        <summary id="vitalHintsSummary" data-i18n="hintsSummary">What do these numbers mean?</summary>
         <dl class="hint-grid" id="vitalHintsGrid">
           <div>
             <dt data-i18n="hintBpDt">Blood pressure</dt>
@@ -199,7 +195,7 @@
     </div>
   </div>
   <script src="/vendor/chart.umd.min.js"></script>
-  <script src="/js/api.js?v=29"></script>
-  <script src="/js/citizen.js?v=29"></script>
+  <script src="/js/api.js?v=31"></script>
+  <script src="/js/citizen.js?v=31"></script>
 </body>
 </html>
