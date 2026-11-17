@@ -1519,6 +1519,184 @@ def test_register_validations_case_insensitivity_and_security_headers(client):
     assert ping.headers.get("Referrer-Policy") == "strict-origin-when-cross-origin"
 
 
+def test_nan_infinity_and_bmi_bounds_sanitization(client):
+    """Non-finite floats (NaN/Inf) and out-of-range/zero BMI must sanitize to None."""
+    res = client.post(
+        "/api/kiosk/health-data",
+        json=kiosk_reading(weight="nan", temperature="inf", bmi=0),
+        headers=KIOSK_HEADERS,
+    )
+    assert res.status_code == 201
+
+    guest_res = client.post(
+        "/api/kiosk/guest-data",
+        json={"guests": [{"bmi": -5, "weight": "inf", "spo2": 98}]},
+        headers=KIOSK_HEADERS,
+    )
+    assert guest_res.status_code == 201
+
+    carl_token = login(client, "carl", "citizen123")["token"]
+    logs = client.get("/api/health-data", headers=bearer(carl_token)).get_json()["logs"]
+    assert logs[0]["weight"] is None
+    assert logs[0]["temperature"] is None
+    assert logs[0]["bmi"] is None
+
+    bhw_token = login(client, "bhw1", "bhw12345")["token"]
+    dash = client.get("/api/bhw/dashboard?days=all", headers=bearer(bhw_token))
+    assert dash.status_code == 200
+    assert dash.get_json()["distributions"]["bmi"] == {}
+
+
+def test_input_length_future_dob_overflow_and_staff_target_guards(client):
+    """Reject oversized usernames, future profile DOBs, date overflow, and non-citizen targets."""
+    long_user = "u" * 51
+    reg = client.post(
+        "/api/register",
+        json={
+            "username": long_user,
+            "password": "ValidPassword123",
+            "full_name": "Long Username",
+            "birthdate": "1990-01-01",
+            "gender": "male",
+        },
+    )
+    assert reg.status_code == 400
+
+    kiosk_u = client.post(
+        "/api/kiosk/user",
+        json={"username": long_user, "password_hash": "$2b$12$fake"},
+        headers=KIOSK_HEADERS,
+    )
+    assert kiosk_u.status_code == 400
+
+    carl_token = login(client, "carl", "citizen123")["token"]
+    future_dob = client.put(
+        "/api/citizen/profile",
+        json={"full_name": "Carl Mendoza", "birthdate": "2099-01-01", "gender": "male"},
+        headers=bearer(carl_token),
+    )
+    assert future_dob.status_code == 400
+
+    bhw_token = login(client, "bhw1", "bhw12345")["token"]
+    overflow = client.get("/api/bhw/audit-trail?to=9999-12-31", headers=bearer(bhw_token))
+    assert overflow.status_code == 400
+
+    # User id 2 is bhw1 (staff), not a citizen
+    staff_target = client.get("/api/bhw/citizen/2/health-logs", headers=bearer(bhw_token))
+    assert staff_target.status_code == 404
+    staff_notes = client.get("/api/bhw/citizen/2/notes", headers=bearer(bhw_token))
+    assert staff_notes.status_code == 404
+
+
+def test_legacy_sqlite_migrations_preserve_audit_and_backfill_notes(tmp_path):
+    """Verify legacy access_audit_trail and bhw_notes tables migrate without losing data or crashing."""
+    import sqlite3
+
+    db_file = tmp_path / "legacy_full.db"
+    conn = sqlite3.connect(db_file)
+    conn.execute(
+        """
+        CREATE TABLE users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username VARCHAR(50) UNIQUE NOT NULL,
+            password_hash VARCHAR(255) NOT NULL,
+            full_name VARCHAR(100) NOT NULL,
+            birthdate VARCHAR(10) NOT NULL,
+            gender VARCHAR(10) NOT NULL,
+            role VARCHAR(10),
+            created_at DATETIME
+        )
+        """
+    )
+    conn.execute(
+        """
+        CREATE TABLE access_audit_trail (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            bhw_user_id INTEGER NOT NULL,
+            citizen_id INTEGER NOT NULL,
+            access_timestamp DATETIME,
+            action_type VARCHAR(40) NOT NULL,
+            ip_address VARCHAR(64)
+        )
+        """
+    )
+    conn.execute(
+        """
+        CREATE TABLE bhw_notes (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            citizen_id INTEGER NOT NULL,
+            bhw_id INTEGER NOT NULL,
+            note VARCHAR(1000) NOT NULL,
+            timestamp DATETIME
+        )
+        """
+    )
+    from app import hash_password
+
+    conn.execute(
+        "INSERT INTO users (id, username, password_hash, full_name, birthdate, gender, role) VALUES (?, ?, ?, ?, ?, ?, ?)",
+        (1, "carl", hash_password("citizen123"), "Carl Mendoza", "1992-11-03", "male", "citizen"),
+    )
+    conn.execute(
+        "INSERT INTO users (id, username, password_hash, full_name, birthdate, gender, role) VALUES (?, ?, ?, ?, ?, ?, ?)",
+        (2, "bhw1", hash_password("bhw12345"), "Maria Santos", "1985-04-12", "female", "bhw"),
+    )
+    conn.execute(
+        "INSERT INTO access_audit_trail (bhw_user_id, citizen_id, action_type, ip_address) VALUES (2, 1, 'view_health_data', '127.0.0.1')"
+    )
+    conn.execute(
+        "INSERT INTO bhw_notes (citizen_id, bhw_id, note, timestamp) VALUES (1, 2, 'Legacy note text', '2026-10-01 08:00:00')"
+    )
+    conn.commit()
+    conn.close()
+
+    app = create_app("sqlite:///" + db_file.as_posix(), seed=False)
+    app.config.update(TESTING=True)
+    legacy_client = app.test_client()
+
+    grant_consent(legacy_client, True)
+    bhw_token = login(legacy_client, "bhw1", "bhw12345")["token"]
+    notes = legacy_client.get("/api/bhw/citizen/1/notes", headers=bearer(bhw_token))
+    assert notes.status_code == 200
+    assert notes.get_json()["notes"][0]["note"] == "Legacy note text"
+    assert notes.get_json()["notes"][0]["bhw"] == "Maria Santos"
+    assert notes.get_json()["notes"][0]["visible_to_citizen"] is False
+
+    audit = legacy_client.get("/api/bhw/audit-trail", headers=bearer(bhw_token))
+    assert audit.status_code == 200
+    actions = [r["action"] for r in audit.get_json()["audit"]]
+    assert "staff_login" in actions  # nullable citizen_id works after rebuild
+    assert "view_health_data" in actions
+
+
+def test_security_headers_pagination_and_guest_watermark(client):
+    """Verify CSP/Permissions-Policy headers, optional pagination, and guest watermark updates."""
+    ping = client.get("/healthz")
+    assert "Content-Security-Policy" in ping.headers
+    assert "Permissions-Policy" in ping.headers
+
+    bhw_token = login(client, "bhw1", "bhw12345")["token"]
+    before_wm = client.get("/api/realtime/watermark", headers=bearer(bhw_token)).get_json()
+
+    guest_res = client.post(
+        "/api/kiosk/guest-data",
+        json={"guests": [{"temperature": 36.8, "spo2": 98}]},
+        headers=KIOSK_HEADERS,
+    )
+    assert guest_res.status_code == 201
+    after_wm = client.get("/api/realtime/watermark", headers=bearer(bhw_token)).get_json()
+    assert after_wm["latest_id"] > before_wm["latest_id"]
+    assert after_wm["version"] > before_wm["version"]
+
+    p_citizens = client.get("/api/bhw/citizens?limit=1&offset=0", headers=bearer(bhw_token))
+    assert p_citizens.status_code == 200
+    assert len(p_citizens.get_json()["citizens"]) == 1
+
+    p_kiosk = client.get("/api/kiosk/users?limit=1&offset=0", headers=KIOSK_HEADERS)
+    assert p_kiosk.status_code == 200
+    assert len(p_kiosk.get_json()["users"]) == 1
+
+
 
 
 
