@@ -13,6 +13,8 @@ import hmac
 import html as html_lib
 import io
 import json
+import logging
+import math
 import os
 import queue
 import re
@@ -50,6 +52,12 @@ from vitals import (
 
 load_dotenv()
 
+logging.basicConfig(
+    level=os.getenv("LOG_LEVEL", "INFO").upper(),
+    format="%(asctime)s %(levelname)s [%(name)s] %(message)s",
+)
+logger = logging.getLogger("bhw_platform")
+
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///platform.db")
 # Render (and Heroku) hand out the legacy "postgres://" scheme, which
 # SQLAlchemy 2.x rejects. Normalize it to "postgresql://".
@@ -62,11 +70,14 @@ if DATABASE_URL.startswith("postgresql://"):
 JWT_SECRET = os.getenv("JWT_SECRET", "change-me-jwt-secret-min-32-chars-long")
 API_KEY = os.getenv("API_KEY", "dev-kiosk-key")
 ENV = os.getenv("FLASK_ENV", os.getenv("ENV", "development")).lower()
+IS_PROD = ENV in ("production", "prod", "staging") or bool(os.getenv("RENDER"))
 
-if ENV in ("production", "prod") and (
-    JWT_SECRET.startswith("change-me-") or API_KEY == "dev-kiosk-key"
+if IS_PROD and (
+    JWT_SECRET.startswith("change-me-") or len(JWT_SECRET) < 32 or API_KEY == "dev-kiosk-key"
 ):
-    raise RuntimeError("FATAL: JWT_SECRET and API_KEY must be configured in production.")
+    raise RuntimeError(
+        "FATAL: Strong JWT_SECRET (>=32 chars) and non-default API_KEY must be configured in production."
+    )
 
 _AUTH_ATTEMPTS: dict[str, list[float]] = {}
 _AUTH_LOCK = threading.Lock()
@@ -114,13 +125,8 @@ DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 
 
 # ---------------------------------------------------------------------------
-# Small utilities
+# Small utilities & validation helpers
 # ---------------------------------------------------------------------------
-
-
-def utcnow() -> datetime:
-    """Naive UTC timestamp (the whole platform stores naive UTC)."""
-    return datetime.now(timezone.utc).replace(tzinfo=None)
 
 
 def iso(value):
@@ -149,7 +155,8 @@ def as_float(value):
     if value is None or value == "" or isinstance(value, bool):
         return None
     try:
-        return float(value)
+        num = float(value)
+        return num if math.isfinite(num) else None
     except (TypeError, ValueError):
         return None
 
@@ -245,7 +252,7 @@ broadcaster = EventBroadcaster()
 
 
 class KioskSyncTracker:
-    """Ultra-fast, non-blocking in-memory state tracker for kiosk data pulses."""
+    """Thread-safe, per-app state tracker for kiosk data pulses (no DB I/O under lock)."""
 
     def __init__(self):
         self._lock = threading.Lock()
@@ -267,55 +274,57 @@ class KioskSyncTracker:
             if timestamp:
                 self._latest_timestamp = timestamp
             if user_id and log_id:
+                if len(self._user_latest) > 5000 and user_id not in self._user_latest:
+                    self._user_latest.clear()
                 self._user_latest[user_id] = {
                     "latest_id": log_id,
                     "latest_timestamp": timestamp,
                     "version": self._version,
                 }
 
-    def get_watermark(self, user_id: int | None = None, is_staff: bool = False) -> dict:
+    def get_watermark(self, db: Database, user_id: int | None = None, is_staff: bool = False) -> dict:
         with self._lock:
             if not is_staff and user_id is not None:
-                if user_id in self._user_latest:
-                    return {
-                        "latest_id": self._user_latest[user_id]["latest_id"],
-                        "latest_timestamp": self._user_latest[user_id]["latest_timestamp"],
-                        "version": self._user_latest[user_id]["version"],
-                    }
-                # Cold start: read latest user reading from DB once
-                with get_db().session() as session:
-                    stmt = select(func.max(HealthLog.id), func.max(HealthLog.timestamp)).where(
-                        HealthLog.user_id == user_id
-                    )
-                    row = session.execute(stmt).first()
-                    lid = row[0] if row and row[0] else 0
-                    lts = iso(row[1]) if row and row[1] else None
-                    self._user_latest[user_id] = {
-                        "latest_id": lid,
-                        "latest_timestamp": lts,
-                        "version": self._version,
-                    }
-                    return {
-                        "latest_id": lid,
-                        "latest_timestamp": lts,
-                        "version": self._version,
-                    }
-            else:
-                if self._latest_id == 0:
-                    with get_db().session() as session:
-                        stmt = select(func.max(HealthLog.id), func.max(HealthLog.timestamp))
-                        row = session.execute(stmt).first()
-                        if row and row[0]:
-                            self._latest_id = row[0]
-                            self._latest_timestamp = iso(row[1])
+                cached = self._user_latest.get(user_id)
+                if cached is not None:
+                    return dict(cached)
+            elif self._latest_id != 0:
                 return {
                     "latest_id": self._latest_id,
                     "latest_timestamp": self._latest_timestamp,
                     "version": self._version,
                 }
 
+        # Query DB outside self._lock so concurrent pollers do not serialize on DB I/O
+        with db.readonly_session() as session:
+            stmt = select(HealthLog.id, HealthLog.timestamp)
+            if not is_staff and user_id is not None:
+                stmt = stmt.where(HealthLog.user_id == user_id)
+            row = session.execute(stmt.order_by(HealthLog.id.desc()).limit(1)).first()
+            lid = row[0] if row else 0
+            lts = iso(row[1]) if row else None
 
-kiosk_sync = KioskSyncTracker()
+        with self._lock:
+            if not is_staff and user_id is not None:
+                if len(self._user_latest) > 5000:
+                    self._user_latest.clear()
+                entry = self._user_latest.setdefault(
+                    user_id,
+                    {"latest_id": lid, "latest_timestamp": lts, "version": self._version},
+                )
+                return dict(entry)
+            if self._latest_id == 0 and lid:
+                self._latest_id = lid
+                self._latest_timestamp = lts
+            return {
+                "latest_id": self._latest_id,
+                "latest_timestamp": self._latest_timestamp,
+                "version": self._version,
+            }
+
+
+def get_sync() -> KioskSyncTracker:
+    return current_app.config["HK_SYNC"]
 
 
 class Database:
@@ -342,7 +351,7 @@ class Database:
         self._migrate_bhw_notes_table()
 
     def _migrate_bhw_notes_table(self):
-        """Add visible_to_citizen column to existing bhw_notes tables (legacy notes stay staff-only)."""
+        """Migrate legacy bhw_notes columns and add visible_to_citizen (legacy notes stay staff-only)."""
         try:
             with self.engine.begin() as conn:
                 if self.engine.name == "sqlite":
@@ -350,16 +359,28 @@ class Database:
                         row[1]
                         for row in conn.exec_driver_sql("PRAGMA table_info(bhw_notes)").fetchall()
                     }
-                    if cols and "visible_to_citizen" not in cols:
+                    if not cols:
+                        return
+                    if "visible_to_citizen" not in cols:
                         conn.exec_driver_sql(
                             "ALTER TABLE bhw_notes ADD COLUMN visible_to_citizen INTEGER NOT NULL DEFAULT 0"
+                        )
+                    if "bhw_user_id" not in cols and "bhw_id" in cols:
+                        conn.exec_driver_sql("ALTER TABLE bhw_notes ADD COLUMN bhw_user_id INTEGER")
+                        conn.exec_driver_sql(
+                            "UPDATE bhw_notes SET bhw_user_id = bhw_id WHERE bhw_user_id IS NULL"
+                        )
+                    if "created_at" not in cols and "timestamp" in cols:
+                        conn.exec_driver_sql("ALTER TABLE bhw_notes ADD COLUMN created_at DATETIME")
+                        conn.exec_driver_sql(
+                            "UPDATE bhw_notes SET created_at = timestamp WHERE created_at IS NULL"
                         )
                 else:
                     conn.exec_driver_sql(
                         "ALTER TABLE bhw_notes ADD COLUMN IF NOT EXISTS visible_to_citizen INTEGER NOT NULL DEFAULT 0"
                     )
-        except Exception as e:
-            print("BhwNotes migration warning:", e)
+        except Exception:
+            logger.exception("BhwNotes migration failed")
 
     def _migrate_users_table(self):
         """Add privacy_acknowledged_at and updated_at columns to users if missing."""
@@ -391,8 +412,8 @@ class Database:
                     conn.exec_driver_sql(
                         "UPDATE users SET updated_at = COALESCE(created_at, CURRENT_TIMESTAMP) WHERE updated_at IS NULL"
                     )
-        except Exception as e:
-            print("User migration warning:", e)
+        except Exception:
+            logger.exception("User migration failed")
 
     def _migrate_audit_trail(self):
         """Add status, details, user_agent to access_audit_trail if missing and handle SQLite nullable citizen_id."""
@@ -420,8 +441,9 @@ class Database:
                             "ALTER TABLE access_audit_trail ADD COLUMN user_agent VARCHAR(255)"
                         )
                     if "citizen_id" in cols and cols["citizen_id"][3] == 1:
+                        conn.exec_driver_sql("DROP TABLE IF EXISTS access_audit_trail_migrated")
                         conn.exec_driver_sql(
-                            "CREATE TABLE IF NOT EXISTS access_audit_trail_migrated ("
+                            "CREATE TABLE access_audit_trail_migrated ("
                             "id INTEGER PRIMARY KEY, "
                             "bhw_user_id INTEGER NOT NULL, "
                             "citizen_id INTEGER, "
@@ -434,13 +456,21 @@ class Database:
                         )
                         conn.exec_driver_sql(
                             "INSERT INTO access_audit_trail_migrated "
-                            "(id, bhw_user_id, citizen_id, access_timestamp, action_type, ip_address) "
-                            "SELECT id, bhw_user_id, citizen_id, access_timestamp, action_type, ip_address "
+                            "(id, bhw_user_id, citizen_id, access_timestamp, action_type, status, details, ip_address, user_agent) "
+                            "SELECT id, bhw_user_id, citizen_id, access_timestamp, action_type, "
+                            "COALESCE(status, 'success'), details, ip_address, user_agent "
                             "FROM access_audit_trail"
                         )
                         conn.exec_driver_sql("DROP TABLE access_audit_trail")
                         conn.exec_driver_sql(
                             "ALTER TABLE access_audit_trail_migrated RENAME TO access_audit_trail"
+                        )
+                        for col in ("bhw_user_id", "citizen_id", "access_timestamp", "action_type", "status"):
+                            conn.exec_driver_sql(
+                                f"CREATE INDEX IF NOT EXISTS ix_access_audit_trail_{col} ON access_audit_trail ({col})"
+                            )
+                        conn.exec_driver_sql(
+                            "CREATE INDEX IF NOT EXISTS ix_access_audit_ts_id ON access_audit_trail (access_timestamp, id)"
                         )
                 else:
                     for col_sql in (
@@ -451,10 +481,10 @@ class Database:
                     ):
                         try:
                             conn.exec_driver_sql(col_sql)
-                        except Exception:
-                            pass
-        except Exception as e:
-            print("Migration warning:", e)
+                        except Exception as exc:
+                            logger.debug("Audit trail DDL step skipped: %s", exc)
+        except Exception:
+            logger.exception("Audit trail migration failed")
 
     @contextmanager
     def session(self):
@@ -465,6 +495,14 @@ class Database:
         except Exception:
             session.rollback()
             raise
+        finally:
+            session.close()
+
+    @contextmanager
+    def readonly_session(self):
+        session = self.Session()
+        try:
+            yield session
         finally:
             session.close()
 
@@ -552,10 +590,10 @@ def write_audit(
         AccessAuditTrail(
             bhw_user_id=bhw_user_id,
             citizen_id=citizen_id,
-            action_type=action_type,
-            status=status,
-            details=details,
-            ip_address=remote_ip,
+            action_type=action_type[:40],
+            status=(status or "success")[:20],
+            details=details[:255] if details else None,
+            ip_address=(str(remote_ip)[:64] if remote_ip else None),
             user_agent=ua,
             access_timestamp=utcnow(),
         )
@@ -587,15 +625,24 @@ def period_label(start, end):
 
 
 def compute_metrics(session, logs):
-    """Derived metrics shared by the dashboard and the summary report."""
+    """Derived metrics shared by the dashboard and the summary report.
+
+    Accepts either ORM HealthLog rows or lightweight scalar tuples/Row objects
+    from metric_rows_in_period().
+    """
     bmi_counts = {}
     bp_counts = {}
     spo2_counts = {}
     fever_by_date = {}
+    total_measurements = 0
     alerts = 0
     guests = 0
+    active_user_ids = set()
 
     for log in logs:
+        total_measurements += 1
+        if log.user_id is not None:
+            active_user_ids.add(log.user_id)
         if log.is_guest == 1:
             guests += 1
         if is_alert(log.temperature, log.systolic_bp, log.diastolic_bp, log.spo2):
@@ -621,13 +668,12 @@ def compute_metrics(session, logs):
     citizens = session.execute(
         select(func.count()).select_from(User).where(User.role == "citizen")
     ).scalar() or 0
-    active_citizens = len({log.user_id for log in logs if log.user_id is not None})
 
     return {
-        "measurements": len(logs),
+        "measurements": total_measurements,
         "users": users_total,
         "citizens": citizens,
-        "active_citizens": active_citizens,
+        "active_citizens": len(active_user_ids),
         "guest_measurements": guests,
         "alerts": alerts,
         "bmi": bmi_counts,
@@ -635,6 +681,25 @@ def compute_metrics(session, logs):
         "spo2": spo2_counts,
         "fever_trend": sorted(([day, count] for day, count in fever_by_date.items())),
     }
+
+
+def metric_rows_in_period(session, start=None, end=None):
+    """Stream minimal HealthLog columns for dashboard aggregation without full ORM hydration."""
+    stmt = select(
+        HealthLog.user_id,
+        HealthLog.timestamp,
+        HealthLog.bmi,
+        HealthLog.temperature,
+        HealthLog.spo2,
+        HealthLog.systolic_bp,
+        HealthLog.diastolic_bp,
+        HealthLog.is_guest,
+    )
+    if start is not None:
+        stmt = stmt.where(HealthLog.timestamp >= start)
+    if end is not None:
+        stmt = stmt.where(HealthLog.timestamp < end)
+    return session.execute(stmt.execution_options(yield_per=1000))
 
 
 
@@ -649,7 +714,8 @@ def sanitize_csv_cell(value) -> str:
     if value is None:
         return ""
     text = str(value)
-    if text and text[0] in ("=", "+", "-", "@", "\t", "\r"):
+    stripped = text.lstrip(" ")
+    if text and (text[0] in ("=", "+", "-", "@", "\t", "\r", "\n") or (stripped and stripped[0] in ("=", "+", "-", "@"))):
         return "'" + text
     return text
 
@@ -739,8 +805,8 @@ def start_keep_alive_pinger():
                 )
                 with urllib.request.urlopen(req, timeout=15) as res:
                     pass
-            except Exception:
-                pass
+            except Exception as exc:
+                logger.debug("Keep-alive ping skipped: %s", exc)
             time.sleep(12 * 60)  # Ping every 12 minutes (Render timeout is 15 min)
 
     t = threading.Thread(target=_loop, daemon=True, name="render-keepalive")
@@ -754,15 +820,26 @@ def start_keep_alive_pinger():
 
 def create_app(database_url: str | None = None, seed: bool = True) -> Flask:
     app = Flask(__name__)
-    CORS(app)
-    # Trust reverse proxy headers (e.g. Render, Nginx, Cloudflare) for real client IP in audit logs
-    app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1)
+    cors_origins = [o.strip() for o in os.getenv("CORS_ORIGINS", "").split(",") if o.strip()]
+    if cors_origins:
+        CORS(app, resources={r"/api/*": {"origins": cors_origins}})
+    elif not IS_PROD:
+        CORS(app)
+
+    # Trust reverse proxy headers when TRUST_PROXY > 0 (default 1 hop for Render/Nginx/Cloudflare)
+    try:
+        proxy_hops = max(0, int(os.getenv("TRUST_PROXY", "1")))
+    except ValueError:
+        proxy_hops = 1
+    if proxy_hops > 0:
+        app.wsgi_app = ProxyFix(app.wsgi_app, x_for=proxy_hops, x_proto=proxy_hops, x_host=proxy_hops)
 
     db = Database(database_url or DATABASE_URL)
     db.create_all()
     if seed:
         seed_users(db)
     app.config["HK_DB"] = db
+    app.config["HK_SYNC"] = KioskSyncTracker()
 
     register_routes(app)
     register_error_handlers(app)
@@ -772,6 +849,14 @@ def create_app(database_url: str | None = None, seed: bool = True) -> Flask:
         response.headers.setdefault("X-Content-Type-Options", "nosniff")
         response.headers.setdefault("X-Frame-Options", "SAMEORIGIN")
         response.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
+        response.headers.setdefault("Permissions-Policy", "geolocation=(), microphone=(), camera=()")
+        response.headers.setdefault(
+            "Content-Security-Policy",
+            "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; "
+            "img-src 'self' data:; connect-src 'self'; frame-ancestors 'self';",
+        )
+        if IS_PROD and request.is_secure:
+            response.headers.setdefault("Strict-Transport-Security", "max-age=31536000; includeSubDomains")
         return response
 
     if not app.config.get("TESTING") and not app.config.get("PING_STARTED"):
@@ -799,7 +884,8 @@ def register_error_handlers(app: Flask):
         return jsonify({"error": "method not allowed"}), 405
 
     @app.errorhandler(500)
-    def server_error(_error):
+    def server_error(error):
+        logger.exception("Unhandled 500 error on %s %s: %s", request.method, request.path, error)
         return jsonify({"error": "internal server error"}), 500
 
 
@@ -829,7 +915,7 @@ def register_routes(app: Flask):
                 subject = str(payload.get("sub", ""))
                 if not subject.isdigit():
                     return jsonify({"error": "invalid token"}), 401
-                with get_db().session() as session:
+                with get_db().readonly_session() as session:
                     user = session.get(User, int(subject))
                 if user is None:
                     return jsonify({"error": "invalid token"}), 401
@@ -913,7 +999,7 @@ def register_routes(app: Flask):
                 timestamp=ts,
                 weight=sanitize_float(data.get("weight"), 20.0, 300.0),
                 height=sanitize_float(data.get("height"), 80.0, 220.0),
-                bmi=sanitize_float(data.get("bmi")),
+                bmi=sanitize_float(data.get("bmi"), 5.0, 120.0),
                 temperature=sanitize_float(data.get("temperature"), 30.0, 45.0),
                 pulse_rate=sanitize_int(data.get("pulse_rate"), 30, 250),
                 spo2=sanitize_int(data.get("spo2"), 50, 100),
@@ -925,7 +1011,7 @@ def register_routes(app: Flask):
             session.add(log)
             session.flush()
 
-            kiosk_sync.notify(
+            get_sync().notify(
                 user_id=user.id,
                 log_id=log.id,
                 timestamp=iso(log.timestamp),
@@ -959,6 +1045,8 @@ def register_routes(app: Flask):
         if not isinstance(username, str) or not username.strip():
             return jsonify({"error": "missing username"}), 400
         username = username.strip()
+        if len(username) > 50:
+            return jsonify({"error": "username too long (max 50)"}), 400
 
         with get_db().session() as session:
             existing = find_user_by_username(session, username)
@@ -967,11 +1055,12 @@ def register_routes(app: Flask):
 
             birthdate = data.get("birthdate")
             gender = data.get("gender")
+            pw_hash = str(data.get("password_hash") or "")[:255]
             now = utcnow()
             user = User(
                 username=username,
                 # Stored exactly as received: it is already a bcrypt hash.
-                password_hash=str(data.get("password_hash") or ""),
+                password_hash=pw_hash,
                 full_name=str(data.get("full_name") or username)[:100],
                 birthdate=(str(birthdate)[:10] if birthdate else ""),
                 gender=(str(gender)[:10] if gender else ""),
@@ -994,7 +1083,7 @@ def register_routes(app: Flask):
         since_raw = request.args.get("since")
         server_now = iso(utcnow())
 
-        with get_db().session() as session:
+        with get_db().readonly_session() as session:
             if isinstance(username_q, str) and username_q.strip():
                 user = find_user_by_username(session, username_q)
                 users = [user] if (user is not None and user.role == "citizen") else []
@@ -1006,6 +1095,15 @@ def register_routes(app: Flask):
                         return jsonify({"error": "invalid since timestamp"}), 400
                     stmt = stmt.where(func.coalesce(User.updated_at, User.created_at) >= since_dt)
                 stmt = stmt.order_by(func.coalesce(User.updated_at, User.created_at).asc(), User.id.asc())
+                limit_raw = request.args.get("limit")
+                offset_raw = request.args.get("offset")
+                if limit_raw is not None:
+                    try:
+                        limit_val = min(max(1, int(limit_raw)), 1000)
+                        offset_val = max(0, int(offset_raw or 0))
+                    except ValueError:
+                        return jsonify({"error": "invalid pagination parameters"}), 400
+                    stmt = stmt.offset(offset_val).limit(limit_val)
                 users = list(session.execute(stmt).scalars())
 
             return jsonify({"server_time": server_now, "users": [kiosk_user_payload(u) for u in users]})
@@ -1039,40 +1137,47 @@ def register_routes(app: Flask):
             guests = []
 
         added = 0
+        last_guest_log = None
         with get_db().session() as session:
             for item in guests:
                 if not isinstance(item, dict):
                     continue
                 age_group = item.get("age_group")
                 gender = item.get("gender")
-                session.add(
-                    HealthLog(
-                        user_id=None,
-                        timestamp=parse_timestamp(item.get("timestamp")),
-                        weight=sanitize_float(item.get("weight"), 20.0, 300.0),
-                        height=sanitize_float(item.get("height"), 80.0, 220.0),
-                        bmi=sanitize_float(item.get("bmi")),
-                        temperature=sanitize_float(item.get("temperature"), 30.0, 45.0),
-                        pulse_rate=sanitize_int(item.get("pulse_rate"), 30, 250),
-                        spo2=sanitize_int(item.get("spo2"), 50, 100),
-                        systolic_bp=sanitize_int(item.get("systolic_bp"), 60, 260),
-                        diastolic_bp=sanitize_int(item.get("diastolic_bp"), 30, 160),
-                        source="kiosk",
-                        is_guest=1,
-                        age_group=age_group if age_group in ALLOWED_AGE_GROUPS else None,
-                        gender=gender if gender in ALLOWED_GENDERS else None,
-                    )
+                last_guest_log = HealthLog(
+                    user_id=None,
+                    timestamp=parse_timestamp(item.get("timestamp")),
+                    weight=sanitize_float(item.get("weight"), 20.0, 300.0),
+                    height=sanitize_float(item.get("height"), 80.0, 220.0),
+                    bmi=sanitize_float(item.get("bmi"), 5.0, 120.0),
+                    temperature=sanitize_float(item.get("temperature"), 30.0, 45.0),
+                    pulse_rate=sanitize_int(item.get("pulse_rate"), 30, 250),
+                    spo2=sanitize_int(item.get("spo2"), 50, 100),
+                    systolic_bp=sanitize_int(item.get("systolic_bp"), 60, 260),
+                    diastolic_bp=sanitize_int(item.get("diastolic_bp"), 30, 160),
+                    source="kiosk",
+                    is_guest=1,
+                    age_group=age_group if age_group in ALLOWED_AGE_GROUPS else None,
+                    gender=gender if gender in ALLOWED_GENDERS else None,
                 )
+                session.add(last_guest_log)
                 added += 1
+            if added > 0:
+                session.flush()
         if added > 0:
-            kiosk_sync.notify(user_id=None, log_id=None, timestamp=iso(utcnow()))
+            now_iso = iso(utcnow())
+            get_sync().notify(
+                user_id=None,
+                log_id=last_guest_log.id if last_guest_log else None,
+                timestamp=now_iso,
+            )
             broadcaster.broadcast(
                 "kiosk_reading",
                 {
                     "type": "guest_reading",
                     "user_id": None,
                     "added": added,
-                    "timestamp": iso(utcnow()),
+                    "timestamp": now_iso,
                 },
             )
         return jsonify({"ok": True, "added": added}), 201
@@ -1094,6 +1199,8 @@ def register_routes(app: Flask):
             return jsonify({"error": "password too short (min 8)"}), 400
 
         username = str(data["username"]).strip()
+        if len(username) > 50:
+            return jsonify({"error": "username too long (max 50)"}), 400
         birthdate = str(data["birthdate"]).strip()
         gender = str(data["gender"]).strip().lower()
         if not valid_date(birthdate) or birthdate > iso(utcnow())[:10]:
@@ -1177,8 +1284,13 @@ def register_routes(app: Flask):
 
         if not username or not birthdate or not full_name:
             return jsonify({"error": "Username, full name, and birthdate are required."}), 400
+        if not valid_date(birthdate) or birthdate > iso(utcnow())[:10]:
+            return jsonify({"error": "Birthdate must be a valid past YYYY-MM-DD date."}), 400
         if len(new_password) < 8:
             return jsonify({"error": "New password must be at least 8 characters long."}), 400
+        if not current_app.config.get("TESTING"):
+            if not check_rate_limit(f"auth:reset:user:{username.lower()}", max_attempts=5, window_seconds=900):
+                return jsonify({"error": "Too many reset attempts for this account. Please wait 15 minutes."}), 429
 
         with get_db().session() as session:
             user = find_user_by_username(session, username)
@@ -1186,7 +1298,11 @@ def register_routes(app: Flask):
             if user is None or user.role != "citizen":
                 return jsonify({"error": "Account not found or not eligible for self-service reset."}), 404
 
-            if user.birthdate != birthdate or user.full_name.strip().lower() != full_name.lower():
+            if (
+                not user.birthdate
+                or user.birthdate != birthdate
+                or user.full_name.strip().lower() != full_name.lower()
+            ):
                 return jsonify({"error": "Provided birthdate or full name does not match our records."}), 403
 
             user.password_hash = hash_password(new_password)
@@ -1250,9 +1366,16 @@ def register_routes(app: Flask):
             return jsonify({"error": "missing token"}), 401
 
         try:
-            jwt.decode(raw_token, JWT_SECRET, algorithms=["HS256"])
+            payload = jwt.decode(raw_token, JWT_SECRET, algorithms=["HS256"])
         except (jwt.PyJWTError, Exception):
             return jsonify({"error": "invalid or expired token"}), 401
+
+        subject = str(payload.get("sub", ""))
+        if not subject.isdigit():
+            return jsonify({"error": "invalid or expired token"}), 401
+        with get_db().readonly_session() as session:
+            if session.get(User, int(subject)) is None:
+                return jsonify({"error": "invalid or expired token"}), 401
 
         # Non-blocking SSE endpoint: completes immediately to avoid WSGI thread starvation
         def single_event():
@@ -1271,7 +1394,7 @@ def register_routes(app: Flask):
     @require_any
     def realtime_watermark():
         is_staff = g.user.role in ("bhw", "admin")
-        wm = kiosk_sync.get_watermark(user_id=g.user.id, is_staff=is_staff)
+        wm = get_sync().get_watermark(get_db(), user_id=g.user.id, is_staff=is_staff)
         return jsonify(wm)
 
     # -- citizen -----------------------------------------------------------
@@ -1337,7 +1460,7 @@ def register_routes(app: Flask):
                     user_id=g.user.id,
                     consent_granted=granted,
                     timestamp=utcnow(),
-                    ip_address=request.remote_addr,
+                    ip_address=(str(request.remote_addr)[:64] if request.remote_addr else None),
                     user_agent=(request.headers.get("User-Agent") or "")[:255],
                 )
             )
@@ -1375,6 +1498,8 @@ def register_routes(app: Flask):
         birthdate = data.get("birthdate")
         if not valid_date(birthdate):
             return jsonify({"error": "birthdate must be YYYY-MM-DD"}), 400
+        if birthdate > iso(utcnow())[:10]:
+            return jsonify({"error": "birthdate cannot be in the future"}), 400
 
         with get_db().session() as session:
             user = session.get(User, g.user.id)
@@ -1389,6 +1514,9 @@ def register_routes(app: Flask):
     @app.route("/api/citizen/password", methods=["PUT"])
     @require_citizen
     def update_password():
+        if not current_app.config.get("TESTING"):
+            if not check_rate_limit(f"pwchange:{g.user.id}", max_attempts=10, window_seconds=300):
+                return jsonify({"error": "too many requests, please try again later"}), 429
         data = json_body()
         current = data.get("current_password")
         new_password = data.get("new_password")
@@ -1438,8 +1566,8 @@ def register_routes(app: Flask):
         days = raw_days if raw_days in ("7", "30", "90", "all") else "30"
         start = None if days == "all" else utcnow() - timedelta(days=int(days))
 
-        with get_db().session() as session:
-            logs = logs_in_period(session, start=start)
+        with get_db().readonly_session() as session:
+            logs = metric_rows_in_period(session, start=start)
             metrics = compute_metrics(session, logs)
             consent_rows = latest_consent_map(session)
             consent_grants = sum(
@@ -1468,7 +1596,7 @@ def register_routes(app: Flask):
             }
         )
 
-    def citizens_payload(session, search, consented_only):
+    def citizens_payload(session, search, consented_only, limit=None, offset=0):
         stmt = select(User).where(User.role == "citizen")
         if search:
             like = f"%{search.lower()}%"
@@ -1479,6 +1607,8 @@ def register_routes(app: Flask):
                 )
             )
         stmt = stmt.order_by(User.full_name.asc(), User.id.asc())
+        if limit is not None and not consented_only:
+            stmt = stmt.offset(offset).limit(limit)
         citizens = list(session.execute(stmt).scalars())
 
         citizen_ids = [c.id for c in citizens]
@@ -1524,22 +1654,34 @@ def register_routes(app: Flask):
     @require_staff
     def bhw_citizens():
         search = (request.args.get("search") or "").strip()
-        with get_db().session() as session:
-            citizens = citizens_payload(session, search, consented_only=False)
+        limit_raw = request.args.get("limit")
+        offset_raw = request.args.get("offset")
+        limit_val = None
+        offset_val = 0
+        if limit_raw is not None:
+            try:
+                limit_val = min(max(1, int(limit_raw)), 500)
+                offset_val = max(0, int(offset_raw or 0))
+            except ValueError:
+                return jsonify({"error": "invalid pagination parameters"}), 400
+        with get_db().readonly_session() as session:
+            citizens = citizens_payload(
+                session, search, consented_only=False, limit=limit_val, offset=offset_val
+            )
         return jsonify({"citizens": citizens})
 
     @app.route("/api/admin/citizens", methods=["GET"])
     @require_staff
     def admin_citizens():
         search = (request.args.get("search") or "").strip()
-        with get_db().session() as session:
+        with get_db().readonly_session() as session:
             citizens = citizens_payload(session, search, consented_only=True)
         return jsonify({"citizens": citizens})
 
     def citizen_health_payload(citizen_id):
         with get_db().session() as session:
             citizen = session.get(User, citizen_id)
-            if citizen is None:
+            if citizen is None or citizen.role != "citizen":
                 return jsonify({"error": "citizen not found"}), 404
             consent_row = latest_consent(session, citizen.id)
             if not (consent_row and consent_row.consent_granted == 1):
@@ -1635,7 +1777,7 @@ def register_routes(app: Flask):
 
     def check_consent_and_audit(session, citizen_id, action):
         citizen = session.get(User, citizen_id)
-        if citizen is None:
+        if citizen is None or citizen.role != "citizen":
             return None, (jsonify({"error": "citizen not found"}), 404)
         consent_row = latest_consent(session, citizen.id)
         if not (consent_row and consent_row.consent_granted == 1):
@@ -1754,7 +1896,7 @@ def register_routes(app: Flask):
                 citizen.id,
                 "staff_password_reset",
                 status="success",
-                details=f"Staff {g.user.full_name} reset password for citizen {citizen.full_name}",
+                details=f"Staff {g.user.full_name} reset password for citizen {citizen.full_name}"[:255],
             )
             return jsonify({"ok": True, "temporary_password": temp_pw}), 200
 
@@ -1861,10 +2003,11 @@ def register_routes(app: Flask):
         if to_raw:
             if not valid_date(to_raw):
                 return None, None, (jsonify({"error": "invalid date"}), 400)
-            end = datetime.combine(
-                datetime.strptime(to_raw, "%Y-%m-%d").date() + timedelta(days=1),
-                time.min,
-            )
+            try:
+                end_date = datetime.strptime(to_raw, "%Y-%m-%d").date() + timedelta(days=1)
+            except OverflowError:
+                return None, None, (jsonify({"error": "invalid date"}), 400)
+            end = datetime.combine(end_date, time.min)
         if start is not None and end is not None and start >= end:
             return None, None, (jsonify({"error": "invalid date range"}), 400)
         return start, end, None
