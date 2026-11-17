@@ -156,6 +156,9 @@
       bhwNotesEmpty: "No health worker notes have been shared with you yet.",
       bhwNotesFrom: "From",
       bhwNotesRefBadge: "RHU Referral",
+      bhwNotesCountSingle: "1 note from BHW",
+      bhwNotesCountPlural: "{n} notes from BHW",
+      bhwNotesLatestBadge: "Latest",
       feverThresholdLabel: "Fever ≥ 37.9 °C",
       chartsUnavailMini: "Charts unavailable (the chart script failed to load) — open History for the full table.",
       notEnoughBp: "Not enough blood pressure readings yet to show a trend.",
@@ -576,6 +579,9 @@
       bhwNotesEmpty: "Wala pay mga pahimangno gikan sa BHW nga gipaambit kanimo.",
       bhwNotesFrom: "Gikan kang",
       bhwNotesRefBadge: "Referral sa RHU",
+      bhwNotesCountSingle: "1 ka nota gikan sa BHW",
+      bhwNotesCountPlural: "{n} ka nota gikan sa BHW",
+      bhwNotesLatestBadge: "Pinakabag-o",
       feverThresholdLabel: "Hilanat ≥ 37.9 °C",
       chartsUnavailMini: "Dili ma-load ang mga chart — ablihi ang Kasaysayan alang sa tibuok talaan.",
       notEnoughBp: "Wala pay igong sukod sa presyon sa dugo aron makita ang kausaban.",
@@ -992,6 +998,9 @@
       bhwNotesEmpty: "Wala pang mga tala mula sa BHW na ibinahagi sa iyo.",
       bhwNotesFrom: "Mula kay",
       bhwNotesRefBadge: "RHU Referral",
+      bhwNotesCountSingle: "1 tala mula sa BHW",
+      bhwNotesCountPlural: "{n} na tala mula sa BHW",
+      bhwNotesLatestBadge: "Pinakabago",
       feverThresholdLabel: "Lagnat ≥ 37.9 °C",
       chartsUnavailMini: "Hindi ma-load ang mga chart — buksan ang Kasaysayan para sa buong talahanayan.",
       notEnoughBp: "Wala pang sapat na sukat ng presyon ng dugo upang maipakita ang trend.",
@@ -2604,23 +2613,66 @@
 
   function renderBhwNotes(notes) {
     var container = document.getElementById("bhwNotesList");
+    var section = document.getElementById("bhwNotesSection");
+    var countBadge = document.getElementById("bhwNotesCountBadge");
+    var headlineSection = document.getElementById("headlineSection");
+    var vitalHintsBox = document.getElementById("vitalHintsBox");
     if (!container) return;
     U.clear(container);
-    if (!notes || !notes.length) {
+
+    var hasNotes = Boolean(notes && notes.length > 0);
+    var hasReferral = hasNotes && notes.some(function (item) {
+      return (item.note || "").indexOf("Referral to RHU:") === 0;
+    });
+
+    if (section) {
+      section.classList.toggle("has-notes", hasNotes);
+      section.classList.toggle("has-referral", hasReferral);
+      if (hasNotes && headlineSection && headlineSection.parentNode) {
+        if (section.nextElementSibling !== headlineSection) {
+          headlineSection.parentNode.insertBefore(section, headlineSection);
+        }
+      } else if (!hasNotes && vitalHintsBox && vitalHintsBox.parentNode) {
+        if (section.nextElementSibling !== vitalHintsBox) {
+          vitalHintsBox.parentNode.insertBefore(section, vitalHintsBox);
+        }
+      }
+    }
+
+    if (countBadge) {
+      if (hasNotes) {
+        countBadge.textContent = notes.length === 1
+          ? t("bhwNotesCountSingle")
+          : t("bhwNotesCountPlural", { n: notes.length });
+        countBadge.hidden = false;
+      } else {
+        countBadge.textContent = "";
+        countBadge.hidden = true;
+      }
+    }
+
+    if (!hasNotes) {
       U.empty(container, t("bhwNotesEmpty"));
       return;
     }
+
     var list = U.el("ul", { class: "citizen-notes-list" });
-    notes.forEach(function (item) {
+    notes.forEach(function (item, idx) {
       var text = item.note || "";
       var isReferral = text.indexOf("Referral to RHU:") === 0;
+      var isLatest = idx === 0;
       var card = U.el("li", {
-        class: "citizen-note-card" + (isReferral ? " is-referral" : ""),
+        class: "citizen-note-card" + (isReferral ? " is-referral" : "") + (isLatest ? " is-latest" : ""),
       });
-      if (isReferral) {
-        card.appendChild(
-          U.el("span", { class: "citizen-note-ref" }, t("bhwNotesRefBadge"))
-        );
+      if (isLatest || isReferral) {
+        var badges = U.el("div", { class: "citizen-note-badges" });
+        if (isLatest) {
+          badges.appendChild(U.el("span", { class: "citizen-note-latest" }, t("bhwNotesLatestBadge")));
+        }
+        if (isReferral) {
+          badges.appendChild(U.el("span", { class: "citizen-note-ref" }, t("bhwNotesRefBadge")));
+        }
+        card.appendChild(badges);
       }
       card.appendChild(U.el("p", { class: "citizen-note-text" }, text));
       card.appendChild(
@@ -2842,6 +2894,23 @@
           U.toast(t("toastNewReading") + bmiNote, "success");
         });
       },
+    });
+
+    // Refresh BHW notes when the citizen returns to the tab (throttled to 15s)
+    var lastNotesRefreshMs = Date.now();
+    document.addEventListener("visibilitychange", function () {
+      if (document.hidden || !loaded) return;
+      var nowMs = Date.now();
+      if (nowMs - lastNotesRefreshMs < 15000) return;
+      lastNotesRefreshMs = nowMs;
+      API.apiFetch("/api/citizen/notes").then(function (res) {
+        if (res && Array.isArray(res.notes)) {
+          cachedNotes = res.notes;
+          renderBhwNotes(cachedNotes);
+        }
+      }).catch(function () {
+        // Ignore transient background refresh errors
+      });
     });
   }
 

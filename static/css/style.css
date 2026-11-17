@@ -5579,3 +5579,78 @@ mark.match {
     padding-bottom: max(0.9rem, env(safe-area-inset-bottom));
   }
 }
+
+/* ---------- Highlighted Citizen BHW Notes Callout ---------- */
+#bhwNotesSection.has-notes {
+  background: linear-gradient(180deg, #eef9f3 0%, #ffffff 100%);
+  border: 1.5px solid #88cbb0;
+  border-left: 5px solid var(--green-700);
+  border-radius: var(--radius);
+  padding: 1.25rem 1.35rem;
+  box-shadow: var(--shadow-md);
+}
+
+#bhwNotesSection.has-notes.has-referral {
+  background: linear-gradient(180deg, #fff9ec 0%, #ffffff 100%);
+  border-color: #eab95c;
+  border-left-color: #c26a12;
+}
+
+.bhw-notes-count-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.72rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  background: var(--green-100);
+  color: var(--green-900);
+  border: 1px solid #9dd0bc;
+  white-space: nowrap;
+}
+
+#bhwNotesSection.has-referral .bhw-notes-count-pill {
+  background: #fef3c7;
+  color: #7c2d12;
+  border-color: #f0cf8e;
+}
+
+.citizen-note-badges {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 0.45rem;
+}
+
+.citizen-note-badges .citizen-note-ref {
+  margin-bottom: 0;
+}
+
+.citizen-note-latest {
+  display: inline-block;
+  padding: 0.16rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  background: var(--green-100);
+  color: var(--green-900);
+  border: 1px solid #9dd0bc;
+}
+
+.citizen-note-card.is-latest {
+  border-color: #88cbb0;
+  box-shadow: 0 3px 10px rgba(15, 107, 83, 0.08);
+}
+
+.citizen-note-card.is-referral.is-latest {
+  border-color: #eab95c;
+  box-shadow: 0 3px 10px rgba(194, 106, 18, 0.1);
+}
+
+@media (max-width: 640px) {
+  #bhwNotesSection.has-notes {
+    padding: 1rem 0.95rem;
+  }
+}
