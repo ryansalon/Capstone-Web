@@ -5540,3 +5540,42 @@ mark.match {
     min-height: 44px;
   }
 }
+
+/* ---------- Visual Hierarchy & Mobile Modal Containment ---------- */
+.page-head h1 {
+  font-size: clamp(1.55rem, 2.2vw, 1.92rem);
+  color: var(--green-900);
+}
+
+.section > h2,
+.section-header-row > div > h2 {
+  font-size: 1.24rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--green-900);
+}
+
+.readings-snapshot-panel {
+  border-top: 3px solid var(--green-700);
+  box-shadow: var(--shadow-md);
+}
+
+.card .unit,
+.card .ref-range,
+.card .sub,
+.checkin-metric-label {
+  color: #486358;
+}
+
+@media (max-width: 640px) {
+  .modal-card {
+    max-width: 100%;
+    max-height: 92vh;
+    max-height: 92dvh;
+    border-radius: 20px 20px 0 0;
+  }
+
+  .modal-footer {
+    padding-bottom: max(0.9rem, env(safe-area-inset-bottom));
+  }
+}

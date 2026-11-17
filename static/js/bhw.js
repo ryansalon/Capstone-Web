@@ -368,7 +368,6 @@
       cvColPulse: "Pulse (bpm)",
       cvColSpo2: "SpO2 (%)",
       btnClose: "Close",
-      btnCancel: "Cancel",
       btnDone: "Done",
       auditMoreFilters: "More filters (health worker, citizen, status, action)",
       auditInspect: "Inspect",
@@ -757,7 +756,6 @@
       cvColPulse: "Pulso (bpm)",
       cvColSpo2: "SpO2 (%)",
       btnClose: "Isira",
-      btnCancel: "Kanselahon",
       btnDone: "Nahuman",
       auditMoreFilters: "Dugang mga filter (health worker, lumulupyo, kahimtang, aksyon)",
       auditInspect: "Susiha",
@@ -1146,7 +1144,6 @@
       cvColPulse: "Pulso (bpm)",
       cvColSpo2: "SpO2 (%)",
       btnClose: "Isara",
-      btnCancel: "Kanselahin",
       btnDone: "Tapos na",
       auditMoreFilters: "Iba pang filter (health worker, mamamayan, estado, aksyon)",
       auditInspect: "Suriin",
@@ -1787,9 +1784,12 @@
     );
   }
 
+  var dashReqSeq = 0;
+
   async function loadDashboard(options) {
     // animate:false is used by the 30s auto-refresh tick to avoid flicker.
     var animate = !options || options.animate !== false;
+    var reqSeq = ++dashReqSeq;
     var periodNode = document.getElementById("period");
     var statusNode = document.getElementById("status");
     var totalsNode = document.getElementById("totals");
@@ -1806,6 +1806,7 @@
 
     try {
       var data = await API.apiFetch("/api/bhw/dashboard?days=" + encodeURIComponent(days));
+      if (reqSeq !== dashReqSeq) return false;
       U.clear(statusNode);
 
       // Resolved date range + last-updated stamp.
@@ -2225,13 +2226,12 @@
   }
 
   function calculateAge(birthdateStr) {
-    if (!birthdateStr) return null;
-    var birth = new Date(birthdateStr);
-    if (isNaN(birth.getTime())) return null;
+    if (!birthdateStr || !/^\d{4}-\d{2}-\d{2}$/.test(birthdateStr)) return null;
+    var parts = birthdateStr.split("-").map(Number);
     var today = new Date();
-    var age = today.getFullYear() - birth.getFullYear();
-    var m = today.getMonth() - birth.getMonth();
-    if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
+    var age = today.getFullYear() - parts[0];
+    var m = (today.getMonth() + 1) - parts[1];
+    if (m < 0 || (m === 0 && today.getDate() < parts[2])) {
       age--;
     }
     return age >= 0 ? age : null;
@@ -2635,21 +2635,33 @@
     }
 
     if (log) {
-      var hasBp = (log.systolic_bp !== null && log.systolic_bp !== undefined && log.diastolic_bp !== null && log.diastolic_bp !== undefined);
-      var bpVal = hasBp ? (log.systolic_bp + "/" + log.diastolic_bp + " mmHg") : "—";
-      var bpSub = (log.systolic_bp >= 140 || log.diastolic_bp >= 90) ? "Stage 2 HTN Alert" : (log.systolic_bp >= 130 || log.diastolic_bp >= 80 ? "Stage 1 HTN" : "Normal BP");
+      var bpCat = bpCategory(log.systolic_bp, log.diastolic_bp);
+      var bpVal = bpCat ? (log.systolic_bp + "/" + log.diastolic_bp + " mmHg") : "—";
+      var bpSub = !bpCat
+        ? ""
+        : bpCat === "Normal"
+          ? "Normal BP"
+          : bpCat === "Elevated"
+            ? "Elevated BP"
+            : (bpCat + " HTN");
       addStat("Blood Pressure", bpVal, bpSub);
       var refHeightFt = U.fmtHeightFtIn(log.height);
+      var whSub = (!isMissing(log.weight) || !isMissing(log.height))
+        ? (U.fmtNum(log.weight, 1, "kg") + " / " + U.fmtNum(log.height, 1, "cm") + (refHeightFt ? " (" + refHeightFt + ")" : ""))
+        : "";
+      addStat("Body Mass Index", U.fmtNum(log.bmi, 1), whSub);
+      var spo2Cat = spo2Category(log.spo2);
       addStat(
-        "Body Mass Index",
-        U.fmtNum(log.bmi, 1),
-        log.weight
-          ? (U.fmtNum(log.weight, 1, "kg") + " / " + U.fmtNum(log.height, 1, "cm") + (refHeightFt ? " (" + refHeightFt + ")" : ""))
-          : ""
+        "Blood Oxygen (SpO2)",
+        U.fmtNum(log.spo2, 0, "%"),
+        !spo2Cat ? "" : spo2Cat === "Normal" ? "Normal" : (spo2Cat + " SpO2")
       );
-      addStat("Blood Oxygen (SpO2)", U.fmtNum(log.spo2, 0, "%"), (log.spo2 && log.spo2 < 95) ? "Attention required" : "Normal");
-      addStat("Body Temperature", U.fmtNum(log.temperature, 1, "°C"), (log.temperature >= 37.9) ? "Fever alert" : "Normothermic");
-      addStat("Pulse / Heart Rate", U.fmtNum(log.pulse_rate, 0, "bpm"), "Resting pulse");
+      addStat(
+        "Body Temperature",
+        U.fmtNum(log.temperature, 1, "°C"),
+        isMissing(log.temperature) ? "" : (Number(log.temperature) >= 37.9 ? "Fever alert" : "Normothermic")
+      );
+      addStat("Pulse / Heart Rate", U.fmtNum(log.pulse_rate, 0, "bpm"), isMissing(log.pulse_rate) ? "" : "Resting pulse");
       addStat("Measurement Time", U.fmtDT(log.timestamp), "Kiosk Station");
     } else {
       grid.appendChild(U.el("p", { class: "muted" }, "No vital readings recorded yet."));
@@ -2946,19 +2958,23 @@
       referBtnEl.onclick = async function () {
         var value = reason.value.trim();
         if (!value) {
+          reasonErr.textContent = bt("referReasonErr");
           reasonErr.style.display = "block";
           reason.focus();
           return;
         }
         reasonErr.style.display = "none";
-        closeDialog();
-        setBusy(document.getElementById("referBtn"), true, "Referring…");
+        setBusy(referBtnEl, true, "Referring…");
+        cancelBtn.disabled = true;
         try {
           await API.apiFetch(
             "/api/bhw/citizen/" + encodeURIComponent(citizenId) + "/refer",
             { method: "POST", body: { note: value } }
           );
+          closeDialog();
           await loadNotes(citizenId);
+          var prevNotice = document.getElementById("referFeedback");
+          if (prevNotice) prevNotice.remove();
           var notice = U.el("p", { class: "notice", id: "referFeedback", role: "status" },
             "Referral to the Rural Health Unit recorded.");
           var consentLine = document.getElementById("consentLine");
@@ -2968,10 +2984,11 @@
           var latest = logs.length ? logs[0] : null;
           showReferralSlipModal(citizen, latest, value);
         } catch (error) {
-          U.error(statusNode, error.message);
+          reasonErr.textContent = error.message || "Failed to submit referral.";
+          reasonErr.style.display = "block";
+          cancelBtn.disabled = false;
+          setBusy(referBtnEl, false);
           U.toast(error.message, "error");
-        } finally {
-          setBusy(document.getElementById("referBtn"), false);
         }
       };
     });
@@ -3026,9 +3043,15 @@
         backdrop.appendChild(card);
         document.body.appendChild(backdrop);
 
-        var closeDialog = U.openDialog(backdrop, confirmBtn);
+        var closeDialog = U.openDialog(backdrop, pwInput);
         closeBtn.onclick = closeDialog;
         cancelBtn.onclick = closeDialog;
+        pwInput.addEventListener("keydown", function (event) {
+          if (event.key === "Enter") {
+            event.preventDefault();
+            confirmBtn.click();
+          }
+        });
 
         confirmBtn.onclick = async function () {
           pwErr.style.display = "none";
