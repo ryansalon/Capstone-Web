@@ -377,7 +377,6 @@
       loginHeading: "Citizen Sign In",
       loginLede: "Sign in with your kiosk account to view your vital readings and health records.",
       loginExpired: "Your session expired — please sign in again.",
-      lblUsername: "Username",
       phUsernameLogin: "e.g. maria.santos",
       lblPassword: "Password",
       phPasswordLogin: "Enter your password",
@@ -394,18 +393,12 @@
       elderStep3Html: "<strong>3. Forgot password?</strong> Tap <em>Forgot password?</em> above, or ask your Barangay Health Worker (BHW) at the health station for help.",
       regHeading: "Create Citizen Account",
       regLede: "Register to access your kiosk vital measurements and download your health passport.",
-      lblFullName: "Full name",
       phFullName: "e.g. Juan dela Cruz",
       phUsernameReg: "Choose a username",
       phPasswordReg: "At least 8 characters",
       regPwHint: "Must be at least 8 characters.",
       lblConfirmPw: "Confirm password",
       phConfirmPw: "Re-enter your password",
-      lblBirthdate: "Birthdate",
-      lblGender: "Gender",
-      optMale: "Male",
-      optFemale: "Female",
-      optOther: "Other",
       btnCreateAcct: "Create account",
       btnCreatingAcct: "Creating account…",
       regAlready: "Already registered?",
@@ -800,7 +793,6 @@
       loginHeading: "Sign In sa Lumulupyo",
       loginLede: "Pag-sign in gamit ang imong kiosk account aron makita ang imong sukod sa panglawas ug rekord.",
       loginExpired: "Na-expire ang imong sesyon — palihug pag-sign in pag-usab.",
-      lblUsername: "Username",
       phUsernameLogin: "pananglitan maria.santos",
       lblPassword: "Password",
       phPasswordLogin: "Isulat ang imong password",
@@ -817,18 +809,12 @@
       elderStep3Html: "<strong>3. Nakalimot sa password?</strong> Pindota ang <em>Nakalimot sa password?</em> sa ibabaw, o pangayo og tabang sa imong Barangay Health Worker (BHW) sa health center.",
       regHeading: "Paghimo og Citizen Account",
       regLede: "Magparehistro aron makita ang imong mga sukod gikan sa kiosk ug ma-download ang health passport.",
-      lblFullName: "Tibuok ngalan",
       phFullName: "pananglitan Juan dela Cruz",
       phUsernameReg: "Pagpili og username",
       phPasswordReg: "Labing menos 8 ka karakter",
       regPwHint: "Kinahanglan labing menos 8 ka karakter.",
       lblConfirmPw: "Kumpirmaha ang password",
       phConfirmPw: "Isulat pag-usab ang password",
-      lblBirthdate: "Petsa sa pagkatawo",
-      lblGender: "Sekso",
-      optMale: "Lalaki",
-      optFemale: "Babaye",
-      optOther: "Uban pa",
       btnCreateAcct: "Paghimo og account",
       btnCreatingAcct: "Naghimo og account…",
       regAlready: "Nakarehistro na?",
@@ -1186,7 +1172,7 @@
       lblBirthdate: "Kaarawan",
       lblGender: "Kasarian",
       optMale: "Lalaki",
-      optFemale: "Babaye",
+      optFemale: "Babae",
       optOther: "Iba pa",
       profSaveDetails: "I-save ang detalye",
       profSaveChanges: "I-save ang pagbabago",
@@ -1223,7 +1209,6 @@
       loginHeading: "Mag-sign In",
       loginLede: "Mag-sign in gamit ang iyong kiosk account upang makita ang iyong mga sukat at rekord sa kalusugan.",
       loginExpired: "Nag-expire ang iyong sesyon — pakisubukan mag-sign in muli.",
-      lblUsername: "Username",
       phUsernameLogin: "hal. maria.santos",
       lblPassword: "Password",
       phPasswordLogin: "Ilagay ang iyong password",
@@ -1240,18 +1225,12 @@
       elderStep3Html: "<strong>3. Nakalimutan ang password?</strong> Pindutin ang <em>Nakalimutan ang password?</em> sa itaas, o humingi ng tulong sa Barangay Health Worker (BHW) sa health station.",
       regHeading: "Gumawa ng Citizen Account",
       regLede: "Magrehistro upang makita ang iyong mga sukat mula sa kiosk at ma-download ang iyong health passport.",
-      lblFullName: "Buong pangalan",
       phFullName: "hal. Juan dela Cruz",
       phUsernameReg: "Pumili ng username",
       phPasswordReg: "Hindi bababa sa 8 karakter",
       regPwHint: "Dapat hindi bababa sa 8 karakter.",
       lblConfirmPw: "Kumpirmahin ang password",
       phConfirmPw: "Ilagay muli ang password",
-      lblBirthdate: "Petsa ng kapanganakan",
-      lblGender: "Kasarian",
-      optMale: "Lalaki",
-      optFemale: "Babae",
-      optOther: "Iba pa",
       btnCreateAcct: "Gumawa ng account",
       btnCreatingAcct: "Gumagawa ng account…",
       regAlready: "Nakarehistro na?",
@@ -1679,8 +1658,12 @@
         passHeightFt ? ("≈ " + passHeightFt) : ""
       );
       addStat(t("passportStatSpo2"), U.fmtNum(log.spo2, 0, "%"), spo2Cat ? tCat(spo2Cat) : "");
-      addStat(t("passportStatTemp"), U.fmtNum(log.temperature, 1, "°C"), Number(log.temperature) >= 37.9 ? t("passportElevFever") : t("catNormal"));
-      addStat(t("passportStatPulse"), U.fmtNum(log.pulse_rate, 0, "bpm"), t("passportRestPulse"));
+      addStat(
+        t("passportStatTemp"),
+        U.fmtNum(log.temperature, 1, "°C"),
+        isMissing(log.temperature) ? "" : (Number(log.temperature) >= 37.9 ? t("passportElevFever") : t("catNormal"))
+      );
+      addStat(t("passportStatPulse"), U.fmtNum(log.pulse_rate, 0, "bpm"), isMissing(log.pulse_rate) ? "" : t("passportRestPulse"));
     } else {
       grid.appendChild(U.el("p", { class: "muted" }, t("passportNoVitals")));
     }
@@ -2665,12 +2648,14 @@
     var passportBtn = document.getElementById("passportBtn");
 
     var knownTimestamp = null;
+    var knownLogId = null;
     var latestLog = null;
     var cachedLogs = [];
     var cachedConsent = null;
     var cachedNotes = [];
     var loaded = false;
     var noticeDismissedInPage = false;
+    var realtimeSync = null;
 
     function setVitalsVisible(visible) {
       [headlineSection, supportSection, trendsSection].forEach(function (node) {
@@ -2743,6 +2728,7 @@
         function paintDashboardLogs(rows) {
           if (rows.length === 0) {
             knownTimestamp = null;
+            knownLogId = null;
             latestLog = null;
             U.clear(cards);
             U.clear(supportCards);
@@ -2763,9 +2749,11 @@
 
           // Re-render only when a new kiosk reading actually arrived, so the
           // 60s poll never disturbs the screen or screen-reader users.
-          if (knownTimestamp !== latest.timestamp) {
+          if (knownLogId !== latest.id || knownTimestamp !== latest.timestamp) {
+            knownLogId = latest.id;
             knownTimestamp = latest.timestamp;
             latestLog = latest;
+            if (realtimeSync && latest.id) realtimeSync.setLastId(latest.id);
             renderLatest(rows);
           }
           loaded = true;
@@ -2839,7 +2827,7 @@
     await load({});
 
     // Real-time live synchronization: instantly updates cards when kiosk POSTs
-    var realtimeSync = API.initRealtimeSync({
+    realtimeSync = API.initRealtimeSync({
       initialLogId: (latestLog && latestLog.id) || 0,
       onReading: function (reading) {
         load({ auto: true }).then(function (ok) {
@@ -3438,44 +3426,57 @@
       }
     });
 
-    U.loading(statusNode, t("loadingReadings"));
-    U.clear(tableWrap);
-    section.hidden = true;
-
-    try {
-      var data = await API.apiFetch("/api/health-data");
-      U.clear(statusNode);
-      var logs = data.logs || [];
-      historyState.logs = logs;
-      if (logs.length === 0) {
-        U.empty(statusNode, t("noReadingsHistory"));
-        U.clear(document.getElementById("chartNote"));
-        return;
-      }
-      renderLogTable(logs);
-      renderCharts(logs);
-      applyChartFilter(historyState.chartGroup);
-
-      API.initRealtimeSync({
-        onReading: function () {
-          API.apiFetch("/api/health-data").then(function (res) {
-            var freshLogs = res.logs || [];
-            historyState.logs = freshLogs;
-            if (freshLogs.length > 0) {
-              section.hidden = false;
-              renderLogTable(freshLogs);
-              renderCharts(freshLogs);
-              applyChartFilter(historyState.chartGroup);
-              U.toast(t("toastHistoryNew"), "success");
-            }
-          });
-        },
-      });
-    } catch (error) {
-      section.hidden = true;
+    async function loadHistory() {
+      U.loading(statusNode, t("loadingReadings"));
       U.clear(tableWrap);
-      U.error(statusNode, error.message, initHistory);
+      section.hidden = true;
+
+      try {
+        var data = await API.apiFetch("/api/health-data");
+        U.clear(statusNode);
+        var logs = data.logs || [];
+        historyState.logs = logs;
+        if (logs.length === 0) {
+          U.empty(statusNode, t("noReadingsHistory"));
+          U.clear(document.getElementById("chartNote"));
+        } else {
+          renderLogTable(logs);
+          renderCharts(logs);
+          applyChartFilter(historyState.chartGroup);
+        }
+        return true;
+      } catch (error) {
+        section.hidden = true;
+        U.clear(tableWrap);
+        U.error(statusNode, error.message, loadHistory);
+        return false;
+      }
     }
+
+    await loadHistory();
+
+    API.initRealtimeSync({
+      initialLogId: (historyState.logs[0] && historyState.logs[0].id) || 0,
+      onReading: function () {
+        API.apiFetch("/api/health-data").then(function (res) {
+          var freshLogs = res.logs || [];
+          var prevCount = historyState.logs.length;
+          var prevId = historyState.logs[0] && historyState.logs[0].id;
+          var nextId = freshLogs[0] && freshLogs[0].id;
+          historyState.logs = freshLogs;
+          if (freshLogs.length > 0 && (freshLogs.length !== prevCount || nextId !== prevId)) {
+            U.clear(statusNode);
+            section.hidden = false;
+            renderLogTable(freshLogs);
+            renderCharts(freshLogs);
+            applyChartFilter(historyState.chartGroup);
+            U.toast(t("toastHistoryNew"), "success");
+          }
+        }).catch(function () {
+          // Transient polling refresh errors are retried on the next watermark change
+        });
+      },
+    });
   }
 
   /* ---------------- consent ---------------- */

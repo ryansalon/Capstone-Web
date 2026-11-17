@@ -698,7 +698,10 @@
       tableWrap.parentNode.insertBefore(cue, tableWrap);
 
       function sync() {
-        if (!document.body.contains(tableWrap)) return;
+        if (!document.body.contains(tableWrap)) {
+          window.removeEventListener("resize", sync);
+          return;
+        }
         var visible = tableWrap.offsetParent !== null;
         var overflows = visible && tableWrap.scrollWidth > tableWrap.clientWidth + 6;
         cue.hidden = !overflows;
@@ -786,7 +789,11 @@
       container.appendChild(tableWrap);
 
       function syncCue() {
-        if (!document.body.contains(tableWrap) || tableWrap.hidden) {
+        if (!document.body.contains(tableWrap)) {
+          window.removeEventListener("resize", syncCue);
+          return;
+        }
+        if (tableWrap.hidden) {
           cue.hidden = true;
           return;
         }
