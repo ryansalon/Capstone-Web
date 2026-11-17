@@ -11,24 +11,27 @@
   var feverThresholdPlugin = {
     id: "feverThreshold",
     afterDraw: function (chart) {
-      var ctx = chart.ctx;
+      if (!chart.config || !chart.config.options || !chart.config.options.plugins || !chart.config.options.plugins.feverThreshold) return;
       var yAxis = chart.scales.y;
-      if (!yAxis) return;
+      var area = chart.chartArea;
+      if (!yAxis || !area) return;
       var y = yAxis.getPixelForValue(37.9);
-      if (y === null || y === undefined) return;
+      if (y === null || y === undefined || y < area.top || y > area.bottom) return;
+      var ctx = chart.ctx;
+      var drawBelow = (y - area.top) < 16;
       ctx.save();
       ctx.strokeStyle = "#a5271d";
       if (ctx.setLineDash) ctx.setLineDash([6, 4]);
       ctx.lineWidth = 1.5;
-      ctx.font = '11px system-ui, -apple-system, "Segoe UI", sans-serif';
+      ctx.font = '600 11px system-ui, -apple-system, "Segoe UI", sans-serif';
       ctx.fillStyle = "#a5271d";
       ctx.textAlign = "right";
-      ctx.textBaseline = "bottom";
+      ctx.textBaseline = drawBelow ? "top" : "bottom";
       ctx.beginPath();
-      ctx.moveTo(yAxis.left, y);
-      ctx.lineTo(yAxis.right, y);
+      ctx.moveTo(area.left, y);
+      ctx.lineTo(area.right, y);
       ctx.stroke();
-      ctx.fillText(t("feverThresholdLabel"), yAxis.right - 8, y - 6);
+      ctx.fillText(t("feverThresholdLabel"), area.right - 8, drawBelow ? y + 5 : y - 5);
       ctx.restore();
     },
   };
@@ -170,6 +173,8 @@
       trendUp: "up {diff}",
       trendDown: "down {diff}",
       trendMsg: "{label} went from {first} to {last}{unit} over {count} readings ({change}).",
+      trendSingle: "{label}: 1 reading recorded ({last}{unit}) — take another kiosk reading to plot a trend line.",
+      trendSingleBp: "1 blood pressure reading recorded ({bp} mmHg) — take another kiosk reading to plot a trend line.",
       chartSystolic: "Systolic",
       chartDiastolic: "Diastolic",
       chartWeightKg: "Weight (kg)",
@@ -596,6 +601,8 @@
       trendUp: "misaka og {diff}",
       trendDown: "miubos og {diff}",
       trendMsg: "Ang {label} gikan sa {first} nahimong {last}{unit} sulod sa {count} ka sukod ({change}).",
+      trendSingle: "{label}: 1 ka sukod pa ({last}{unit}) — pagkuha og laing sukod sa kiosk aron makita ang linya sa dagan.",
+      trendSingleBp: "1 ka sukod sa presyon sa dugo ({bp} mmHg) — pagkuha og laing sukod sa kiosk aron makita ang linya sa dagan.",
       chartSystolic: "Systolic",
       chartDiastolic: "Diastolic",
       chartWeightKg: "Timbang (kg)",
@@ -1018,6 +1025,8 @@
       trendUp: "tumaas nang {diff}",
       trendDown: "bumaba nang {diff}",
       trendMsg: "Ang {label} mula {first} ay naging {last}{unit} sa loob ng {count} sukat ({change}).",
+      trendSingle: "{label}: 1 sukat pa lang ({last}{unit}) — kumuha ng isa pang sukat sa kiosk upang makita ang trend.",
+      trendSingleBp: "1 sukat ng presyon ng dugo ({bp} mmHg) — kumuha ng isa pang sukat sa kiosk upang makita ang trend.",
       chartSystolic: "Systolic",
       chartDiastolic: "Diastolic",
       chartWeightKg: "Timbang (kg)",
@@ -2239,13 +2248,16 @@
   /* Plain-language trend line for a chart, e.g.
    * "Systolic went from 128 to 135 mmHg over 5 readings (up 7)." */
   function trendSentence(values, label, unit, decimals) {
-    var pts = values.filter(function (v) { return v !== null; }).map(Number);
-    if (pts.length < 2) return "";
+    var pts = values.filter(function (v) { return v !== null && v !== undefined; }).map(Number);
     var d = decimals || 0;
+    var u = unit ? " " + unit : "";
+    if (pts.length === 1) {
+      return t("trendSingle", { label: label, last: pts[0].toFixed(d), unit: u });
+    }
+    if (pts.length < 2) return "";
     var first = pts[0];
     var last = pts[pts.length - 1];
     var diff = last - first;
-    var u = unit ? " " + unit : "";
     var change = Math.abs(diff) < Math.pow(10, -d) / 2
       ? t("trendNoChange")
       : t(diff > 0 ? "trendUp" : "trendDown", { diff: Math.abs(diff).toFixed(d) });
@@ -3222,20 +3234,38 @@
     function series(key) {
       return ascending.map(function (log) { return isMissing(log[key]) ? null : log[key]; });
     }
-    setChartSummary("temperatureSummary", [trendSentence(series("temperature"), tLabel("Body temperature"), "°C", 1)]);
-    setChartSummary("weightSummary", [trendSentence(series("weight"), tLabel("Weight"), "kg", 1)]);
-    setChartSummary("bmiSummary", [trendSentence(series("bmi"), t("chartBmi"), "", 1)]);
-    setChartSummary("bpSummary", [
-      trendSentence(series("systolic_bp"), t("chartSystolic"), "mmHg"),
-      trendSentence(series("diastolic_bp"), t("chartDiastolic"), "mmHg"),
-    ]);
-    setChartSummary("spo2Summary", [trendSentence(series("spo2"), t("chartSpo2Pct"), "%")]);
+    function pointRadiusFor(vals) {
+      var n = vals.filter(function (v) { return !isMissing(v); }).length;
+      return n <= 1 ? 6 : 3;
+    }
+    var sysVals = series("systolic_bp");
+    var diaVals = series("diastolic_bp");
+    var weightVals = series("weight");
+    var bmiVals = series("bmi");
+    var spo2Vals = series("spo2");
+    var tempVals = series("temperature");
+    var sysPts = sysVals.filter(function (v) { return v !== null; }).map(Number);
+    var diaPts = diaVals.filter(function (v) { return v !== null; }).map(Number);
+
+    setChartSummary("temperatureSummary", [trendSentence(tempVals, tLabel("Body temperature"), "°C", 1)]);
+    setChartSummary("weightSummary", [trendSentence(weightVals, tLabel("Weight"), "kg", 1)]);
+    setChartSummary("bmiSummary", [trendSentence(bmiVals, t("chartBmi"), "", 1)]);
+    if (sysPts.length === 1 && diaPts.length === 1) {
+      setChartSummary("bpSummary", [t("trendSingleBp", { bp: Math.round(sysPts[0]) + "/" + Math.round(diaPts[0]) })]);
+    } else {
+      setChartSummary("bpSummary", [
+        trendSentence(sysVals, t("chartSystolic"), "mmHg"),
+        trendSentence(diaVals, t("chartDiastolic"), "mmHg"),
+      ]);
+    }
+    setChartSummary("spo2Summary", [trendSentence(spo2Vals, t("chartSpo2Pct"), "%")]);
     var green = "#0f6b53";
     var red = "#a5271d";
     var baseOptions = {
       responsive: true,
       maintainAspectRatio: true,
       aspectRatio: 2,
+      layout: { padding: { left: 4, right: 10 } },
       plugins: { legend: { display: false } },
       scales: {
         x: { ticks: { maxTicksLimit: 6, maxRotation: 0 } },
@@ -3250,15 +3280,14 @@
         datasets: [
           {
             label: t("chartWeightKg"),
-            data: ascending.map(function (log) {
-              return log.weight;
-            }),
+            data: weightVals,
             borderColor: green,
             backgroundColor: "rgba(15, 107, 83, 0.12)",
             fill: true,
             spanGaps: true,
             tension: 0.25,
-            pointRadius: 3,
+            pointRadius: pointRadiusFor(weightVals),
+            pointHoverRadius: 7,
           },
         ],
       },
@@ -3272,15 +3301,14 @@
         datasets: [
           {
             label: t("chartBmi"),
-            data: ascending.map(function (log) {
-              return log.bmi;
-            }),
+            data: bmiVals,
             borderColor: "#8a5a00",
             backgroundColor: "rgba(138, 90, 0, 0.12)",
             fill: true,
             spanGaps: true,
             tension: 0.25,
-            pointRadius: 3,
+            pointRadius: pointRadiusFor(bmiVals),
+            pointHoverRadius: 7,
           },
         ],
       },
@@ -3294,26 +3322,24 @@
         datasets: [
           {
             label: t("chartSystolic"),
-            data: ascending.map(function (log) {
-              return log.systolic_bp;
-            }),
+            data: sysVals,
             borderColor: "#1565c0",
             backgroundColor: "rgba(21, 101, 192, 0.10)",
             spanGaps: true,
             tension: 0.25,
-            pointRadius: 3,
+            pointRadius: pointRadiusFor(sysVals),
+            pointHoverRadius: 7,
             pointStyle: "circle",
           },
           {
             label: t("chartDiastolic"),
-            data: ascending.map(function (log) {
-              return log.diastolic_bp;
-            }),
+            data: diaVals,
             borderColor: "#b9761b",
             backgroundColor: "rgba(185, 118, 27, 0.10)",
             spanGaps: true,
             tension: 0.25,
-            pointRadius: 3,
+            pointRadius: pointRadiusFor(diaVals),
+            pointHoverRadius: 7,
             pointStyle: "rect",
           },
         ],
@@ -3322,6 +3348,7 @@
         responsive: true,
         maintainAspectRatio: true,
         aspectRatio: 2,
+        layout: { padding: { left: 4, right: 10 } },
         plugins: { legend: { display: true, position: "bottom" } },
         scales: {
           x: { ticks: { maxTicksLimit: 6, maxRotation: 0 } },
@@ -3337,15 +3364,14 @@
         datasets: [
           {
             label: t("chartSpo2Pct"),
-            data: ascending.map(function (log) {
-              return log.spo2;
-            }),
+            data: spo2Vals,
             borderColor: "#0b3d30",
             backgroundColor: "rgba(11, 61, 48, 0.12)",
             fill: true,
             spanGaps: true,
             tension: 0.25,
-            pointRadius: 3,
+            pointRadius: pointRadiusFor(spo2Vals),
+            pointHoverRadius: 7,
           },
         ],
       },
@@ -3353,6 +3379,7 @@
         responsive: true,
         maintainAspectRatio: true,
         aspectRatio: 2,
+        layout: { padding: { left: 4, right: 10 } },
         plugins: { legend: { display: false } },
         scales: {
           x: { ticks: { maxTicksLimit: 6, maxRotation: 0 } },
@@ -3361,9 +3388,7 @@
       },
     });
 
-    var temps = ascending.map(function (log) {
-      return log.temperature;
-    });
+    var temps = tempVals;
     var tempMax = Math.max.apply(
       null,
       temps.filter(function (t) {
@@ -3383,7 +3408,8 @@
             fill: true,
             spanGaps: true,
             tension: 0.25,
-            pointRadius: 3,
+            pointRadius: pointRadiusFor(temps),
+            pointHoverRadius: 7,
           },
         ],
       },
@@ -3391,6 +3417,7 @@
         responsive: true,
         maintainAspectRatio: true,
         aspectRatio: 2,
+        layout: { padding: { left: 4, right: 10 } },
         plugins: {
           legend: { display: false },
           feverThreshold: {},

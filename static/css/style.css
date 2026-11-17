@@ -4250,6 +4250,10 @@ td.cell-bad {
   border-radius: 8px;
 }
 
+.chart-summary:empty {
+  display: none;
+}
+
 /* ---------- consent comparison cards ---------- */
 .consent-compare {
   display: grid;
