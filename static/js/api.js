@@ -25,14 +25,14 @@
     memStore[key] = String(value);
     try {
       localStorage.setItem(key, value);
-    } catch (_) {}
+    } catch (_) { }
   }
 
   function lsRemove(key) {
     delete memStore[key];
     try {
       localStorage.removeItem(key);
-    } catch (_) {}
+    } catch (_) { }
   }
 
   function getLang() {
@@ -91,7 +91,7 @@
     try {
       sessionStorage.removeItem("bhm:staff_privacy_oath");
       sessionStorage.removeItem("bhm:citizen_terms_seen");
-    } catch (_) {}
+    } catch (_) { }
   }
 
   /* Canonical clinical range classifiers mirroring backend vitals.py. */
@@ -362,7 +362,7 @@
      * Returns a close() function (callers should invoke it from their own
      * close buttons). */
     openDialog: function (backdrop, focusTarget, options) {
-      if (!backdrop) return function () {};
+      if (!backdrop) return function () { };
       options = options || {};
       var persistent = Boolean(options.persistent || options.preventDismiss);
       var seq = (UI._dialogSeq = (UI._dialogSeq || 0) + 1);
@@ -840,9 +840,9 @@
    */
   function initRealtimeSync(options) {
     options = options || {};
-    var onReading = options.onReading || function () {};
+    var onReading = options.onReading || function () { };
     var token = getToken();
-    if (!token) return { close: function () {}, setLastId: function () {} };
+    if (!token) return { close: function () { }, setLastId: function () { } };
 
     var closed = false;
     var lastWatermarkId = options.initialLogId || 0;
@@ -1243,7 +1243,7 @@
     if (banner.classList.contains("is-offline")) {
       banner.textContent = trShared(
         "statusOfflineBanner",
-        "⚠️ Internet connection interrupted. Changes will synchronize automatically once reconnected."
+        " Internet connection interrupted. Changes will synchronize automatically once reconnected."
       );
     } else if (banner.classList.contains("is-online")) {
       banner.textContent = trShared(
@@ -1273,7 +1273,7 @@
         banner.style.display = "block";
         banner.textContent = trShared(
           "statusOfflineBanner",
-          "⚠️ Internet connection interrupted. Changes will synchronize automatically once reconnected."
+          " Internet connection interrupted. Changes will synchronize automatically once reconnected."
         );
       } else if (banner.classList.contains("is-offline")) {
         banner.className = "offline-banner is-online";
