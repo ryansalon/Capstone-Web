@@ -23,7 +23,7 @@ class User(Base):
     full_name = Column(String(100), nullable=False, index=True)
     birthdate = Column(String(10), nullable=False)
     gender = Column(String(10), nullable=False)
-    role = Column(String(10), default="citizen")
+    role = Column(String(10), default="citizen", index=True)
     privacy_acknowledged_at = Column(DateTime, nullable=True)
     created_at = Column(DateTime, default=utcnow)
     updated_at = Column(DateTime, default=utcnow, onupdate=utcnow)
@@ -63,6 +63,10 @@ class ConsentAudit(Base):
     ip_address = Column(String(64), nullable=True)
     user_agent = Column(String(255), nullable=True)
 
+    __table_args__ = (
+        Index("ix_consent_audit_user_ts_id", "user_id", "timestamp", "id"),
+    )
+
 
 class AccessAuditTrail(Base):
     __tablename__ = "access_audit_trail"
@@ -77,6 +81,10 @@ class AccessAuditTrail(Base):
     ip_address = Column(String(64), nullable=True)
     user_agent = Column(String(255), nullable=True)
 
+    __table_args__ = (
+        Index("ix_access_audit_ts_id", "access_timestamp", "id"),
+    )
+
 
 class BhwNote(Base):
     __tablename__ = "bhw_notes"
@@ -87,3 +95,7 @@ class BhwNote(Base):
     note = Column(String(1000), nullable=False)
     visible_to_citizen = Column(Integer, default=1, nullable=False)
     created_at = Column(DateTime, default=utcnow, index=True)
+
+    __table_args__ = (
+        Index("ix_bhw_notes_citizen_vis_created", "citizen_id", "visible_to_citizen", "created_at"),
+    )
