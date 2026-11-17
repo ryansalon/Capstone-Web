@@ -5236,48 +5236,83 @@ mark.match {
   list-style: none;
   margin: 0;
   padding: 0;
-  display: grid;
-  gap: 0.75rem;
 }
 
 .citizen-note-card {
-  background: var(--white);
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  padding: 0.9rem 1rem;
-  box-shadow: 0 1px 2px rgba(11, 38, 29, 0.04);
+  padding: 0.95rem 1.25rem;
+  border-top: 1px solid #e7efea;
+  background: transparent;
+}
+
+.citizen-note-card:first-child {
+  border-top: 0;
 }
 
 .citizen-note-card.is-referral {
-  border-color: #eab95c;
-  background: #fffdf7;
+  background: #fffcf4;
+}
+
+.citizen-note-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.3rem 0.75rem;
+  margin-bottom: 0.38rem;
+}
+
+.citizen-note-badges {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.citizen-note-latest {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--green-700);
+}
+
+.citizen-note-card.is-referral .citizen-note-latest {
+  color: #9a4a09;
 }
 
 .citizen-note-ref {
-  display: inline-block;
-  margin-bottom: 0.4rem;
-  padding: 0.16rem 0.55rem;
-  border-radius: 999px;
-  font-size: 0.72rem;
+  display: inline-flex;
+  align-items: center;
+  padding: 0.14rem 0.48rem;
+  border-radius: 4px;
+  font-size: 0.7rem;
   font-weight: 700;
-  letter-spacing: 0.02em;
-  background: #fef3c7;
-  color: #92400e;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  background: var(--status-attention-bg);
+  color: var(--status-attention-fg);
+  border: 1px solid var(--status-attention-border);
 }
 
 .citizen-note-text {
   margin: 0;
+  max-width: 68ch;
   white-space: pre-wrap;
   word-break: break-word;
   color: var(--ink);
-  font-size: 0.95rem;
-  line-height: 1.5;
+  font-size: 0.94rem;
+  line-height: 1.55;
+}
+
+.citizen-note-card.is-latest .citizen-note-text {
+  font-size: 0.97rem;
+  font-weight: 500;
 }
 
 .citizen-note-meta {
-  margin-top: 0.45rem;
-  font-size: 0.8rem;
+  font-size: 0.81rem;
   font-weight: 600;
+  font-variant-numeric: tabular-nums;
   color: var(--ink-soft);
 }
 
@@ -5580,77 +5615,106 @@ mark.match {
   }
 }
 
-/* ---------- Highlighted Citizen BHW Notes Callout ---------- */
+/* ---------- Citizen BHW Clinical Notes Panel & Mobile Polish ---------- */
 #bhwNotesSection.has-notes {
-  background: linear-gradient(180deg, #eef9f3 0%, #ffffff 100%);
-  border: 1.5px solid #88cbb0;
-  border-left: 5px solid var(--green-700);
+  background: var(--white);
+  border: 1px solid var(--status-normal-border);
   border-radius: var(--radius);
-  padding: 1.25rem 1.35rem;
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+#bhwNotesSection.has-notes .section-header-row {
+  align-items: center;
+  gap: 0.45rem 1rem;
+  padding: 0.95rem 1.25rem;
+  margin-bottom: 0;
+  background: var(--green-050);
+  border-bottom: 1px solid #cce3d8;
 }
 
 #bhwNotesSection.has-notes.has-referral {
-  background: linear-gradient(180deg, #fff9ec 0%, #ffffff 100%);
-  border-color: #eab95c;
-  border-left-color: #c26a12;
+  border-color: var(--status-attention-border);
+}
+
+#bhwNotesSection.has-notes.has-referral .section-header-row {
+  background: var(--status-attention-bg);
+  border-bottom-color: #ecd7a8;
 }
 
 .bhw-notes-count-pill {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.25rem 0.72rem;
-  border-radius: 999px;
-  font-size: 0.78rem;
-  font-weight: 700;
-  background: var(--green-100);
-  color: var(--green-900);
-  border: 1px solid #9dd0bc;
+  font-size: 0.81rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--green-800);
   white-space: nowrap;
 }
 
 #bhwNotesSection.has-referral .bhw-notes-count-pill {
-  background: #fef3c7;
-  color: #7c2d12;
-  border-color: #f0cf8e;
+  color: #8a3b08;
 }
 
-.citizen-note-badges {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.4rem;
-  margin-bottom: 0.45rem;
+.bhw-notes-toggle {
+  display: block;
+  width: 100%;
+  min-height: 44px;
+  padding: 0.68rem 1.25rem;
+  border: 0;
+  border-top: 1px solid #e7efea;
+  background: #fafcfb;
+  font: inherit;
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: var(--green-800);
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
 }
 
-.citizen-note-badges .citizen-note-ref {
-  margin-bottom: 0;
-}
-
-.citizen-note-latest {
-  display: inline-block;
-  padding: 0.16rem 0.55rem;
-  border-radius: 999px;
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-  background: var(--green-100);
+.bhw-notes-toggle:hover {
+  background: var(--green-050);
   color: var(--green-900);
-  border: 1px solid #9dd0bc;
 }
 
-.citizen-note-card.is-latest {
-  border-color: #88cbb0;
-  box-shadow: 0 3px 10px rgba(15, 107, 83, 0.08);
-}
-
-.citizen-note-card.is-referral.is-latest {
-  border-color: #eab95c;
-  box-shadow: 0 3px 10px rgba(194, 106, 18, 0.1);
+.bhw-notes-toggle:focus-visible {
+  outline: 2px solid var(--green-700);
+  outline-offset: -2px;
 }
 
 @media (max-width: 640px) {
-  #bhwNotesSection.has-notes {
-    padding: 1rem 0.95rem;
+  .portal-citizen .hero-actions .btn {
+    min-height: 44px;
+  }
+
+  .portal-citizen .hero-meta-bar {
+    gap: 0.6rem 0.85rem;
+  }
+
+  .portal-citizen .section {
+    margin-bottom: 1.25rem;
+  }
+
+  #bhwNotesSection.has-notes .section-header-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.3rem;
+    padding: 0.85rem 1rem;
+  }
+
+  .citizen-note-card {
+    padding: 0.85rem 1rem;
+  }
+
+  .citizen-note-top {
+    gap: 0.25rem 0.6rem;
+  }
+
+  .citizen-note-text,
+  .citizen-note-card.is-latest .citizen-note-text {
+    font-size: 0.95rem;
+  }
+
+  .bhw-notes-toggle {
+    padding: 0.72rem 1rem;
   }
 }

@@ -159,6 +159,9 @@
       bhwNotesCountSingle: "1 note from BHW",
       bhwNotesCountPlural: "{n} notes from BHW",
       bhwNotesLatestBadge: "Latest",
+      bhwNotesShowOlderSingle: "Show 1 earlier note",
+      bhwNotesShowOlderPlural: "Show {n} earlier notes",
+      bhwNotesShowLess: "Show fewer notes",
       feverThresholdLabel: "Fever ≥ 37.9 °C",
       chartsUnavailMini: "Charts unavailable (the chart script failed to load) — open History for the full table.",
       notEnoughBp: "Not enough blood pressure readings yet to show a trend.",
@@ -582,6 +585,9 @@
       bhwNotesCountSingle: "1 ka nota gikan sa BHW",
       bhwNotesCountPlural: "{n} ka nota gikan sa BHW",
       bhwNotesLatestBadge: "Pinakabag-o",
+      bhwNotesShowOlderSingle: "Ipakita ang 1 ka miaging nota",
+      bhwNotesShowOlderPlural: "Ipakita ang {n} ka miaging mga nota",
+      bhwNotesShowLess: "Ipakita ang mas gamay",
       feverThresholdLabel: "Hilanat ≥ 37.9 °C",
       chartsUnavailMini: "Dili ma-load ang mga chart — ablihi ang Kasaysayan alang sa tibuok talaan.",
       notEnoughBp: "Wala pay igong sukod sa presyon sa dugo aron makita ang kausaban.",
@@ -1001,6 +1007,9 @@
       bhwNotesCountSingle: "1 tala mula sa BHW",
       bhwNotesCountPlural: "{n} na tala mula sa BHW",
       bhwNotesLatestBadge: "Pinakabago",
+      bhwNotesShowOlderSingle: "Ipakita ang 1 mas lumang tala",
+      bhwNotesShowOlderPlural: "Ipakita ang {n} mas lumang tala",
+      bhwNotesShowLess: "Magpakita ng mas kaunti",
       feverThresholdLabel: "Lagnat ≥ 37.9 °C",
       chartsUnavailMini: "Hindi ma-load ang mga chart — buksan ang Kasaysayan para sa buong talahanayan.",
       notEnoughBp: "Wala pang sapat na sukat ng presyon ng dugo upang maipakita ang trend.",
@@ -2657,34 +2666,70 @@
     }
 
     var list = U.el("ul", { class: "citizen-notes-list" });
+    var visibleLimit = 2;
+    var extraItems = [];
     notes.forEach(function (item, idx) {
       var text = item.note || "";
       var isReferral = text.indexOf("Referral to RHU:") === 0;
       var isLatest = idx === 0;
+      var showLatestLabel = isLatest && notes.length > 1;
+      var isExtra = idx >= visibleLimit;
       var card = U.el("li", {
         class: "citizen-note-card" + (isReferral ? " is-referral" : "") + (isLatest ? " is-latest" : ""),
       });
-      if (isLatest || isReferral) {
-        var badges = U.el("div", { class: "citizen-note-badges" });
-        if (isLatest) {
-          badges.appendChild(U.el("span", { class: "citizen-note-latest" }, t("bhwNotesLatestBadge")));
-        }
-        if (isReferral) {
-          badges.appendChild(U.el("span", { class: "citizen-note-ref" }, t("bhwNotesRefBadge")));
-        }
-        card.appendChild(badges);
+      if (isExtra) {
+        card.hidden = true;
+        extraItems.push(card);
       }
-      card.appendChild(U.el("p", { class: "citizen-note-text" }, text));
-      card.appendChild(
+
+      var top = U.el("div", { class: "citizen-note-top" });
+      top.appendChild(
         U.el(
           "div",
           { class: "citizen-note-meta" },
           t("bhwNotesFrom") + " " + (item.bhw || "BHW") + " · " + U.fmtDT(item.timestamp)
         )
       );
+      if (showLatestLabel || isReferral) {
+        var badges = U.el("div", { class: "citizen-note-badges" });
+        if (showLatestLabel) {
+          badges.appendChild(U.el("span", { class: "citizen-note-latest" }, t("bhwNotesLatestBadge")));
+        }
+        if (isReferral) {
+          badges.appendChild(U.el("span", { class: "citizen-note-ref" }, t("bhwNotesRefBadge")));
+        }
+        top.appendChild(badges);
+      }
+      card.appendChild(top);
+      card.appendChild(U.el("p", { class: "citizen-note-text" }, text));
       list.appendChild(card);
     });
     container.appendChild(list);
+
+    if (extraItems.length > 0) {
+      var expanded = false;
+      var moreLabel = extraItems.length === 1
+        ? t("bhwNotesShowOlderSingle")
+        : t("bhwNotesShowOlderPlural", { n: extraItems.length });
+      var toggleBtn = U.el(
+        "button",
+        {
+          type: "button",
+          class: "bhw-notes-toggle",
+          "aria-expanded": "false",
+        },
+        moreLabel
+      );
+      toggleBtn.addEventListener("click", function () {
+        expanded = !expanded;
+        extraItems.forEach(function (itemNode) {
+          itemNode.hidden = !expanded;
+        });
+        toggleBtn.setAttribute("aria-expanded", expanded ? "true" : "false");
+        toggleBtn.textContent = expanded ? t("bhwNotesShowLess") : moreLabel;
+      });
+      container.appendChild(toggleBtn);
+    }
   }
 
   async function initDashboard() {
