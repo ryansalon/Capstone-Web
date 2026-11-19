@@ -641,6 +641,16 @@ a:hover {
   white-space: nowrap;
 }
 
+.icon-inline {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+}
+
+.btn svg {
+  flex-shrink: 0;
+}
+
 h1 {
   font-family: var(--font-display);
   font-size: 1.8rem;
@@ -2464,8 +2474,9 @@ footer.foot,
 
   .page-actions .btn {
     flex: 1 1 auto;
+    justify-content: center;
     text-align: center;
-    white-space: normal;
+    white-space: nowrap;
   }
 
   .topbar {
