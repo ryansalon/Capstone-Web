@@ -8,7 +8,7 @@
   <link rel="icon" type="image/svg+xml" href="/img/favicon.svg">
   <link rel="preload" as="image" href="/img/cpsc-logo.png">
   <link rel="preload" as="image" href="/img/rhu-logo.png">
-  <link rel="stylesheet" href="/css/style.css?v=32">
+  <link rel="stylesheet" href="/css/style.css?v=36">
 </head>
 
 <body data-page="bhw-dashboard">
@@ -104,11 +104,11 @@
             <span class="section-caption" data-i18n="dashInThisPeriod">In this period</span>
             <div id="totals" class="totals"></div>
           </div>
-          <div class="totals-group">
-            <span class="section-caption" data-i18n="dashAllTimeRegistry">Registry (all time)</span>
-            <div id="registryTotals" class="totals"></div>
-          </div>
           <div class="context-row">
+            <div class="chart-box context-panel">
+              <h3 data-i18n="dashAllTimeRegistry">Registry (all time)</h3>
+              <div id="registryTotals" class="totals"></div>
+            </div>
             <div class="chart-box context-panel">
               <h3 data-i18n="dashConsentDonutHeading">Consent coverage</h3>
               <canvas id="consentDonut" role="img" aria-label="Citizens who granted consent versus not"></canvas>

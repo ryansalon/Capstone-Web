@@ -2766,7 +2766,7 @@
     function renderCitizenDetails() {
       document.getElementById("pageTitle").textContent = citizen.full_name || bt("cvTitleFallback");
       var profileHeading = document.getElementById("profileHeading");
-      if (profileHeading) profileHeading.textContent = citizen.full_name || bt("cvProfileHeading");
+      if (profileHeading) profileHeading.textContent = bt("cvProfileHeading");
 
       var avatar = document.getElementById("patientAvatar");
       if (avatar) {
